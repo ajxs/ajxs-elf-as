@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ARCH=mips
+./build && ./ajxs-${ARCH}-as

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export ARCH=mips
+
+make clean;
