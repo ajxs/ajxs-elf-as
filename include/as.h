@@ -143,12 +143,13 @@ typedef struct _encoding_entity {
 } Encoding_Entity;
 
 
-typedef struct {
+typedef struct _section {
 	char *name;
 	size_t name_strtab_offset;
 	size_t file_offset;
 	size_t program_counter;
 	uint32_t type;
+	uint32_t flags;
 	size_t size;
 	size_t link;
 	Encoding_Entity *encoding_entities;

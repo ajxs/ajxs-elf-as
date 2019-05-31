@@ -233,6 +233,9 @@ void assemble(FILE *input_file) {
 	}
 #endif
 
+
+#define ENCODE_SYMBOLS 1
+
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
 	symbol_table.n_entries = 0;
@@ -250,6 +253,7 @@ void assemble(FILE *input_file) {
 	sections[0].program_counter = 0;
 	sections[0].file_offset = 0;
 	sections[0].size = 0;
+	sections[0].flags = 0;
 	sections[0].link = 0;
 	sections[0].type = SHT_NULL;
 	sections[0].encoding_entities = NULL;
@@ -259,6 +263,7 @@ void assemble(FILE *input_file) {
 	sections[1].program_counter = 0;
 	sections[1].file_offset = 0;
 	sections[1].size = 0;
+	sections[1].flags = SHF_ALLOC | SHF_EXECINSTR;
 	sections[1].link = 0;
 	sections[1].type = SHT_PROGBITS;
 	sections[1].encoding_entities = NULL;
@@ -268,6 +273,7 @@ void assemble(FILE *input_file) {
 	sections[2].program_counter = 0;
 	sections[2].file_offset = 0;
 	sections[2].size = 0;
+	sections[2].flags = SHF_ALLOC | SHF_WRITE;
 	sections[2].link = 0;
 	sections[2].type = SHT_PROGBITS;
 	sections[2].encoding_entities = NULL;
@@ -278,6 +284,7 @@ void assemble(FILE *input_file) {
 	sections[3].file_offset = 0;
 	sections[3].size = 0;
 	sections[3].link = 0;
+	sections[3].flags = SHF_ALLOC | SHF_WRITE;
 	sections[3].type = SHT_NOBITS;
 	sections[3].encoding_entities = NULL;
 
@@ -286,6 +293,7 @@ void assemble(FILE *input_file) {
 	sections[4].program_counter = 0;
 	sections[4].file_offset = 0;
 	sections[4].size = 0;
+	sections[4].flags = SHF_ALLOC;
 	sections[4].link = 6;
 	sections[4].type = SHT_SYMTAB;
 	sections[4].encoding_entities = NULL;
@@ -295,6 +303,7 @@ void assemble(FILE *input_file) {
 	sections[5].program_counter = 0;
 	sections[5].file_offset = 0;
 	sections[5].size = 0;
+	sections[5].flags = SHF_ALLOC;
 	sections[5].link = 0;
 	sections[5].type = SHT_STRTAB;
 	sections[5].encoding_entities = NULL;
@@ -357,7 +366,8 @@ void assemble(FILE *input_file) {
 	elf_header.e_entry = 0;
 	elf_header.e_phoff = 0;
 	elf_header.e_shoff = 0;
-	elf_header.e_flags = 0;
+	// @TODO - Temporarily hardcoding MIPS values.
+	elf_header.e_flags = 0x90000400;
 	elf_header.e_ehsize = sizeof(Elf32_Ehdr);
 	elf_header.e_phentsize = 0;
 	elf_header.e_phnum = 0;
@@ -400,6 +410,7 @@ void assemble(FILE *input_file) {
 	}
 
 
+#if ENCODE_SYMBOLS == 1
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Populating .symtab...\n");
 #endif
@@ -491,6 +502,7 @@ void assemble(FILE *input_file) {
 			symbol_table.symbols[i].name, strtab->size);
 #endif
 	}
+#endif
 
 	/** The total size of all section data. */
 	size_t total_section_data_size = 0;
@@ -540,7 +552,7 @@ void assemble(FILE *input_file) {
 		Elf32_Shdr section_header;
 		section_header.sh_name = sections[i].name_strtab_offset;
 		section_header.sh_type = sections[i].type;
-		section_header.sh_flags = 0;
+		section_header.sh_flags = sections[i].flags;
 		section_header.sh_addr = 0;
 		section_header.sh_offset = sections[i].file_offset;
 		section_header.sh_size = sections[i].size;
