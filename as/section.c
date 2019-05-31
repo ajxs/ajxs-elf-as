@@ -14,6 +14,24 @@
 #include <as.h>
 
 
+Section *add_section(Section *section_list,
+	Section *section) {
+
+	if(!section_list) {
+		section_list = section;
+		return section;
+	}
+
+	Section *curr = section_list;
+	while(curr->next) {
+		curr = curr->next;
+	}
+
+	curr->next = section;
+	return section;
+}
+
+
 /**
  * @brief Finds a section by its name.
  *
@@ -24,15 +42,18 @@
  * @return A pointer to the section, or `NULL` if no matching section can be
  * found.
  */
-Section *find_section(Section *sections,
-	size_t n_sections,
+Section *find_section(Section *section_list,
 	const char *name) {
 
 	int name_len = strlen(name);
-	for(size_t i=0; i < n_sections; i++) {
-		if(strncmp(sections[i].name, name, name_len) == 0) {
-			return &sections[i];
+	Section *curr = section_list;
+
+	while(curr) {
+		if(strncmp(curr->name, name, name_len) == 0) {
+			return curr;
 		}
+
+		curr = curr->next;
 	}
 
 	return NULL;
@@ -104,5 +125,10 @@ void free_encoding_entity(Encoding_Entity *entity) {
  * entities contained in the section.
  */
 void free_section(Section *section) {
+	if(section->next) {
+		free_section(section->next);
+	}
+
 	free_encoding_entity(section->encoding_entities);
+	free(section);
 }

@@ -21,7 +21,6 @@ void free_program_statement(Parsed_Statement *parsed_statement) {
 
 
 void assemble_first_pass(Section *sections,
-	size_t n_sections,
 	Symbol_Table *symbol_table,
 	Parsed_Statement *statements) {
 
@@ -29,9 +28,9 @@ void assemble_first_pass(Section *sections,
 	printf("Debug Assembler: Begin first pass...\n");
 #endif
 
-	Section *section_text = find_section(sections, n_sections, ".text");
-	Section *section_data = find_section(sections, n_sections, ".data");
-	Section *section_bss = find_section(sections, n_sections, ".bss");
+	Section *section_text = find_section(sections, ".text");
+	Section *section_data = find_section(sections, ".data");
+	Section *section_bss = find_section(sections, ".bss");
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
@@ -89,7 +88,6 @@ void assemble_first_pass(Section *sections,
 
 
 void assemble_second_pass(Section *sections,
-	size_t n_sections,
 	Symbol_Table *symbol_table,
 	Parsed_Statement *statements) {
 
@@ -99,13 +97,15 @@ void assemble_second_pass(Section *sections,
 
 	// Ensure all section program counters counters are reset.
 	// These will have been set by the first assembly pass.
-	for(uint8_t i=0; i < n_sections; i++) {
-		sections[i].program_counter = 0;
+	Section *curr_section = sections;
+	while(curr_section) {
+		curr_section->program_counter = 0;
+		curr_section = curr_section->next;
 	}
 
-	Section *section_text = find_section(sections, n_sections, ".text");
-	Section *section_data = find_section(sections, n_sections, ".data");
-	Section *section_bss = find_section(sections, n_sections, ".bss");
+	Section *section_text = find_section(sections, ".text");
+	Section *section_data = find_section(sections, ".data");
+	Section *section_bss = find_section(sections, ".bss");
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
@@ -241,81 +241,100 @@ void assemble(FILE *input_file) {
 	symbol_table.n_entries = 0;
 	symbol_table.symbols = NULL;
 
-	/** The number of ELF sections in the executable. */
-	size_t n_sections = 7;
-
-	/** The ELF section data. */
-	Section *sections = malloc(sizeof(Section) * n_sections);
+	/** The binary section data. */
+	Section *sections = NULL;
 
 	// The section header data will be filled as the sections are serialised.
-	sections[0].name = "\0";
-	sections[0].name_strtab_offset = 0;
-	sections[0].program_counter = 0;
-	sections[0].file_offset = 0;
-	sections[0].size = 0;
-	sections[0].flags = 0;
-	sections[0].link = 0;
-	sections[0].type = SHT_NULL;
-	sections[0].encoding_entities = NULL;
+	Section *section_null = malloc(sizeof(Section));
+	section_null->name = "\0";
+	section_null->name_strtab_offset = 0;
+	section_null->program_counter = 0;
+	section_null->file_offset = 0;
+	section_null->size = 0;
+	section_null->flags = 0;
+	section_null->link = 0;
+	section_null->type = SHT_NULL;
+	section_null->encoding_entities = NULL;
+	section_null->next = NULL;
 
-	sections[1].name = ".text";
-	sections[1].name_strtab_offset = 11;
-	sections[1].program_counter = 0;
-	sections[1].file_offset = 0;
-	sections[1].size = 0;
-	sections[1].flags = SHF_ALLOC | SHF_EXECINSTR;
-	sections[1].link = 0;
-	sections[1].type = SHT_PROGBITS;
-	sections[1].encoding_entities = NULL;
+	Section *section_text = malloc(sizeof(Section));
+	section_text->name = ".text";
+	section_text->name_strtab_offset = 11;
+	section_text->program_counter = 0;
+	section_text->file_offset = 0;
+	section_text->size = 0;
+	section_text->flags = SHF_ALLOC | SHF_EXECINSTR;
+	section_text->link = 0;
+	section_text->type = SHT_PROGBITS;
+	section_text->encoding_entities = NULL;
+	section_text->next = NULL;
 
-	sections[2].name = ".data";
-	sections[2].name_strtab_offset = 6;
-	sections[2].program_counter = 0;
-	sections[2].file_offset = 0;
-	sections[2].size = 0;
-	sections[2].flags = SHF_ALLOC | SHF_WRITE;
-	sections[2].link = 0;
-	sections[2].type = SHT_PROGBITS;
-	sections[2].encoding_entities = NULL;
+	Section *section_data = malloc(sizeof(Section));
+	section_data->name = ".data";
+	section_data->name_strtab_offset = 6;
+	section_data->program_counter = 0;
+	section_data->file_offset = 0;
+	section_data->size = 0;
+	section_data->flags = SHF_ALLOC | SHF_WRITE;
+	section_data->link = 0;
+	section_data->type = SHT_PROGBITS;
+	section_data->encoding_entities = NULL;
+	section_data->next = NULL;
 
-	sections[3].name = ".bss";
-	sections[3].name_strtab_offset = 0;
-	sections[3].program_counter = 0;
-	sections[3].file_offset = 0;
-	sections[3].size = 0;
-	sections[3].link = 0;
-	sections[3].flags = SHF_ALLOC | SHF_WRITE;
-	sections[3].type = SHT_NOBITS;
-	sections[3].encoding_entities = NULL;
+	Section *section_bss = malloc(sizeof(Section));
+	section_bss->name = ".bss";
+	section_bss->name_strtab_offset = 0;
+	section_bss->program_counter = 0;
+	section_bss->file_offset = 0;
+	section_bss->size = 0;
+	section_bss->link = 0;
+	section_bss->flags = SHF_ALLOC | SHF_WRITE;
+	section_bss->type = SHT_NOBITS;
+	section_bss->encoding_entities = NULL;
+	section_bss->next = NULL;
 
-	sections[4].name = ".symtab";
-	sections[4].name_strtab_offset = 0;
-	sections[4].program_counter = 0;
-	sections[4].file_offset = 0;
-	sections[4].size = 0;
-	sections[4].flags = SHF_ALLOC;
-	sections[4].link = 6;
-	sections[4].type = SHT_SYMTAB;
-	sections[4].encoding_entities = NULL;
+	Section *section_symtab = malloc(sizeof(Section));
+	section_symtab->name = ".symtab";
+	section_symtab->name_strtab_offset = 0;
+	section_symtab->program_counter = 0;
+	section_symtab->file_offset = 0;
+	section_symtab->size = 0;
+	section_symtab->flags = SHF_ALLOC;
+	section_symtab->link = 6;
+	section_symtab->type = SHT_SYMTAB;
+	section_symtab->encoding_entities = NULL;
+	section_symtab->next = NULL;
 
-	sections[5].name = ".shstrtab";
-	sections[5].name_strtab_offset = 0;
-	sections[5].program_counter = 0;
-	sections[5].file_offset = 0;
-	sections[5].size = 0;
-	sections[5].flags = SHF_ALLOC;
-	sections[5].link = 0;
-	sections[5].type = SHT_STRTAB;
-	sections[5].encoding_entities = NULL;
+	Section *section_shstrtab = malloc(sizeof(Section));
+	section_shstrtab->name = ".shstrtab";
+	section_shstrtab->name_strtab_offset = 0;
+	section_shstrtab->program_counter = 0;
+	section_shstrtab->file_offset = 0;
+	section_shstrtab->size = 0;
+	section_shstrtab->flags = SHF_ALLOC;
+	section_shstrtab->link = 0;
+	section_shstrtab->type = SHT_STRTAB;
+	section_shstrtab->encoding_entities = NULL;
+	section_shstrtab->next = NULL;
 
-	sections[6].name = ".strtab";
-	sections[6].name_strtab_offset = 0;
-	sections[6].program_counter = 0;
-	sections[6].file_offset = 0;
-	sections[6].size = 0;
-	sections[6].link = 0;
-	sections[6].type = SHT_STRTAB;
-	sections[6].encoding_entities = NULL;
+	Section *section_strtab = malloc(sizeof(Section));
+	section_strtab->name = ".strtab";
+	section_strtab->name_strtab_offset = 0;
+	section_strtab->program_counter = 0;
+	section_strtab->file_offset = 0;
+	section_strtab->size = 0;
+	section_strtab->link = 0;
+	section_strtab->type = SHT_STRTAB;
+	section_strtab->encoding_entities = NULL;
+	section_strtab->next = NULL;
+
+	add_section(sections, section_null);
+	add_section(sections, section_text);
+	add_section(sections, section_data);
+	add_section(sections, section_bss);
+	add_section(sections, section_symtab);
+	add_section(sections, section_shstrtab);
+	add_section(sections, section_strtab);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Beginning macro expansion...\n");
@@ -325,7 +344,7 @@ void assemble(FILE *input_file) {
 	expand_macros(program_statements);
 
 	// Begin the first assembler pass. Populating the symbol table.
-	assemble_first_pass(sections, n_sections, &symbol_table, program_statements);
+	assemble_first_pass(sections, &symbol_table, program_statements);
 
 #if DEBUG_SYMBOLS == 1
 	// Print the symbol table.
@@ -337,7 +356,7 @@ void assemble(FILE *input_file) {
 #endif
 
 	// Begin the second assembler pass, which handles code generation.
-	assemble_second_pass(sections, n_sections, &symbol_table, program_statements);
+	assemble_second_pass(sections, &symbol_table, program_statements);
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Initialising output file...\n");
@@ -372,7 +391,7 @@ void assemble(FILE *input_file) {
 	elf_header.e_phentsize = 0;
 	elf_header.e_phnum = 0;
 	elf_header.e_shentsize = sizeof(Elf32_Shdr);
-	elf_header.e_shnum = n_sections;
+	elf_header.e_shnum = 0;
 	elf_header.e_shstrndx = 5;
 
 
@@ -380,18 +399,23 @@ void assemble(FILE *input_file) {
 	printf("Debug Output: Populating .shstrtab...\n");
 #endif
 
-	Section *shstrtab = find_section(sections, n_sections, ".shstrtab");
+	Section *shstrtab = find_section(sections, ".shstrtab");
 
-	for(size_t i=0; i<n_sections; i++) {
+
+	Section *curr_section = sections;
+	while(curr_section) {
+		// Increment the total sections in the header.
+		elf_header.e_shnum++;
+
 		// Iterate through each section and add its name to the section header
 		// string table, recording the index.
-		size_t section_name_len = strlen(sections[i].name) + 1;
+		size_t section_name_len = strlen(curr_section->name) + 1;
 		// The current section size is the offset of each section name into SHSTRTAB.
-		sections[i].name_strtab_offset = shstrtab->size;
+		curr_section->name_strtab_offset = shstrtab->size;
 
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Adding section name: `%s` to .shstrtab at offset `0x%lx`...\n",
-			sections[i].name, shstrtab->size);
+			curr_section->name, shstrtab->size);
 #endif
 
 		// Create an encoding entity for each section name, this will be encoded
@@ -402,11 +426,13 @@ void assemble(FILE *input_file) {
 
 		string_entity->size = section_name_len;
 		string_entity->data = malloc(section_name_len);
-		string_entity->data = memcpy(string_entity->data, sections[i].name,
+		string_entity->data = memcpy(string_entity->data, curr_section->name,
 			section_name_len);
 		string_entity->data[section_name_len] = '\0';
 
 		section_add_encoding_entity(shstrtab, string_entity);
+
+		curr_section = curr_section->next;
 	}
 
 
@@ -415,8 +441,8 @@ void assemble(FILE *input_file) {
 	printf("Debug Output: Populating .symtab...\n");
 #endif
 
-	Section *strtab = find_section(sections, n_sections, ".strtab");
-	Section *symtab = find_section(sections, n_sections, ".symtab");
+	Section *strtab = find_section(sections, ".strtab");
+	Section *symtab = find_section(sections, ".symtab");
 
 	// Add the initial null byte to strtab as per ELF documentation.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
@@ -595,9 +621,7 @@ void assemble(FILE *input_file) {
 	printf("Debug Assembler: Freeing sections...\n");
 #endif
 
-	for(size_t i=0; i<n_sections; i++) {
-		free_section(&sections[i]);
-	}
+	free_section(sections);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Finished.\n");

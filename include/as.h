@@ -153,6 +153,7 @@ typedef struct _section {
 	size_t size;
 	size_t link;
 	Encoding_Entity *encoding_entities;
+	struct _section *next;
 } Section;
 
 
@@ -223,12 +224,10 @@ void symbol_table_add_symbol(Symbol_Table *symbol_table,
 	size_t offset);
 
 void assemble_first_pass(Section *sections,
-	size_t n_sections,
 	Symbol_Table *symbol_table,
 	Parsed_Statement *statements);
 
 void assemble_second_pass(Section *sections,
-	size_t n_sections,
 	Symbol_Table *symbol_table,
 	Parsed_Statement *statements);
 
