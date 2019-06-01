@@ -14,21 +14,27 @@
 #include <as.h>
 
 
-Section *add_section(Section *section_list,
+/**
+ * @brief Adds a section.
+ *
+ * Adds a program section to the linked list of program sections.
+ * @param section_list A pointer-to-pointer to the program section linked list.
+ * @param section The section to add.
+ */
+void add_section(Section **section_list,
 	Section *section) {
 
-	if(!section_list) {
-		section_list = section;
-		return section;
+	if(!*section_list) {
+		*section_list = section;
+		return;
 	}
 
-	Section *curr = section_list;
+	Section *curr = *section_list;
 	while(curr->next) {
 		curr = curr->next;
 	}
 
 	curr->next = section;
-	return section;
 }
 
 
@@ -36,8 +42,7 @@ Section *add_section(Section *section_list,
  * @brief Finds a section by its name.
  *
  * Finds a program section, searching for one that matches the provided name.
- * @param sections A pointer to the program section array.
- * @param n_sections The number of sections in the program.
+ * @param sections A pointer to the program section linked list.
  * @param name The name of the section to search for.
  * @return A pointer to the section, or `NULL` if no matching section can be
  * found.
@@ -48,6 +53,10 @@ Section *find_section(Section *section_list,
 	int name_len = strlen(name);
 	Section *curr = section_list;
 
+	if(!curr) {
+		return NULL;
+	}
+
 	while(curr) {
 		if(strncmp(curr->name, name, name_len) == 0) {
 			return curr;
@@ -57,6 +66,37 @@ Section *find_section(Section *section_list,
 	}
 
 	return NULL;
+}
+
+
+/**
+ * @brief Finds a section's index by its name.
+ *
+ * Finds a program section's index in the sections linked list by its name.
+ * @param sections A pointer to the program section linked list.
+ * @param name The name of the section to search for.
+ * @return The index of the found section in the list, or -1 if not found.
+ */
+ssize_t find_section_index(Section *section_list,
+	const char *name) {
+
+	if(!section_list) {
+		return -1;
+	}
+
+	int name_len = strlen(name);
+	Section *curr = section_list;
+	ssize_t idx = 0;
+	while(curr) {
+		if(strncmp(curr->name, name, name_len) == 0) {
+			return idx;
+		}
+
+		idx++;
+		curr = curr->next;
+	}
+
+	return -1;
 }
 
 

@@ -178,6 +178,7 @@ void print_operand(Operand op);
 void print_operand_sequence(Operand_Sequence opseq);
 void print_instruction(Instruction inst);
 void print_directive(Directive dir);
+void print_directive_type(Directive dir);
 void print_statement(Statement statement);
 void print_opcode(Opcode op);
 
@@ -215,9 +216,6 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 ssize_t get_statement_size(Statement statement);
 void assemble(FILE *input_file);
 
-void section_add_encoding_entity(Section *section,
-	Encoding_Entity *entity);
-
 void symbol_table_add_symbol(Symbol_Table *symbol_table,
 	char *label,
 	Section *section,
@@ -240,5 +238,20 @@ void symtab_add_symbol(Symbol_Table *symtab,
 
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *name);
+
+
+void add_section(Section **section_list,
+	Section *section);
+
+Section *find_section(Section *section_list,
+	const char *name);
+
+ssize_t find_section_index(Section *section_list,
+	const char *name);
+
+void section_add_encoding_entity(Section *section,
+	Encoding_Entity *entity);
+
+void free_encoding_entity(Encoding_Entity *entity);
 
 #endif

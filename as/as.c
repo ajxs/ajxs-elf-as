@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+void populate_symtab(Section *sections,
+	Symbol_Table *symbol_table);
+
 
 void free_program_statement(Parsed_Statement *parsed_statement) {
 	if(parsed_statement->next) {
@@ -68,14 +71,14 @@ void assemble_first_pass(Section *sections,
 #if DEBUG_ASSEMBLER == 1
 		printf("Debug Assembler: Calculated size `0x%lx` for ", statement_size);
 		if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
-			printf("directive type `%i`.\n", curr->statement.body.directive.type);
-
+			printf("directive `");
+			print_directive_type(curr->statement.body.directive);
+			printf("`.\n");
 		} else if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
 			printf("instruction `");
 			print_opcode(curr->statement.body.instruction.opcode);
 			printf("`.\n");
 		} else {
-			// Empty statement
 			printf("empty statement.\n");
 		}
 #endif
@@ -163,6 +166,97 @@ void assemble_second_pass(Section *sections,
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Finished second pass.\n");
 #endif
+}
+
+
+void populate_symtab(Section *sections,
+	Symbol_Table *symbol_table) {
+
+	Section *strtab = find_section(sections, ".strtab");
+	Section *symtab = find_section(sections, ".symtab");
+
+	// Add the initial null byte to strtab as per ELF documentation.
+	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
+	null_byte_entity->n_reloc_entries = 0;
+	null_byte_entity->reloc_entries = NULL;
+
+	null_byte_entity->size = 1;
+	null_byte_entity->data = malloc(1);
+	null_byte_entity->data[0] = '\0';
+
+	section_add_encoding_entity(strtab, null_byte_entity);
+
+#if DEBUG_OUTPUT == 1
+	printf("Debug Output: Added null byte to .strtab.\n");
+#endif
+
+	for(size_t i = 0; i < symbol_table->n_entries; i++) {
+		// Add each symbol name to the string table, and each symbol entry to the
+		// symbol table section.
+
+		Elf32_Sym symbol_entry;
+		symbol_entry.st_name = strtab->size;
+		symbol_entry.st_value = symbol_table->symbols[i].offset;
+		symbol_entry.st_size = 0;
+		symbol_entry.st_info = 0;
+		symbol_entry.st_other = 0;
+
+		ssize_t shndx = find_section_index(sections,
+			symbol_table->symbols[i].section->name);
+
+		// If we could not match the section index, abort.
+		if(shndx == -1) {
+			printf("ERROR FINDING SYMBOL SECTION INDEX.\n");
+		}
+
+		// Get the section index.
+		symbol_entry.st_shndx = shndx;
+
+#if DEBUG_OUTPUT == 1
+			printf("Debug Output: Matched section index: `%i` for symbol name `%s`.\n",
+				symbol_entry.st_shndx, symbol_table->symbols[i].name);
+#endif
+
+		size_t symbol_entry_size = sizeof(Elf32_Sym);
+
+		// Create an encoding entity for each symbol entry, this will be encoded
+		// in the symbol table section during the writing of the section data.
+		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
+		symbol_entry_entity->n_reloc_entries = 0;
+		symbol_entry_entity->reloc_entries = NULL;
+
+		symbol_entry_entity->size = symbol_entry_size;
+		symbol_entry_entity->data = malloc(symbol_entry_size);
+		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
+			&symbol_entry, symbol_entry_size);
+
+		section_add_encoding_entity(symtab, symbol_entry_entity);
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Adding symbol: `%s` to .symtab at offset `0x%lx`...\n",
+			symbol_table->symbols[i].name, symtab->size);
+#endif
+
+		// Create an encoding entity for each symbol name, this will be encoded
+		// in the string table during the writing of the section data.
+		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
+		symbol_name_entity->n_reloc_entries = 0;
+		symbol_name_entity->reloc_entries = NULL;
+
+		size_t symbol_name_len = strlen(symbol_table->symbols[i].name) + 1;
+		symbol_name_entity->size = symbol_name_len;
+		symbol_name_entity->data = malloc(symbol_name_len);
+		symbol_name_entity->data = memcpy(symbol_name_entity->data,
+			symbol_table->symbols[i].name, symbol_name_len);
+		symbol_name_entity->data[symbol_name_len] = '\0';
+
+		section_add_encoding_entity(strtab, symbol_name_entity);
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Added symbol name: `%s` to .strtab at offset `0x%lx`.\n",
+			symbol_table->symbols[i].name, strtab->size);
+#endif
+	}
 }
 
 
@@ -328,13 +422,13 @@ void assemble(FILE *input_file) {
 	section_strtab->encoding_entities = NULL;
 	section_strtab->next = NULL;
 
-	add_section(sections, section_null);
-	add_section(sections, section_text);
-	add_section(sections, section_data);
-	add_section(sections, section_bss);
-	add_section(sections, section_symtab);
-	add_section(sections, section_shstrtab);
-	add_section(sections, section_strtab);
+	add_section(&sections, section_null);
+	add_section(&sections, section_text);
+	add_section(&sections, section_data);
+	add_section(&sections, section_bss);
+	add_section(&sections, section_symtab);
+	add_section(&sections, section_shstrtab);
+	add_section(&sections, section_strtab);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Beginning macro expansion...\n");
@@ -440,101 +534,16 @@ void assemble(FILE *input_file) {
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Populating .symtab...\n");
 #endif
-
-	Section *strtab = find_section(sections, ".strtab");
-	Section *symtab = find_section(sections, ".symtab");
-
-	// Add the initial null byte to strtab as per ELF documentation.
-	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
-	null_byte_entity->n_reloc_entries = 0;
-	null_byte_entity->reloc_entries = NULL;
-
-	null_byte_entity->size = 1;
-	null_byte_entity->data = malloc(1);
-	null_byte_entity->data[0] = '\0';
-
-	section_add_encoding_entity(strtab, null_byte_entity);
-
-#if DEBUG_OUTPUT == 1
-	printf("Debug Output: Added null byte to .strtab.\n");
-#endif
-
-	for(size_t i = 0; i < symbol_table.n_entries; i++) {
-		// Add each symbol name to the string table, and each symbol entry to the
-		// symbol table section.
-
-		Elf32_Sym symbol_entry;
-		symbol_entry.st_name = strtab->size;
-		symbol_entry.st_value = symbol_table.symbols[i].offset;
-		symbol_entry.st_size = 0;
-		symbol_entry.st_info = 0;
-		symbol_entry.st_other = 0;
-
-		// Iterate through each section to find the correct st_shndx
-		symbol_entry.st_shndx = -1;
-		for(size_t k=0; k<n_sections; k++) {
-			if(strcmp(sections[k].name, symbol_table.symbols[i].section->name) == 0) {
-				symbol_entry.st_shndx = k;
-			}
-		}
-
-		// If we could not match the section index, abort.
-		if(symbol_entry.st_shndx == -1) {
-			printf("ERROR FINDING SYMBOL SECTION INDEX.\n");
-		}
-
-#if DEBUG_OUTPUT == 1
-			printf("Debug Output: Matched section index to: `%s` for symbol name `%s`.\n",
-				sections[symbol_entry.st_shndx].name, symbol_table.symbols[i].name);
-#endif
-
-		size_t symbol_entry_size = sizeof(Elf32_Sym);
-
-		// Create an encoding entity for each symbol entry, this will be encoded
-		// in the symbol table section during the writing of the section data.
-		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
-		symbol_entry_entity->n_reloc_entries = 0;
-		symbol_entry_entity->reloc_entries = NULL;
-
-		symbol_entry_entity->size = symbol_entry_size;
-		symbol_entry_entity->data = malloc(symbol_entry_size);
-		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
-			&symbol_entry, symbol_entry_size);
-
-		section_add_encoding_entity(symtab, symbol_entry_entity);
-
-#if DEBUG_OUTPUT == 1
-		printf("Debug Output: Adding symbol: `%s` to .symtab at offset `0x%lx`...\n",
-			symbol_table.symbols[i].name, symtab->size);
-#endif
-
-		// Create an encoding entity for each symbol name, this will be encoded
-		// in the string table during the writing of the section data.
-		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
-		symbol_name_entity->n_reloc_entries = 0;
-		symbol_name_entity->reloc_entries = NULL;
-
-		size_t symbol_name_len = strlen(symbol_table.symbols[i].name) + 1;
-		symbol_name_entity->size = symbol_name_len;
-		symbol_name_entity->data = malloc(symbol_name_len);
-		symbol_name_entity->data = memcpy(symbol_name_entity->data,
-			symbol_table.symbols[i].name, symbol_name_len);
-		symbol_name_entity->data[symbol_name_len] = '\0';
-
-		section_add_encoding_entity(strtab, symbol_name_entity);
-
-#if DEBUG_OUTPUT == 1
-		printf("Debug Output: Added symbol name: `%s` to .strtab at offset `0x%lx`.\n",
-			symbol_table.symbols[i].name, strtab->size);
-#endif
-	}
+	populate_symtab(sections, &symbol_table);
 #endif
 
 	/** The total size of all section data. */
 	size_t total_section_data_size = 0;
 
-	for(size_t i=0; i<n_sections; i++) {
-		total_section_data_size += sections[i].size;
+	curr_section = sections;
+	while(curr_section) {
+		total_section_data_size += curr_section->size;
+		curr_section = curr_section->next;
 	}
 
 	// Set the section header offset to after the ELF header, and
@@ -549,45 +558,64 @@ void assemble(FILE *input_file) {
 	// Write header.
 	size_t written = fwrite(&elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(written != 1) {
-		printf("ERROR\n");
-	}
-
-	// Write section data.
-	for(size_t i=0; i<n_sections; i++) {
-		// Store the current file offset as the offset of this section in the file.
-		sections[i].file_offset = ftell(out_file);
-
-#if DEBUG_OUTPUT == 1
-		printf("Debug Output: Writing section: `%s` with size: `0x%lx`at `0x%lx`...\n",
-			sections[i].name, sections[i].size, sections[i].file_offset);
-#endif
-
-		Encoding_Entity *curr_entity = sections[i].encoding_entities;
-		while(curr_entity) {
-			written = fwrite(curr_entity->data, 1, curr_entity->size, out_file);
-			curr_entity = curr_entity->next;
+		if(ferror(out_file)) {
+			perror("Error writing ELF header.\n");
 		}
 	}
 
-	for(size_t i=0; i<n_sections; i++) {
+	// Write section data.
+	curr_section = sections;
+	while(curr_section) {
+		// Store the current file offset as the offset of this section in the file.
+		curr_section->file_offset = ftell(out_file);
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Writing section: `%s` with size: `0x%lx` at `0x%lx`...\n",
+			curr_section->name, curr_section->size, curr_section->file_offset);
+#endif
+
+		Encoding_Entity *curr_entity = curr_section->encoding_entities;
+		while(curr_entity) {
+			written = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
+			if(written != 1) {
+				if(ferror(out_file)) {
+					perror("Error writing section data.\n");
+				}
+			}
+
+			curr_entity = curr_entity->next;
+		}
+
+		curr_section = curr_section->next;
+	}
+
+	curr_section = sections;
+	while(curr_section) {
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Writing section header `%s` with offset `0x%lx` at `0x%lx`...\n",
-			sections[i].name, sections[i].file_offset, ftell(out_file));
+			curr_section->name, curr_section->file_offset, ftell(out_file));
 #endif
 
 		Elf32_Shdr section_header;
-		section_header.sh_name = sections[i].name_strtab_offset;
-		section_header.sh_type = sections[i].type;
-		section_header.sh_flags = sections[i].flags;
+		section_header.sh_name = curr_section->name_strtab_offset;
+		section_header.sh_type = curr_section->type;
+		section_header.sh_flags = curr_section->flags;
 		section_header.sh_addr = 0;
-		section_header.sh_offset = sections[i].file_offset;
-		section_header.sh_size = sections[i].size;
-		section_header.sh_link = sections[i].link;
+		section_header.sh_offset = curr_section->file_offset;
+		section_header.sh_size = curr_section->size;
+		section_header.sh_link = curr_section->link;
 		section_header.sh_info = 0;
 		section_header.sh_addralign = 0;
 		section_header.sh_entsize = 0;
 
-		written = fwrite(&section_header, 1, sizeof(Elf32_Shdr), out_file);
+		written = fwrite(&section_header, sizeof(Elf32_Shdr), 1, out_file);
+		if(written != 1) {
+			if(ferror(out_file)) {
+				perror("Error writing section header data.\n");
+			}
+		}
+
+		curr_section = curr_section->next;
 	}
 
 #if DEBUG_ASSEMBLER == 1

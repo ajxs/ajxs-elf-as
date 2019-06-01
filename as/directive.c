@@ -11,7 +11,8 @@ void free_directive(Directive directive) {
 
 
 Directive_Type parse_directive_symbol(char *directive_symbol) {
-	if(!strncasecmp(directive_symbol, ".asciiz", 7) || !strncasecmp(directive_symbol, ".asciz", 6)) {
+	if(!strncasecmp(directive_symbol, ".asciiz", 7) ||
+		!strncasecmp(directive_symbol, ".asciz", 6)) {
 		return DIRECTIVE_ASCIZ;
 	} else if(!strncasecmp(directive_symbol, ".ascii", 6)) {
 		return DIRECTIVE_ASCII;
@@ -23,7 +24,8 @@ Directive_Type parse_directive_symbol(char *directive_symbol) {
 		return DIRECTIVE_DATA;
 	} else if(!strncasecmp(directive_symbol, ".fill", 5)) {
 		return DIRECTIVE_FILL;
-	} else if(!strncasecmp(directive_symbol, ".globl", 6) || !strncasecmp(directive_symbol, ".global", 7)) {
+	} else if(!strncasecmp(directive_symbol, ".globl", 6) ||
+		!strncasecmp(directive_symbol, ".global", 7)) {
 		return DIRECTIVE_GLOBAL;
 	} else if(!strncasecmp(directive_symbol, ".long", 5)) {
 		return DIRECTIVE_LONG;

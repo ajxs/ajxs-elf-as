@@ -31,12 +31,53 @@ void print_instruction(Instruction instruction) {
 
 
 void print_directive(Directive dir) {
-	printf("  Directive: Type: `%i`\n", dir.type);
+	printf("  Directive: Type: `");
+	print_directive_type(dir);
+	printf("`\n");
+
 	if(dir.opseq.n_operands > 0) {
 		print_operand_sequence(dir.opseq);
 	}
 }
 
+
+void print_directive_type(Directive dir) {
+	if(dir.type == DIRECTIVE_ALIGN) {
+		printf(".align");
+	} else if(dir.type == DIRECTIVE_ASCII) {
+		printf(".ascii");
+	} else if(dir.type == DIRECTIVE_ASCIZ) {
+		printf(".asciz");
+	} else if(dir.type == DIRECTIVE_BSS) {
+		printf(".bss");
+	} else if(dir.type == DIRECTIVE_BYTE) {
+		printf(".byte");
+	} else if(dir.type == DIRECTIVE_DATA) {
+		printf(".data");
+	} else if(dir.type == DIRECTIVE_FILL) {
+		printf(".fill");
+	} else if(dir.type == DIRECTIVE_GLOBAL) {
+		printf(".global");
+	} else if(dir.type == DIRECTIVE_LONG) {
+		printf(".long");
+	} else if(dir.type == DIRECTIVE_SHORT) {
+		printf(".short");
+	} else if(dir.type == DIRECTIVE_SIZE) {
+		printf(".size");
+	} else if(dir.type == DIRECTIVE_SKIP) {
+		printf(".skip");
+	} else if(dir.type == DIRECTIVE_SPACE) {
+		printf(".space");
+	} else if(dir.type == DIRECTIVE_STRING) {
+		printf(".string");
+	} else if(dir.type == DIRECTIVE_TEXT) {
+		printf(".text");
+	} else if(dir.type == DIRECTIVE_WORD) {
+		printf(".word");
+	} else {
+		printf("unknown");
+	}
+}
 
 
 void print_operand(Operand op) {
