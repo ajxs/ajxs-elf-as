@@ -50,11 +50,11 @@ void yyerror(Parsed_Statement **parsed_statements, const char *s);
 } STRING_LITERAL
 
 %destructor {
-	free_operand($$);
+	free_operand(&$$);
 } operand
 
 %destructor {
-	free_operand_sequence($$);
+	free_operand_sequence(&$$);
 } operand_seq
 
 %destructor {

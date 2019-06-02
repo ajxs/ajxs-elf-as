@@ -6,7 +6,7 @@
 
 void free_instruction(Instruction instruction) {
 	for(size_t i=0; i<instruction.opseq.n_operands; i++) {
-		free_operand(instruction.opseq.operands[i]);
+		free_operand(&instruction.opseq.operands[i]);
 	}
 }
 

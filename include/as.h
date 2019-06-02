@@ -193,8 +193,8 @@ Parsed_Statement *scan_string(const char *str);
 char *preprocess_line(char *line_buffer);
 
 
-void free_operand(Operand op);
-void free_operand_sequence(Operand_Sequence opseq);
+void free_operand(Operand *op);
+void free_operand_sequence(Operand_Sequence *opseq);
 void free_directive(Directive directive);
 void free_instruction(Instruction instruction);
 void free_statement(Statement statement);
