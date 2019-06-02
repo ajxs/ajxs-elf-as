@@ -34,7 +34,7 @@ Elf32_Ehdr *create_elf_header() {
 	elf_header->e_phnum = 0;
 	elf_header->e_shentsize = sizeof(Elf32_Shdr);
 	elf_header->e_shnum = 0;
-	elf_header->e_shstrndx = 5;
+	elf_header->e_shstrndx = 0;
 
 	return elf_header;
 }

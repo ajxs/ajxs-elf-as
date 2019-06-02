@@ -32,8 +32,20 @@ void assemble_first_pass(Section *sections,
 #endif
 
 	Section *section_text = find_section(sections, ".text");
+	if(!section_text) {
+		printf("Error finding section: `.text`\n");
+	}
+
 	Section *section_data = find_section(sections, ".data");
+	if(!section_text) {
+		printf("Error finding section: `.data`\n");
+	}
+
 	Section *section_bss = find_section(sections, ".bss");
+	if(!section_text) {
+		printf("Error finding section: `.bss`\n");
+	}
+
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
@@ -63,9 +75,21 @@ void assemble_first_pass(Section *sections,
 			}
 		}
 
+		/** The encoded size of the statement. */
 		ssize_t statement_size = get_statement_size(curr->statement);
 		if(statement_size == -1) {
-			printf("ERROR\n");
+			printf("Error getting statement size for ");
+			if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
+				printf("directive `");
+				print_directive_type(curr->statement.body.directive);
+				printf("`.\n");
+			} else if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
+				printf("instruction `");
+				print_opcode(curr->statement.body.instruction.opcode);
+				printf("`.\n");
+			} else {
+				printf("empty statement.\n");
+			}
 		}
 
 #if DEBUG_ASSEMBLER == 1
@@ -347,21 +371,44 @@ void assemble(FILE *input_file) {
 	section_null->size = 0;
 	section_null->flags = 0;
 	section_null->link = 0;
+	section_null->info = 0;
+
 	section_null->type = SHT_NULL;
 	section_null->encoding_entities = NULL;
 	section_null->next = NULL;
 
 	Section *section_text = malloc(sizeof(Section));
 	section_text->name = ".text";
-	section_text->name_strtab_offset = 11;
+	section_text->name_strtab_offset = 0;
 	section_text->program_counter = 0;
 	section_text->file_offset = 0;
 	section_text->size = 0;
 	section_text->flags = SHF_ALLOC | SHF_EXECINSTR;
 	section_text->link = 0;
+	section_text->info = 0;
+
 	section_text->type = SHT_PROGBITS;
 	section_text->encoding_entities = NULL;
 	section_text->next = NULL;
+
+	Section *section_text_rel = malloc(sizeof(Section));
+	section_text_rel->name = ".rel.text";
+	section_text_rel->name_strtab_offset = 0;
+	section_text_rel->program_counter = 0;
+	section_text_rel->file_offset = 0;
+	section_text_rel->size = 0;
+	// The ELF man page suggests that the flags for relocatable sections are
+	// set to SHF_ALLOC, but from readelf we can see that gcc itself
+	// seems to use `SHF_INFO_LINK`.
+	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
+	// for the undocumented flags.
+	section_text_rel->flags = SHF_INFO_LINK;
+	section_text_rel->link = 0;
+	section_text_rel->info = 0;
+
+	section_text_rel->type = SHT_REL;
+	section_text_rel->encoding_entities = NULL;
+	section_text_rel->next = NULL;
 
 	Section *section_data = malloc(sizeof(Section));
 	section_data->name = ".data";
@@ -371,9 +418,25 @@ void assemble(FILE *input_file) {
 	section_data->size = 0;
 	section_data->flags = SHF_ALLOC | SHF_WRITE;
 	section_data->link = 0;
+	section_data->info = 0;
+
 	section_data->type = SHT_PROGBITS;
 	section_data->encoding_entities = NULL;
 	section_data->next = NULL;
+
+	Section *section_data_rel = malloc(sizeof(Section));
+	section_data_rel->name = ".rel.data";
+	section_data_rel->name_strtab_offset = 0;
+	section_data_rel->program_counter = 0;
+	section_data_rel->file_offset = 0;
+	section_data_rel->size = 0;
+	section_data_rel->flags = SHF_INFO_LINK;
+	section_data_rel->link = 0;
+	section_data_rel->info = 0;
+
+	section_data_rel->type = SHT_REL;
+	section_data_rel->encoding_entities = NULL;
+	section_data_rel->next = NULL;
 
 	Section *section_bss = malloc(sizeof(Section));
 	section_bss->name = ".bss";
@@ -382,6 +445,8 @@ void assemble(FILE *input_file) {
 	section_bss->file_offset = 0;
 	section_bss->size = 0;
 	section_bss->link = 0;
+	section_bss->info = 0;
+
 	section_bss->flags = SHF_ALLOC | SHF_WRITE;
 	section_bss->type = SHT_NOBITS;
 	section_bss->encoding_entities = NULL;
@@ -394,7 +459,9 @@ void assemble(FILE *input_file) {
 	section_symtab->file_offset = 0;
 	section_symtab->size = 0;
 	section_symtab->flags = SHF_ALLOC;
-	section_symtab->link = 6;
+	section_symtab->link = 0;
+	section_symtab->info = 0;
+
 	section_symtab->type = SHT_SYMTAB;
 	section_symtab->encoding_entities = NULL;
 	section_symtab->next = NULL;
@@ -407,6 +474,8 @@ void assemble(FILE *input_file) {
 	section_shstrtab->size = 0;
 	section_shstrtab->flags = SHF_ALLOC;
 	section_shstrtab->link = 0;
+	section_shstrtab->info = 0;
+
 	section_shstrtab->type = SHT_STRTAB;
 	section_shstrtab->encoding_entities = NULL;
 	section_shstrtab->next = NULL;
@@ -418,17 +487,47 @@ void assemble(FILE *input_file) {
 	section_strtab->file_offset = 0;
 	section_strtab->size = 0;
 	section_strtab->link = 0;
+	section_strtab->info = 0;
+
 	section_strtab->type = SHT_STRTAB;
 	section_strtab->encoding_entities = NULL;
 	section_strtab->next = NULL;
 
 	add_section(&sections, section_null);
 	add_section(&sections, section_text);
+	add_section(&sections, section_text_rel);
 	add_section(&sections, section_data);
+	add_section(&sections, section_data_rel);
 	add_section(&sections, section_bss);
 	add_section(&sections, section_symtab);
 	add_section(&sections, section_shstrtab);
 	add_section(&sections, section_strtab);
+
+	// Link the sections.
+	section_symtab->link = find_section_index(sections, ".strtab");
+	if(section_symtab->link == -1) {
+		printf("Error linking .symtab to .strtab.");
+	}
+
+	section_data_rel->link = find_section_index(sections, ".symtab");
+	if(section_data_rel->link == -1) {
+		printf("Error linking .rel.data to .symtab.");
+	}
+
+	section_data_rel->info = find_section_index(sections, ".data");
+	if(section_data_rel->info == -1) {
+		printf("Error linking .rel.data to .data.");
+	}
+
+	section_text_rel->link = find_section_index(sections, ".symtab");
+	if(section_text_rel->link == -1) {
+		printf("Error linking .rel.text to .text.");
+	}
+
+	section_text_rel->info = find_section_index(sections, ".text");
+	if(section_text_rel->info == -1) {
+		printf("Error linking .rel.text to .text.");
+	}
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Beginning macro expansion...\n");
@@ -459,6 +558,10 @@ void assemble(FILE *input_file) {
 	/** The ELF header. */
 	Elf32_Ehdr *elf_header = create_elf_header();
 
+	elf_header->e_shstrndx = find_section_index(sections, ".shstrtab");
+	if(elf_header->e_shstrndx == -1) {
+		printf("Error finding `.shstrtab` index.\n");
+	}
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Populating .shstrtab...\n");
@@ -495,6 +598,7 @@ void assemble(FILE *input_file) {
 			section_name_len);
 		string_entity->data[section_name_len] = '\0';
 
+		// Add the encoded section name to the `shstrtab` section.
 		section_add_encoding_entity(shstrtab, string_entity);
 
 		curr_section = curr_section->next;
@@ -578,12 +682,14 @@ void assemble(FILE *input_file) {
 		section_header.sh_offset = curr_section->file_offset;
 		section_header.sh_size = curr_section->size;
 		section_header.sh_link = curr_section->link;
-		section_header.sh_info = 0;
+		section_header.sh_info = curr_section->info;
 		section_header.sh_addralign = 0;
 		section_header.sh_entsize = 0;
 
 		if(curr_section->type == SHT_SYMTAB) {
 			section_header.sh_entsize = sizeof(Elf32_Sym);
+		} else if(curr_section->type == SHT_REL) {
+			section_header.sh_entsize = sizeof(Elf32_Rel);
 		}
 
 		written = fwrite(&section_header, sizeof(Elf32_Shdr), 1, out_file);

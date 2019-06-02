@@ -151,6 +151,7 @@ typedef struct _section {
 	uint32_t type;
 	uint32_t flags;
 	size_t size;
+	size_t info;
 	size_t link;
 	Encoding_Entity *encoding_entities;
 	struct _section *next;

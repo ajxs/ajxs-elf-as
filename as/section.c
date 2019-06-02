@@ -146,6 +146,7 @@ void section_add_encoding_entity(Section *section,
  */
 void free_encoding_entity(Encoding_Entity *entity) {
 	if(!entity) {
+		printf("Warning: Attempting to free NULL encoded entity.\n");
 		return;
 	}
 
@@ -172,6 +173,7 @@ void free_encoding_entity(Encoding_Entity *entity) {
  */
 void free_section(Section *section) {
 	if(!section) {
+		printf("Warning: Attempting to free NULL section.\n");
 		return;
 	}
 
@@ -184,6 +186,11 @@ void free_section(Section *section) {
 		printf("Debug Assembler: Freeing entities for section `%s`...\n", section->name);
 #endif
 		free_encoding_entity(section->encoding_entities);
+	} else {
+#if DEBUG_ASSEMBLER == 1
+		printf("Debug Assembler: No entities to cleanup for section `%s`...\n",
+			section->name);
+#endif
 	}
 
 	free(section);
