@@ -216,11 +216,6 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 ssize_t get_statement_size(Statement statement);
 void assemble(FILE *input_file);
 
-void symbol_table_add_symbol(Symbol_Table *symbol_table,
-	char *label,
-	Section *section,
-	size_t offset);
-
 void assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Parsed_Statement *statements);
@@ -253,5 +248,7 @@ void section_add_encoding_entity(Section *section,
 	Encoding_Entity *entity);
 
 void free_encoding_entity(Encoding_Entity *entity);
+
+Elf32_Ehdr *create_elf_header(void);
 
 #endif

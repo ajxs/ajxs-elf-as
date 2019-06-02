@@ -490,6 +490,8 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 	size_t program_counter) {
 
 	Encoding_Entity *encoded_entity = malloc(sizeof(Encoding_Entity));
+	encoded_entity->n_reloc_entries = 0;
+	encoded_entity->reloc_entries = NULL;
 	encoded_entity->next = NULL;
 
 	size_t total_len = 0;

@@ -457,36 +457,7 @@ void assemble(FILE *input_file) {
 #endif
 
 	/** The ELF header. */
-	Elf32_Ehdr elf_header;
-
-	// @TODO: Resolve the fact that this is currently encoding the executable
-	// in LE format by default.
-	// Ideally this would be configurable per target.
-	char EI_IDENT[EI_NIDENT] = {
-		0x7F, 'E', 'L', 'F',
-		ELFCLASS32,
-		ELFDATA2LSB,
-		EV_CURRENT,
-		ELFOSABI_SYSV,
-		0,
-		0, 0, 0, 0, 0, 0, 0
-	};
-
-	memcpy(&elf_header.e_ident, &EI_IDENT, EI_NIDENT);
-	elf_header.e_type = ET_REL;
-	elf_header.e_machine = EM_MIPS;
-	elf_header.e_version = EV_CURRENT;
-	elf_header.e_entry = 0;
-	elf_header.e_phoff = 0;
-	elf_header.e_shoff = 0;
-	// @TODO - Temporarily hardcoding MIPS values.
-	elf_header.e_flags = 0x90000400;
-	elf_header.e_ehsize = sizeof(Elf32_Ehdr);
-	elf_header.e_phentsize = 0;
-	elf_header.e_phnum = 0;
-	elf_header.e_shentsize = sizeof(Elf32_Shdr);
-	elf_header.e_shnum = 0;
-	elf_header.e_shstrndx = 5;
+	Elf32_Ehdr *elf_header = create_elf_header();
 
 
 #if DEBUG_OUTPUT == 1
@@ -499,7 +470,7 @@ void assemble(FILE *input_file) {
 	Section *curr_section = sections;
 	while(curr_section) {
 		// Increment the total sections in the header.
-		elf_header.e_shnum++;
+		elf_header->e_shnum++;
 
 		// Iterate through each section and add its name to the section header
 		// string table, recording the index.
@@ -546,9 +517,12 @@ void assemble(FILE *input_file) {
 		curr_section = curr_section->next;
 	}
 
-	// Set the section header offset to after the ELF header, and
-	// after the section data.
-	elf_header.e_shoff = elf_header.e_ehsize + total_section_data_size;
+	// Set the section offset in the header.
+	elf_header->e_shoff = elf_header->e_ehsize + total_section_data_size;
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Opening output file `%s`...\n", "FFFFFFF");
+#endif
 
 	FILE *out_file = fopen("./out.elf", "w");
 	if(!out_file) {
@@ -556,7 +530,7 @@ void assemble(FILE *input_file) {
 	}
 
 	// Write header.
-	size_t written = fwrite(&elf_header, sizeof(Elf32_Ehdr), 1, out_file);
+	size_t written = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(written != 1) {
 		if(ferror(out_file)) {
 			perror("Error writing ELF header.\n");
@@ -608,6 +582,10 @@ void assemble(FILE *input_file) {
 		section_header.sh_addralign = 0;
 		section_header.sh_entsize = 0;
 
+		if(curr_section->type == SHT_SYMTAB) {
+			section_header.sh_entsize = sizeof(Elf32_Sym);
+		}
+
 		written = fwrite(&section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(written != 1) {
 			if(ferror(out_file)) {
@@ -623,16 +601,17 @@ void assemble(FILE *input_file) {
 #endif
 
 #if DEBUG_ASSEMBLER == 1
-	printf("Debug Assembler: Freeing statements...\n");
-#endif
-
-	free_program_statement(program_statements);
-
-#if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Closing output file...\n");
 #endif
 
 	fclose(out_file);
+
+#if DEBUG_ASSEMBLER == 1
+	printf("Debug Assembler: Freeing statements...\n");
+#endif
+
+	free_program_statement(program_statements);
+	free(elf_header);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing Symbol Table...\n");

@@ -17,6 +17,7 @@ LEXER_SRC:=as/lexer.l
 PARSER_SRC:=as/parser.y
 
 ARCH_SOURCES:=arch/${ARCH}/codegen.c \
+	arch/${ARCH}/elf.c \
 	arch/${ARCH}/macro.c arch/${ARCH}/opcode.c \
 	arch/${ARCH}/register.c arch/${ARCH}/statement.c
 

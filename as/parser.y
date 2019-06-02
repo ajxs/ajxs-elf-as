@@ -8,7 +8,7 @@
 #include "token.h"
 
 
-extern int yylex();
+extern int yylex(void);
 void yyerror(Parsed_Statement **parsed_statements, const char *s);
 
 %}
