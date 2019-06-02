@@ -17,7 +17,7 @@ void free_program_statement(Parsed_Statement *parsed_statement) {
 		free_program_statement(parsed_statement->next);
 	}
 
-	free_statement(parsed_statement->statement);
+	free_statement(&parsed_statement->statement);
 
 	free(parsed_statement);
 };

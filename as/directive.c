@@ -3,9 +3,9 @@
 #include <as.h>
 
 
-void free_directive(Directive directive) {
-	for(size_t i=0; i<directive.opseq.n_operands; i++) {
-		free_operand(&directive.opseq.operands[i]);
+void free_directive(Directive *directive) {
+	for(size_t i=0; i<directive->opseq.n_operands; i++) {
+		free_operand(&directive->opseq.operands[i]);
 	}
 }
 

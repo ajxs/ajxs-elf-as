@@ -1,3 +1,12 @@
+/**
+ * @file operand.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Functions for dealing with operand entities.
+ * Contains functions for dealing with operand entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

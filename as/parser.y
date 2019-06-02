@@ -58,15 +58,15 @@ void yyerror(Parsed_Statement **parsed_statements, const char *s);
 } operand_seq
 
 %destructor {
-	free_instruction($$);
+	free_instruction(&$$);
 } instruction
 
 %destructor {
-	free_directive($$);
+	free_directive(&$$);
 } directive
 
 %destructor {
-	free_statement($$);
+	free_statement(&$$);
 } statement
 
 %%
