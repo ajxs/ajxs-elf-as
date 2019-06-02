@@ -145,7 +145,13 @@ void section_add_encoding_entity(Section *section,
  * @warning This function will recursively free any linked entities.
  */
 void free_encoding_entity(Encoding_Entity *entity) {
-	free(entity->reloc_entries);
+	if(!entity) {
+		return;
+	}
+
+	if(entity->reloc_entries) {
+		free(entity->reloc_entries);
+	}
 
 	if(entity->next) {
 		free_encoding_entity(entity->next);
@@ -165,10 +171,20 @@ void free_encoding_entity(Encoding_Entity *entity) {
  * entities contained in the section.
  */
 void free_section(Section *section) {
+	if(!section) {
+		return;
+	}
+
 	if(section->next) {
 		free_section(section->next);
 	}
 
-	free_encoding_entity(section->encoding_entities);
+	if(section->encoding_entities) {
+#if DEBUG_ASSEMBLER == 1
+		printf("Debug Assembler: Freeing entities for section `%s`...\n", section->name);
+#endif
+		free_encoding_entity(section->encoding_entities);
+	}
+
 	free(section);
 }
