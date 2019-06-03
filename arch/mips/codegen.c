@@ -98,11 +98,12 @@ Encoding_Entity *encode_i_type(Symbol_Table *symtab,
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
 		Symbol *symbol = symtab_find_symbol(symtab, imm.value.symbol);
 
-		// We only ever need one reloc entry in an I type?
-		// @TODO: Verify.
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
-		// Add RELOC info.
+
+		encoded_instruction->reloc_entries[0].type = R_MIPS_HI16;
+		encoded_instruction->reloc_entries[0].section = NULL;
+		encoded_instruction->reloc_entries[0].offset = 0;
 
 		immediate = symbol->offset;
 	} else {
@@ -139,11 +140,12 @@ Encoding_Entity *encode_j_type(Symbol_Table *symtab,
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
 		Symbol *symbol = symtab_find_symbol(symtab, imm.value.symbol);
 
-		// We only ever need one reloc entry in a J type?
-		// @TODO: Verify.
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
-		// Add RELOC info.
+
+		encoded_instruction->reloc_entries[0].type = R_MIPS_26;
+		encoded_instruction->reloc_entries[0].section = NULL;
+		encoded_instruction->reloc_entries[0].offset = 0;
 
 		immediate = symbol->offset;
 	} else {

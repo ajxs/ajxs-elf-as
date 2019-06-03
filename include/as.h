@@ -130,6 +130,7 @@ typedef struct _parsed_statement {
 typedef struct {
 	char *section;
 	size_t offset;
+	uint32_t type;
 } Reloc_Entry;
 
 

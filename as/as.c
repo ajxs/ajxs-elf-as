@@ -193,6 +193,56 @@ void assemble_second_pass(Section *sections,
 }
 
 
+void populate_relocation_entries(Section *sections) {
+	Section *curr_section = sections;
+	while(curr_section) {
+
+		Encoding_Entity *curr_entity = curr_section->encoding_entities;
+		while(curr_entity) {
+			if(curr_entity->n_reloc_entries > 0) {
+	#if DEBUG_OUTPUT == 1
+			printf("Debug Output: Writing reloc entries...\n");
+	#endif
+
+				size_t curr_section_name_len = strlen(curr_section->name);
+				char *curr_section_rel_name = malloc(4 + curr_section_name_len);
+				strcpy(curr_section_rel_name, ".rel");
+				strcpy(curr_section_rel_name + 4, curr_section->name);
+
+				/** The section to add the reloc entry to. */
+				Section *curr_section_rel = find_section(sections, curr_section_rel_name);
+				if(!curr_section_rel) {
+					printf("Error: Unable to find relocatable entry section: `%s`\n",
+						curr_section_rel_name);
+				}
+
+				free(curr_section_rel_name);
+
+				for(size_t r=0; r<curr_entity->n_reloc_entries; r++) {
+					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
+					rel->r_info = curr_entity->reloc_entries[r].type;
+					rel->r_offset = curr_section->file_offset;
+
+					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
+					reloc_entity->n_reloc_entries = 0;
+					reloc_entity->reloc_entries = NULL;
+
+					reloc_entity->size = sizeof(Elf32_Rel);
+					reloc_entity->data = (uint8_t*)rel;
+
+					// Add the relocatable entry to the relevant section.
+					section_add_encoding_entity(curr_section_rel, reloc_entity);
+				}
+			}
+
+			curr_entity = curr_entity->next;
+		}
+
+		curr_section = curr_section->next;
+	}
+}
+
+
 void populate_symtab(Section *sections,
 	Symbol_Table *symbol_table) {
 
@@ -504,30 +554,41 @@ void assemble(FILE *input_file) {
 	add_section(&sections, section_strtab);
 
 	// Link the sections.
-	section_symtab->link = find_section_index(sections, ".strtab");
-	if(section_symtab->link == -1) {
+	ssize_t section_strtab_index = find_section_index(sections, ".strtab");
+	section_strtab_index = find_section_index(sections, ".strtab");
+	if(section_strtab_index == -1) {
 		printf("Error linking .symtab to .strtab.");
 	}
 
-	section_data_rel->link = find_section_index(sections, ".symtab");
-	if(section_data_rel->link == -1) {
-		printf("Error linking .rel.data to .symtab.");
-	}
+	section_symtab->link = section_strtab_index;
 
-	section_data_rel->info = find_section_index(sections, ".data");
-	if(section_data_rel->info == -1) {
+
+	ssize_t section_data_index = find_section_index(sections, ".data");
+	if(section_data_index == -1) {
 		printf("Error linking .rel.data to .data.");
 	}
 
-	section_text_rel->link = find_section_index(sections, ".symtab");
-	if(section_text_rel->link == -1) {
+	section_data_rel->info = section_data_index;
+
+
+	ssize_t section_text_index = find_section_index(sections, ".text");
+	if(section_text_index == -1) {
 		printf("Error linking .rel.text to .text.");
 	}
 
-	section_text_rel->info = find_section_index(sections, ".text");
-	if(section_text_rel->info == -1) {
-		printf("Error linking .rel.text to .text.");
+	section_text_rel->info = section_text_index;
+
+
+	ssize_t section_symtab_index = find_section_index(sections, ".symtab");
+	section_symtab_index = find_section_index(sections, ".symtab");
+	if(section_symtab_index == -1) {
+		printf("Error linking .rel.data to .symtab.");
 	}
+
+
+	section_data_rel->link = section_symtab_index;
+	section_text_rel->link = section_symtab_index;
+
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Beginning macro expansion...\n");
@@ -551,6 +612,14 @@ void assemble(FILE *input_file) {
 	// Begin the second assembler pass, which handles code generation.
 	assemble_second_pass(sections, &symbol_table, program_statements);
 
+
+#if DEBUG_ASSEMBLER == 1
+	printf("Debug Assembler: Populating relocation entries...\n");
+#endif
+
+	populate_relocation_entries(sections);
+
+
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Initialising output file...\n");
 #endif
@@ -558,10 +627,12 @@ void assemble(FILE *input_file) {
 	/** The ELF header. */
 	Elf32_Ehdr *elf_header = create_elf_header();
 
-	elf_header->e_shstrndx = find_section_index(sections, ".shstrtab");
-	if(elf_header->e_shstrndx == -1) {
+	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
+	if(section_shstrtab_index == -1) {
 		printf("Error finding `.shstrtab` index.\n");
 	}
+
+	elf_header->e_shstrndx = section_shstrtab_index;
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Populating .shstrtab...\n");

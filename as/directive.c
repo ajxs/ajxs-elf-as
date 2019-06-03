@@ -1,8 +1,23 @@
+/**
+ * @file directive.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Functions for dealing with directive entities.
+ * Contains functions for dealing with directive entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <as.h>
 
 
+/**
+ * @brief Frees a directive.
+ *
+ * Frees a directive and the operands that it contains.
+ * @param directive The directive to free.
+ */
 void free_directive(Directive *directive) {
 	for(size_t i=0; i<directive->opseq.n_operands; i++) {
 		free_operand(&directive->opseq.operands[i]);
@@ -10,6 +25,13 @@ void free_directive(Directive *directive) {
 }
 
 
+/**
+ * @brief Parses a directive symbol.
+ *
+ * Parses a directive string, returning a value.
+ * @param directive_symbol The directive string to parse.
+ * @return A directive type.
+ */
 Directive_Type parse_directive_symbol(char *directive_symbol) {
 	if(!strncasecmp(directive_symbol, ".asciiz", 7) ||
 		!strncasecmp(directive_symbol, ".asciz", 6)) {
