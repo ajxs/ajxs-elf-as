@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <as.h>
 #include <elf.h>
 
 
@@ -10,7 +11,7 @@
  * particular architecture.
  * @return A pointer to the created ELF header.
  */
-Elf32_Ehdr *create_elf_header() {
+Elf32_Ehdr *create_elf_header(void) {
 	Elf32_Ehdr *elf_header = malloc(sizeof(Elf32_Ehdr));
 
 	char EI_IDENT[EI_NIDENT] = {

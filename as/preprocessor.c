@@ -1,14 +1,31 @@
+/**
+ * @file preprocessor.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Functions for preprocessing file input.
+ * Contains functions for preprocessing file input prior to the parsing process.
+ * Helps in normalising the source input file.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <as.h>
 
-#define DEBUG_PREPROCESSOR 0
-
-
-// All leading whitespace removed, all mid-line whitespace
-// collapsed to a single space char.
+/**
+ * @brief Preprocesses a line of input source.
+ *
+ * Preprocesses a line of input source, normalising it to ease parsing of the text.
+ * All leading whitespace is removed, all mid-line whitespace is collapsed to a
+ * single space character.
+ * @param line_buffer The line to process.
+ * @return The processed line.
+ * @warning The returned line is allocated in this function, and must be freed
+ * by the caller.
+ */
 char *preprocess_line(char *line_buffer) {
 	// Copy the line into a new buffer that we can modify.
 	// All operations from here are destructive.
