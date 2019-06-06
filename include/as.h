@@ -117,14 +117,9 @@ typedef struct statement {
 		Instruction instruction;
 		Directive directive;
 	} body;
-} Statement;
-
-
-typedef struct _parsed_statement {
-	Statement statement;
 	size_t line_num;
-	struct _parsed_statement *next;
-} Parsed_Statement;
+	struct statement *next;
+} Statement;
 
 
 typedef struct {
@@ -181,14 +176,14 @@ void print_operand_sequence(Operand_Sequence opseq);
 void print_instruction(Instruction inst);
 void print_directive(Directive dir);
 void print_directive_type(Directive dir);
-void print_statement(Statement statement);
+void print_statement(Statement *statement);
 void print_opcode(Opcode op);
 
 bool instruction_check_operand_length(size_t expected_operand_length,
 	Instruction instruction);
 
 
-Parsed_Statement *scan_string(const char *str);
+Statement *scan_string(const char *str);
 
 
 char *preprocess_line(char *line_buffer);
@@ -205,7 +200,7 @@ void free_encoding_entity(Encoding_Entity *encoding_entity);
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *label);
 
-void expand_macros(Parsed_Statement *statements);
+void expand_macros(Statement *statements);
 
 Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
 	Instruction instruction,
@@ -215,18 +210,16 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 	Directive *directive,
 	size_t program_counter);
 
-ssize_t get_statement_size(Statement statement);
+ssize_t get_statement_size(Statement *statement);
 void assemble(FILE *input_file);
 
 void assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
-	Parsed_Statement *statements);
+	Statement *statements);
 
 void assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
-	Parsed_Statement *statements);
-
-void free_program_statement(Parsed_Statement *parsed_statement);
+	Statement *statements);
 
 void symtab_add_symbol(Symbol_Table *symtab,
 	char *name,

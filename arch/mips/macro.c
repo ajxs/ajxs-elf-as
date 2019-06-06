@@ -29,17 +29,17 @@
  * @warning @p macro is modified in this function. Additional statements may be
  * appended to the end of this statement.
  */
-Expand_Macro_Result_Status expand_macro_la(Parsed_Statement *macro) {
+Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `LA` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, macro->statement.body.instruction)) {
+	if(!instruction_check_operand_length(2, macro->body.instruction)) {
 		// Check operand length is equal to 2, if not abort.
 		return EXPAND_MACRO_FAILURE;
 	}
 
-	if(macro->statement.body.instruction.opseq.operands[1].type == OPERAND_TYPE_SYMBOL) {
+	if(macro->body.instruction.opseq.operands[1].type == OPERAND_TYPE_SYMBOL) {
 		// If the immediate operand is a symbol the pseudo-instruction will be
 		// represented by an `LUI` instruction wtih an additional `ORI` instruction
 		// appended. These will load the symbol address into memory.
@@ -48,75 +48,75 @@ Expand_Macro_Result_Status expand_macro_la(Parsed_Statement *macro) {
 
 		// Create the expansion instruction.
 		// This instruction will be appended to the original instruction.
-		Parsed_Statement *expansion = malloc(sizeof(Parsed_Statement));
-		expansion->statement.n_labels = 0;
-		expansion->statement.labels = NULL;
+		Statement *expansion = malloc(sizeof(Statement));
+		expansion->n_labels = 0;
+		expansion->labels = NULL;
 
-		expansion->statement.type = STATEMENT_TYPE_INSTRUCTION;
-		expansion->statement.body.instruction.opcode = OPCODE_ORI;
-		expansion->statement.body.instruction.opseq.n_operands = 3;
-		expansion->statement.body.instruction.opseq.operands = malloc(sizeof(Operand) * 3);
-		expansion->statement.body.instruction.opseq.operands[0] =
-			macro->statement.body.instruction.opseq.operands[0];
-		expansion->statement.body.instruction.opseq.operands[1] =
-			macro->statement.body.instruction.opseq.operands[0];
+		expansion->type = STATEMENT_TYPE_INSTRUCTION;
+		expansion->body.instruction.opcode = OPCODE_ORI;
+		expansion->body.instruction.opseq.n_operands = 3;
+		expansion->body.instruction.opseq.operands = malloc(sizeof(Operand) * 3);
+		expansion->body.instruction.opseq.operands[0] =
+			macro->body.instruction.opseq.operands[0];
+		expansion->body.instruction.opseq.operands[1] =
+			macro->body.instruction.opseq.operands[0];
 
-		expansion->statement.body.instruction.opseq.operands[2].type = OPERAND_TYPE_SYMBOL;
-		expansion->statement.body.instruction.opseq.operands[2].value.symbol =
-			strdup(macro->statement.body.instruction.opseq.operands[1].value.symbol);
+		expansion->body.instruction.opseq.operands[2].type = OPERAND_TYPE_SYMBOL;
+		expansion->body.instruction.opseq.operands[2].value.symbol =
+			strdup(macro->body.instruction.opseq.operands[1].value.symbol);
 
-		expansion->statement.body.instruction.opseq.operands[2].flags.mask = OPERAND_MASK_LOW;
+		expansion->body.instruction.opseq.operands[2].flags.mask = OPERAND_MASK_LOW;
 
 		// Set the expanded second instruction to point at the original next instruction.
 		// This ensures that the instruction is properly 'inserted'.
 		expansion->next = macro->next;
 
 		// Update the original instruction.
-		macro->statement.body.instruction.opcode = OPCODE_LUI;
-		macro->statement.body.instruction.opseq.operands[1].flags.mask = OPERAND_MASK_HIGH;
+		macro->body.instruction.opcode = OPCODE_LUI;
+		macro->body.instruction.opseq.operands[1].flags.mask = OPERAND_MASK_HIGH;
 
 		// Point the next pointer of the original instruction at the expansion instruction.
 		macro->next = expansion;
-	} else if(macro->statement.body.instruction.opseq.operands[1].type == OPERAND_TYPE_NUMERIC_LITERAL) {
+	} else if(macro->body.instruction.opseq.operands[1].type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		// If the Immediate Operand is a numeric literal.
 
-		if(macro->statement.body.instruction.opseq.operands[1].value.numeric_literal > 0xFFFF) {
+		if(macro->body.instruction.opseq.operands[1].value.numeric_literal > 0xFFFF) {
 			// If the immediate value is above 16bits in size, it will be expanded to use
 			// an LUI instruction loading the MSB of the numeric literal, and an ORI
 			// instruction loading the LSB.
 
 			// Create the expansion instruction to store the `ORI` instruction.
-			Parsed_Statement *expansion = malloc(sizeof(Parsed_Statement));
-			expansion->statement.n_labels = 0;
-			expansion->statement.labels = NULL;
+			Statement *expansion = malloc(sizeof(Statement));
+			expansion->n_labels = 0;
+			expansion->labels = NULL;
 
-			expansion->statement.type = STATEMENT_TYPE_INSTRUCTION;
-			expansion->statement.body.instruction.opcode = OPCODE_ORI;
+			expansion->type = STATEMENT_TYPE_INSTRUCTION;
+			expansion->body.instruction.opcode = OPCODE_ORI;
 
 			// Use the modified operands from the original pseudo-instruction.
-			expansion->statement.body.instruction.opseq.n_operands = 3;
-			expansion->statement.body.instruction.opseq.operands = malloc(sizeof(Operand) * 3);
-			expansion->statement.body.instruction.opseq.operands[0] =
-				macro->statement.body.instruction.opseq.operands[0];
-			expansion->statement.body.instruction.opseq.operands[1] =
-				macro->statement.body.instruction.opseq.operands[0];
+			expansion->body.instruction.opseq.n_operands = 3;
+			expansion->body.instruction.opseq.operands = malloc(sizeof(Operand) * 3);
+			expansion->body.instruction.opseq.operands[0] =
+				macro->body.instruction.opseq.operands[0];
+			expansion->body.instruction.opseq.operands[1] =
+				macro->body.instruction.opseq.operands[0];
 
-			expansion->statement.body.instruction.opseq.operands[2].type = OPERAND_TYPE_NUMERIC_LITERAL;
+			expansion->body.instruction.opseq.operands[2].type = OPERAND_TYPE_NUMERIC_LITERAL;
 
 			// Truncate the immediate value to 16bits.
-			expansion->statement.body.instruction.opseq.operands[2].value.numeric_literal =
-				macro->statement.body.instruction.opseq.operands[1].value.numeric_literal & 0xFFFF;
+			expansion->body.instruction.opseq.operands[2].value.numeric_literal =
+				macro->body.instruction.opseq.operands[1].value.numeric_literal & 0xFFFF;
 
 			// Set the expanded second instruction to point at the original next instruction.
 			// This ensures that the instruction is properly 'inserted'.
 			expansion->next = macro->next;
 
 			// Update the original instruction to be an LUI instruction.
-			macro->statement.body.instruction.opcode = OPCODE_LUI;
+			macro->body.instruction.opcode = OPCODE_LUI;
 
 			// Use upper 16bits.
-			macro->statement.body.instruction.opseq.operands[1].value.numeric_literal =
-				(macro->statement.body.instruction.opseq.operands[1].value.numeric_literal >> 16) &
+			macro->body.instruction.opseq.operands[1].value.numeric_literal =
+				(macro->body.instruction.opseq.operands[1].value.numeric_literal >> 16) &
 				0xFFFF;
 			macro->next = expansion;
 		} else {
@@ -124,17 +124,17 @@ Expand_Macro_Result_Status expand_macro_la(Parsed_Statement *macro) {
 			// instruction is used to represent the pseudo-instruction.
 
 			// The original instruction is modified to use the `ADDIU` opcode.
-			macro->statement.body.instruction.opcode = OPCODE_ADDIU;
-			macro->statement.body.instruction.opseq.n_operands = 3;
-			macro->statement.body.instruction.opseq.operands =
-				realloc(macro->statement.body.instruction.opseq.operands, sizeof(Operand) * 3);
+			macro->body.instruction.opcode = OPCODE_ADDIU;
+			macro->body.instruction.opseq.n_operands = 3;
+			macro->body.instruction.opseq.operands =
+				realloc(macro->body.instruction.opseq.operands, sizeof(Operand) * 3);
 
-			macro->statement.body.instruction.opseq.operands[2] =
-				macro->statement.body.instruction.opseq.operands[1];
-			macro->statement.body.instruction.opseq.operands[1] =
-				macro->statement.body.instruction.opseq.operands[0];
-			macro->statement.body.instruction.opseq.operands[0].type = OPERAND_TYPE_REGISTER;
-			macro->statement.body.instruction.opseq.operands[0].value.reg = REGISTER_$ZERO;
+			macro->body.instruction.opseq.operands[2] =
+				macro->body.instruction.opseq.operands[1];
+			macro->body.instruction.opseq.operands[1] =
+				macro->body.instruction.opseq.operands[0];
+			macro->body.instruction.opseq.operands[0].type = OPERAND_TYPE_REGISTER;
+			macro->body.instruction.opseq.operands[0].value.reg = REGISTER_$ZERO;
 		}
 	} else {
 		// If the original expanded instruction uses any other kind of immediate
@@ -154,20 +154,20 @@ Expand_Macro_Result_Status expand_macro_la(Parsed_Statement *macro) {
  * @param macro The branching instruction statement.
  * @warning @p macro is modified in this function.
  */
-Expand_Macro_Result_Status expand_branch_delay(Parsed_Statement *macro) {
+Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding branch delay macro...\n");
 #endif
 
 	// Create the expansion instruction which will store the inserted `NOP`.
-	Parsed_Statement *expansion = malloc(sizeof(Parsed_Statement));
-	expansion->statement.n_labels = 0;
-	expansion->statement.labels = NULL;
+	Statement *expansion = malloc(sizeof(Statement));
+	expansion->n_labels = 0;
+	expansion->labels = NULL;
 
-	expansion->statement.type = STATEMENT_TYPE_INSTRUCTION;
-	expansion->statement.body.instruction.opcode = OPCODE_NOP;
-	expansion->statement.body.instruction.opseq.n_operands = 0;
-	expansion->statement.body.instruction.opseq.operands = NULL;
+	expansion->type = STATEMENT_TYPE_INSTRUCTION;
+	expansion->body.instruction.opcode = OPCODE_NOP;
+	expansion->body.instruction.opseq.n_operands = 0;
+	expansion->body.instruction.opseq.operands = NULL;
 
 	// Set the expanded second instruction to point at the original next of the macro.
 	expansion->next = macro->next;
@@ -188,24 +188,24 @@ Expand_Macro_Result_Status expand_branch_delay(Parsed_Statement *macro) {
  * @param macro The `move` instruction statement.
  * @warning @p macro is modified in this function.
  */
-Expand_Macro_Result_Status expand_macro_move(Parsed_Statement *macro) {
+Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, macro->statement.body.instruction)) {
+	if(!instruction_check_operand_length(2, macro->body.instruction)) {
 		return EXPAND_MACRO_FAILURE;
 	}
 
 	// The `MOVE` pseudo-instruction is analogous to an ADD instruction between
 	// one register and $zero so we replace the opcode with an `ADD`, and then
 	// add a final operand referencing the $zero register.
-	macro->statement.body.instruction.opcode = OPCODE_ADD;
-	macro->statement.body.instruction.opseq.n_operands = 3;
-	macro->statement.body.instruction.opseq.operands =
-		realloc(macro->statement.body.instruction.opseq.operands, sizeof(Operand) * 3);
-	macro->statement.body.instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
-	macro->statement.body.instruction.opseq.operands[2].value.reg = REGISTER_$ZERO;
+	macro->body.instruction.opcode = OPCODE_ADD;
+	macro->body.instruction.opseq.n_operands = 3;
+	macro->body.instruction.opseq.operands =
+		realloc(macro->body.instruction.opseq.operands, sizeof(Operand) * 3);
+	macro->body.instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
+	macro->body.instruction.opseq.operands[2].value.reg = REGISTER_$ZERO;
 
 	return EXPAND_MACRO_SUCCESS;
 }
@@ -222,12 +222,12 @@ Expand_Macro_Result_Status expand_macro_move(Parsed_Statement *macro) {
  * @param statements The linked list of parsed statements.
  * @warning @p statements is modified by this function.
  */
-void expand_macros(Parsed_Statement *statements) {
-	Parsed_Statement *curr = statements;
+void expand_macros(Statement *statements) {
+	Statement *curr = statements;
 
 	while(curr) {
-		if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
-			switch(curr->statement.body.instruction.opcode) {
+		if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
+			switch(curr->body.instruction.opcode) {
 				case OPCODE_LA:
 				case OPCODE_LI:
 					expand_macro_la(curr);

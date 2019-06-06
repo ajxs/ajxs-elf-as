@@ -14,8 +14,8 @@ typedef enum _expand_macro_status_result {
 	EXPAND_MACRO_SUCCESS,
 } Expand_Macro_Result_Status;
 
-Expand_Macro_Result_Status expand_macro_la(Parsed_Statement *macro);
-Expand_Macro_Result_Status expand_macro_move(Parsed_Statement *macro);
-Expand_Macro_Result_Status expand_branch_delay(Parsed_Statement *macro);
+Expand_Macro_Result_Status expand_macro_la(Statement *macro);
+Expand_Macro_Result_Status expand_macro_move(Statement *macro);
+Expand_Macro_Result_Status expand_branch_delay(Statement *macro);
 
 #endif

@@ -3,19 +3,19 @@
 #include <as.h>
 
 
-void print_statement(Statement statement) {
-	printf("Debug Parser: Statement: Type: `%i`\n", statement.type);
-	if(statement.n_labels > 0) {
-		printf("  Labels: `%zu`:\n", statement.n_labels);
-		for(size_t i=0; i<statement.n_labels; i++) {
-			printf("    Label: `%s`\n", statement.labels[i]);
+void print_statement(Statement *statement) {
+	printf("Debug Parser: Statement: Type: `%i`\n", statement->type);
+	if(statement->n_labels > 0) {
+		printf("  Labels: `%zu`:\n", statement->n_labels);
+		for(size_t i=0; i<statement->n_labels; i++) {
+			printf("    Label: `%s`\n", statement->labels[i]);
 		}
 	}
 
-	if(statement.type == STATEMENT_TYPE_DIRECTIVE) {
-		print_directive(statement.body.directive);
-	} else if(statement.type == STATEMENT_TYPE_INSTRUCTION) {
-		print_instruction(statement.body.instruction);
+	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
+		print_directive(statement->body.directive);
+	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
+		print_instruction(statement->body.instruction);
 	}
 }
 

@@ -9,7 +9,7 @@
 
 
 extern int yylex(void);
-void yyerror(Parsed_Statement **parsed_statements, const char *s);
+void yyerror(Statement **statements, const char *s);
 
 %}
 
@@ -33,7 +33,7 @@ void yyerror(Parsed_Statement **parsed_statements, const char *s);
 %nterm <statement> statement
 %nterm <opseq> operand_seq
 
-%parse-param {Parsed_Statement **parsed_statements}
+%parse-param {Statement **statements}
 
 // https://www.gnu.org/software/bison/manual/html_node/Printer-Decl.html#Printer-Decl
 
@@ -66,7 +66,7 @@ void yyerror(Parsed_Statement **parsed_statements, const char *s);
 } directive
 
 %destructor {
-	free_statement(&$$);
+	free_statement($$);
 } statement
 
 %%
@@ -74,20 +74,16 @@ void yyerror(Parsed_Statement **parsed_statements, const char *s);
 input:
 	%empty
 	| input statement {
-		Parsed_Statement *new_statement = malloc(sizeof(Parsed_Statement));
-		new_statement->statement = $2;
-		new_statement->next = NULL;
-
-		if(!*parsed_statements) {
-			*parsed_statements = new_statement;
+		if(!*statements) {
+			*statements = $2;
 		} else {
-			Parsed_Statement *curr = *parsed_statements;
+			Statement *curr = *statements;
 
 			while(curr->next) {
 				curr = curr->next;
 			}
 
-			curr->next = new_statement;
+			curr->next = $2;
 		}
 	}
 	;
@@ -97,35 +93,39 @@ statement:
 	statement STATEMENT_DELIMITER
 	| LABEL statement {
 		// Add label to existing array.
-		$2.n_labels++;
-		$2.labels = realloc($2.labels,
-			sizeof(char*) * $2.n_labels);
-		$2.labels[$2.n_labels-1] = $<text>1;
+		$2->n_labels++;
+		$2->labels = realloc($2->labels, sizeof(char*) * $2->n_labels);
+		$2->labels[$2->n_labels-1] = $<text>1;
+
 		$$ = $2;
 	}
 	| LABEL {
-		Statement statement;
-		statement.type = STATEMENT_TYPE_EMPTY;
-		statement.n_labels = 1;
-		statement.labels = malloc(sizeof(char*));
-		statement.labels[0] = $<text>1;
+		Statement *statement = malloc(sizeof(Statement));
+		statement->type = STATEMENT_TYPE_EMPTY;
+		statement->n_labels = 1;
+		statement->labels = malloc(sizeof(char*));
+		statement->labels[0] = $<text>1;
+		statement->next = NULL;
+
 		$$ = statement;
 	}
 	| instruction {
-		Statement statement;
-		statement.type = STATEMENT_TYPE_INSTRUCTION;
-		statement.body.instruction = $<instruction>1;
-		statement.n_labels = 0;
-		statement.labels = NULL;
+		Statement *statement = malloc(sizeof(Statement));
+		statement->type = STATEMENT_TYPE_INSTRUCTION;
+		statement->body.instruction = $<instruction>1;
+		statement->n_labels = 0;
+		statement->labels = NULL;
+		statement->next = NULL;
 
 		$$ = statement;
 	}
 	| directive {
-		Statement statement;
-		statement.type = STATEMENT_TYPE_DIRECTIVE;
-		statement.body.directive = $1;
-		statement.n_labels = 0;
-		statement.labels = NULL;
+		Statement *statement = malloc(sizeof(Statement));
+		statement->type = STATEMENT_TYPE_DIRECTIVE;
+		statement->body.directive = $1;
+		statement->n_labels = 0;
+		statement->labels = NULL;
+		statement->next = NULL;
 
 		$$ = statement;
 	}
@@ -251,7 +251,7 @@ operand:
 
 %%
 
-void yyerror(Parsed_Statement **parsed_statements, const char *s) {
-	(void)parsed_statements;
+void yyerror(Statement **statements, const char *s) {
+	(void)statements;
 	fprintf(stderr, "Parser Error: %s\n", s);
 }

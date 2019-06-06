@@ -157,8 +157,8 @@ int yywrap(void) {
 }
 
 
-Parsed_Statement *scan_string(const char *str) {
-	Parsed_Statement *parsed_statements = NULL;
+Statement *scan_string(const char *str) {
+	Statement *parsed_statements = NULL;
 
 	YY_BUFFER_STATE buffer = yy_scan_bytes(str, strlen(str));
 	yyparse(&parsed_statements);

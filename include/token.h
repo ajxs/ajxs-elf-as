@@ -16,7 +16,7 @@ union YYSTYPE {
 	Instruction instruction;
 	Directive_Type dirtype;
 	Directive directive;
-	Statement statement;
+	Statement *statement;
 };
 
 

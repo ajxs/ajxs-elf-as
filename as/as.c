@@ -16,17 +16,7 @@ void populate_relocation_entries(Section *sections);
 
 Section *initialise_sections(void);
 
-Parsed_Statement *read_input(FILE *input_file);
-
-void free_program_statement(Parsed_Statement *parsed_statement) {
-	if(parsed_statement->next) {
-		free_program_statement(parsed_statement->next);
-	}
-
-	free_statement(&parsed_statement->statement);
-
-	free(parsed_statement);
-};
+Statement *read_input(FILE *input_file);
 
 
 /**
@@ -235,7 +225,7 @@ Section *initialise_sections(void) {
  */
 void assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
-	Parsed_Statement *statements) {
+	Statement *statements) {
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Begin first pass...\n");
@@ -259,14 +249,14 @@ void assemble_first_pass(Section *sections,
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
-	Parsed_Statement *curr = statements;
+	Statement *curr = statements;
 
 	while(curr) {
 		// All labels must be processed first.
 		// Since a label _can_ precede a section directive, but not the other way around.
-		if(curr->statement.labels) {
-			for(size_t i = 0; i < curr->statement.n_labels; i++) {
-				symtab_add_symbol(symbol_table, curr->statement.labels[i], section_current,
+		if(curr->labels) {
+			for(size_t i = 0; i < curr->n_labels; i++) {
+				symtab_add_symbol(symbol_table, curr->labels[i], section_current,
 					section_current->program_counter);
 			}
 		}
@@ -275,27 +265,27 @@ void assemble_first_pass(Section *sections,
 		// These are directives which specify which section to place the following
 		// statements in. Adjust the current section accordingly.
 		// These have a size of zero, as returned from `get_statement_size`.
-		if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
-			if(curr->statement.body.directive.type == DIRECTIVE_BSS) {
+		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
+			if(curr->body.directive.type == DIRECTIVE_BSS) {
 				section_current = section_bss;
-			} else if(curr->statement.body.directive.type == DIRECTIVE_DATA) {
+			} else if(curr->body.directive.type == DIRECTIVE_DATA) {
 				section_current = section_data;
-			} else if(curr->statement.body.directive.type == DIRECTIVE_TEXT) {
+			} else if(curr->body.directive.type == DIRECTIVE_TEXT) {
 				section_current = section_text;
 			}
 		}
 
 		/** The encoded size of the statement. */
-		ssize_t statement_size = get_statement_size(curr->statement);
+		ssize_t statement_size = get_statement_size(curr);
 		if(statement_size == -1) {
 			printf("Error getting statement size for ");
-			if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
+			if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
 				printf("directive `");
-				print_directive_type(curr->statement.body.directive);
+				print_directive_type(curr->body.directive);
 				printf("`.\n");
-			} else if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
+			} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 				printf("instruction `");
-				print_opcode(curr->statement.body.instruction.opcode);
+				print_opcode(curr->body.instruction.opcode);
 				printf("`.\n");
 			} else {
 				printf("empty statement.\n");
@@ -304,13 +294,13 @@ void assemble_first_pass(Section *sections,
 
 #if DEBUG_ASSEMBLER == 1
 		printf("Debug Assembler: Calculated size `0x%lx` for ", statement_size);
-		if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
+		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
 			printf("directive `");
-			print_directive_type(curr->statement.body.directive);
+			print_directive_type(curr->body.directive);
 			printf("`.\n");
-		} else if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
+		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 			printf("instruction `");
-			print_opcode(curr->statement.body.instruction.opcode);
+			print_opcode(curr->body.instruction.opcode);
 			printf("`.\n");
 		} else {
 			printf("empty statement.\n");
@@ -402,7 +392,7 @@ void populate_relocation_entries(Section *sections) {
  */
 void assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
-	Parsed_Statement *statements) {
+	Statement *statements) {
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Begin second pass...\n");
@@ -422,13 +412,13 @@ void assemble_second_pass(Section *sections,
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
-	Parsed_Statement *curr = statements;
+	Statement *curr = statements;
 
 	Encoding_Entity *encoding = NULL;
 
 	while(curr) {
-		if(curr->statement.type == STATEMENT_TYPE_DIRECTIVE) {
-			switch(curr->statement.body.directive.type) {
+		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
+			switch(curr->body.directive.type) {
 				case DIRECTIVE_BSS:
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Setting current section to `.bss`...\n");
@@ -453,13 +443,13 @@ void assemble_second_pass(Section *sections,
 					// Non directly encoded entities.
 					break;
 				default:
-					encoding = encode_directive(symbol_table, &curr->statement.body.directive,
+					encoding = encode_directive(symbol_table, &curr->body.directive,
 						section_current->program_counter);
 					section_current->program_counter += encoding->size;
 					section_add_encoding_entity(section_current, encoding);
 			}
-		} else if(curr->statement.type == STATEMENT_TYPE_INSTRUCTION) {
-			encoding = encode_instruction(symbol_table, curr->statement.body.instruction,
+		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
+			encoding = encode_instruction(symbol_table, curr->body.instruction,
 				section_current->program_counter);
 
 			if(!encoding) {
@@ -596,13 +586,13 @@ void populate_symtab(Section *sections,
  * The file handle is closed in the main function.
  * @param input_file The file pointer for the input source file.
  */
-Parsed_Statement *read_input(FILE *input_file) {
+Statement *read_input(FILE *input_file) {
 	char *line_buffer = 0;
 	size_t line_buffer_length = 0;
 	ssize_t chars_read = 0;
 	size_t line_num = 1;
 
-	Parsed_Statement *program_statements = NULL;
+	Statement *program_statements = NULL;
 
 	// Read all the lines in the file.
 	while((chars_read = getline(&line_buffer, &line_buffer_length, input_file)) != -1) {
@@ -627,8 +617,8 @@ Parsed_Statement *read_input(FILE *input_file) {
 		// This is where each line from the source file is lexed and parsed.
 		// This returns a linked-list entity, since architecture-depending, a single
 		// line may contain multiple `statement`s.
-		Parsed_Statement *parsed_statements = scan_string(line);
-		Parsed_Statement *curr = parsed_statements;
+		Statement *parsed_statements = scan_string(line);
+		Statement *curr = parsed_statements;
 		curr->line_num = line_num;
 		while(curr->next) {
 			curr = curr->next;
@@ -640,7 +630,7 @@ Parsed_Statement *read_input(FILE *input_file) {
 			program_statements = parsed_statements;
 		} else {
 			// Add to tail of linked list.
-			Parsed_Statement *curr = program_statements;
+			Statement *curr = program_statements;
 			while(curr->next) {
 				curr = curr->next;
 			}
@@ -655,10 +645,10 @@ Parsed_Statement *read_input(FILE *input_file) {
 
 #if DEBUG_PARSED_STATEMENTS == 1
 	// Iterate over all parsed statements, printing each one.
-	Parsed_Statement *curr = program_statements;
+	Statement *curr = program_statements;
 
 	while(curr) {
-		print_statement(curr->statement);
+		print_statement(curr);
 		curr = curr->next;
 	}
 #endif
@@ -676,7 +666,7 @@ Parsed_Statement *read_input(FILE *input_file) {
  */
 void assemble(FILE *input_file) {
 	/** The individual statements parsed from the source input file. */
-	Parsed_Statement *program_statements = read_input(input_file);
+	Statement *program_statements = read_input(input_file);
 
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
@@ -853,7 +843,6 @@ void assemble(FILE *input_file) {
 	printf("Debug Assembler: Freeing statements...\n");
 #endif
 
-	free_program_statement(program_statements);
 	free(elf_header);
 
 #if DEBUG_ASSEMBLER == 1
