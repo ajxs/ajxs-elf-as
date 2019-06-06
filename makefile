@@ -17,12 +17,11 @@ LEXER_SRC:=as/lexer.l
 PARSER_SRC:=as/parser.y
 
 ARCH_SOURCES:=arch/${ARCH}/codegen.c \
-	arch/${ARCH}/elf.c \
-	arch/${ARCH}/macro.c arch/${ARCH}/opcode.c \
+	arch/${ARCH}/elf.c arch/${ARCH}/macro.c arch/${ARCH}/opcode.c \
 	arch/${ARCH}/register.c arch/${ARCH}/statement.c
 
 SOURCES:=${ARCH_SOURCES} ${LEXER_GEN} ${PARSER_GEN} \
-	as/as.c as/directive.c as/error.c as/instruction.c \
+	as/as.c as/directive.c as/elf.c as/error.c as/instruction.c \
 	as/main.c as/operand.c as/preprocessor.c as/print.c \
 	as/section.c as/statement.c as/symtab.c
 

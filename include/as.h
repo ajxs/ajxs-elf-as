@@ -252,5 +252,6 @@ void section_add_encoding_entity(Section *section,
 void free_encoding_entity(Encoding_Entity *entity);
 
 Elf32_Ehdr *create_elf_header(void);
+Elf32_Shdr *encode_section_header(Section *section);
 
 #endif

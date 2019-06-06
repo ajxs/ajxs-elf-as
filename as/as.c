@@ -824,30 +824,17 @@ void assemble(FILE *input_file) {
 			curr_section->name, curr_section->file_offset, ftell(out_file));
 #endif
 
-		Elf32_Shdr section_header;
-		section_header.sh_name = curr_section->name_strtab_offset;
-		section_header.sh_type = curr_section->type;
-		section_header.sh_flags = curr_section->flags;
-		section_header.sh_addr = 0;
-		section_header.sh_offset = curr_section->file_offset;
-		section_header.sh_size = curr_section->size;
-		section_header.sh_link = curr_section->link;
-		section_header.sh_info = curr_section->info;
-		section_header.sh_addralign = 0;
-		section_header.sh_entsize = 0;
+		// Encode the section header in the ELF format.
+		Elf32_Shdr *section_header = encode_section_header(curr_section);
 
-		if(curr_section->type == SHT_SYMTAB) {
-			section_header.sh_entsize = sizeof(Elf32_Sym);
-		} else if(curr_section->type == SHT_REL) {
-			section_header.sh_entsize = sizeof(Elf32_Rel);
-		}
-
-		written = fwrite(&section_header, sizeof(Elf32_Shdr), 1, out_file);
+		written = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(written != 1) {
 			if(ferror(out_file)) {
 				perror("Error writing section header data.\n");
 			}
 		}
+
+		free(section_header);
 
 		curr_section = curr_section->next;
 	}
