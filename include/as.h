@@ -211,7 +211,9 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 	size_t program_counter);
 
 ssize_t get_statement_size(Statement *statement);
-void assemble(FILE *input_file);
+
+void assemble(const char *input_filename,
+	const char *output_filename);
 
 void assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,

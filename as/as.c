@@ -556,11 +556,24 @@ Statement *read_input(FILE *input_file) {
  *
  * This function begins the assembly process for an input source file.
  * All processing and assembly is initiated here.
- * @param input_file The file pointer for the input source file.
+ * @param input_filename The file path for the input source file.
+ * @param output_filename The file path for the output source file.
  */
-void assemble(FILE *input_file) {
+void assemble(const char *input_filename,
+	const char *output_filename) {
+
+	FILE *input_file = fopen(input_filename, "r");
+	if(!input_file) {
+		fprintf(stderr, "Error opening file: %i\n", errno);
+	}
+
 	/** The individual statements parsed from the source input file. */
 	Statement *program_statements = read_input(input_file);
+
+	int close_status = fclose(input_file);
+	if(close_status) {
+		fprintf(stderr, "Error closing file handler: %u! Exiting.\n", errno);
+	}
 
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
@@ -675,7 +688,7 @@ void assemble(FILE *input_file) {
 #endif
 
 	// Open the output file.
-	FILE *out_file = fopen("./out.elf", "w");
+	FILE *out_file = fopen(output_filename, "w");
 	if(!out_file) {
 		fprintf(stderr, "Error opening output file: `%u`\n", errno);
 	}
