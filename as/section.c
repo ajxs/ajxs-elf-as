@@ -15,6 +15,34 @@
 
 
 /**
+ * @brief Creates a section.
+ *
+ * Adds a program section to the linked list of program sections.
+ * @param section_list A pointer-to-pointer to the program section linked list.
+ * @param section The section to add.
+ */
+Section *create_section(char *name,
+	uint32_t type,
+	uint32_t flags) {
+
+	Section *section = malloc(sizeof(Section));
+	section->name = name;
+	section->name_strtab_offset = 0;
+	section->program_counter = 0;
+	section->file_offset = 0;
+	section->size = 0;
+	section->flags = flags;
+	section->link = 0;
+	section->info = 0;
+	section->type = type;
+	section->encoding_entities = NULL;
+	section->next = NULL;
+
+	return section;
+}
+
+
+/**
  * @brief Adds a section.
  *
  * Adds a program section to the linked list of program sections.

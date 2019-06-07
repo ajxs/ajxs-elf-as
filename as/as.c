@@ -32,135 +32,29 @@ Section *initialise_sections(void) {
 	Section *sections = NULL;
 
 	// The section header data will be filled as the sections are serialised.
-	Section *section_null = malloc(sizeof(Section));
-	section_null->name = "\0";
-	section_null->name_strtab_offset = 0;
-	section_null->program_counter = 0;
-	section_null->file_offset = 0;
-	section_null->size = 0;
-	section_null->flags = 0;
-	section_null->link = 0;
-	section_null->info = 0;
+	Section *section_null = create_section("\0", SHT_NULL, 0);
 
-	section_null->type = SHT_NULL;
-	section_null->encoding_entities = NULL;
-	section_null->next = NULL;
+	Section *section_text = create_section(".text", SHT_PROGBITS,
+		SHF_ALLOC | SHF_EXECINSTR);
 
-	Section *section_text = malloc(sizeof(Section));
-	section_text->name = ".text";
-	section_text->name_strtab_offset = 0;
-	section_text->program_counter = 0;
-	section_text->file_offset = 0;
-	section_text->size = 0;
-	section_text->flags = SHF_ALLOC | SHF_EXECINSTR;
-	section_text->link = 0;
-	section_text->info = 0;
-
-	section_text->type = SHT_PROGBITS;
-	section_text->encoding_entities = NULL;
-	section_text->next = NULL;
-
-	Section *section_text_rel = malloc(sizeof(Section));
-	section_text_rel->name = ".rel.text";
-	section_text_rel->name_strtab_offset = 0;
-	section_text_rel->program_counter = 0;
-	section_text_rel->file_offset = 0;
-	section_text_rel->size = 0;
 	// The ELF man page suggests that the flags for relocatable sections are
 	// set to SHF_ALLOC, but from readelf we can see that gcc itself
 	// seems to use `SHF_INFO_LINK`.
 	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
 	// for the undocumented flags.
-	section_text_rel->flags = SHF_INFO_LINK;
-	section_text_rel->link = 0;
-	section_text_rel->info = 0;
+	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
 
-	section_text_rel->type = SHT_REL;
-	section_text_rel->encoding_entities = NULL;
-	section_text_rel->next = NULL;
+	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
 
-	Section *section_data = malloc(sizeof(Section));
-	section_data->name = ".data";
-	section_data->name_strtab_offset = 6;
-	section_data->program_counter = 0;
-	section_data->file_offset = 0;
-	section_data->size = 0;
-	section_data->flags = SHF_ALLOC | SHF_WRITE;
-	section_data->link = 0;
-	section_data->info = 0;
+	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
 
-	section_data->type = SHT_PROGBITS;
-	section_data->encoding_entities = NULL;
-	section_data->next = NULL;
+	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
 
-	Section *section_data_rel = malloc(sizeof(Section));
-	section_data_rel->name = ".rel.data";
-	section_data_rel->name_strtab_offset = 0;
-	section_data_rel->program_counter = 0;
-	section_data_rel->file_offset = 0;
-	section_data_rel->size = 0;
-	section_data_rel->flags = SHF_INFO_LINK;
-	section_data_rel->link = 0;
-	section_data_rel->info = 0;
+	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
 
-	section_data_rel->type = SHT_REL;
-	section_data_rel->encoding_entities = NULL;
-	section_data_rel->next = NULL;
+	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
 
-	Section *section_bss = malloc(sizeof(Section));
-	section_bss->name = ".bss";
-	section_bss->name_strtab_offset = 0;
-	section_bss->program_counter = 0;
-	section_bss->file_offset = 0;
-	section_bss->size = 0;
-	section_bss->link = 0;
-	section_bss->info = 0;
-
-	section_bss->flags = SHF_ALLOC | SHF_WRITE;
-	section_bss->type = SHT_NOBITS;
-	section_bss->encoding_entities = NULL;
-	section_bss->next = NULL;
-
-	Section *section_symtab = malloc(sizeof(Section));
-	section_symtab->name = ".symtab";
-	section_symtab->name_strtab_offset = 0;
-	section_symtab->program_counter = 0;
-	section_symtab->file_offset = 0;
-	section_symtab->size = 0;
-	section_symtab->flags = SHF_ALLOC;
-	section_symtab->link = 0;
-	section_symtab->info = 0;
-
-	section_symtab->type = SHT_SYMTAB;
-	section_symtab->encoding_entities = NULL;
-	section_symtab->next = NULL;
-
-	Section *section_shstrtab = malloc(sizeof(Section));
-	section_shstrtab->name = ".shstrtab";
-	section_shstrtab->name_strtab_offset = 0;
-	section_shstrtab->program_counter = 0;
-	section_shstrtab->file_offset = 0;
-	section_shstrtab->size = 0;
-	section_shstrtab->flags = SHF_ALLOC;
-	section_shstrtab->link = 0;
-	section_shstrtab->info = 0;
-
-	section_shstrtab->type = SHT_STRTAB;
-	section_shstrtab->encoding_entities = NULL;
-	section_shstrtab->next = NULL;
-
-	Section *section_strtab = malloc(sizeof(Section));
-	section_strtab->name = ".strtab";
-	section_strtab->name_strtab_offset = 0;
-	section_strtab->program_counter = 0;
-	section_strtab->file_offset = 0;
-	section_strtab->size = 0;
-	section_strtab->link = 0;
-	section_strtab->info = 0;
-
-	section_strtab->type = SHT_STRTAB;
-	section_strtab->encoding_entities = NULL;
-	section_strtab->next = NULL;
+	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
 
 	add_section(&sections, section_null);
 	add_section(&sections, section_text);
@@ -694,9 +588,11 @@ void assemble(FILE *input_file) {
 	printf("Debug Output: Initialising output file...\n");
 #endif
 
-	/** The ELF header. */
+	/** The ELF file header. */
 	Elf32_Ehdr *elf_header = create_elf_header();
 
+	// Find the index into the section header block of the section header
+	// string table. This is needed by the ELF header.
 	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
 	if(section_shstrtab_index == -1) {
 		printf("Error finding `.shstrtab` index.\n");
@@ -704,31 +600,37 @@ void assemble(FILE *input_file) {
 
 	elf_header->e_shstrndx = section_shstrtab_index;
 
+
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Populating .shstrtab...\n");
 #endif
 
 	Section *shstrtab = find_section(sections, ".shstrtab");
-
+	if(!shstrtab) {
+		printf("Error finding `.shstrtab` section.\n");
+	}
 
 	Section *curr_section = sections;
 	while(curr_section) {
-		// Increment the total sections in the header.
+		// Iterate through each section and add its name to the section header
+		// string table. Increment the total sections in the header as we go to
+		// populate the total section header count.
 		elf_header->e_shnum++;
 
-		// Iterate through each section and add its name to the section header
-		// string table, recording the index.
-		size_t section_name_len = strlen(curr_section->name) + 1;
+		// Rrecord the index into the section header string table of each section name.
 		// The current section size is the offset of each section name into SHSTRTAB.
 		curr_section->name_strtab_offset = shstrtab->size;
 
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Adding section name: `%s` to .shstrtab at offset `0x%lx`...\n",
-			curr_section->name, shstrtab->size);
+			curr_section->name, curr_section->name_strtab_offset);
 #endif
 
-		// Create an encoding entity for each section name, this will be encoded
-		// during the writing of the section data.
+		size_t section_name_len = strlen(curr_section->name) + 1;
+
+		// Create an encoding entity for each section name.
+		// This raw data will be added to the section header string table binary
+		// data and encoded into the final encoded file.
 		Encoding_Entity *string_entity = malloc(sizeof(Encoding_Entity));
 		string_entity->n_reloc_entries = 0;
 		string_entity->reloc_entries = NULL;
@@ -739,7 +641,7 @@ void assemble(FILE *input_file) {
 			section_name_len);
 		string_entity->data[section_name_len] = '\0';
 
-		// Add the encoded section name to the `shstrtab` section.
+		// Add the encoded string to the `shstrtab` section.
 		section_add_encoding_entity(shstrtab, string_entity);
 
 		curr_section = curr_section->next;
@@ -757,23 +659,28 @@ void assemble(FILE *input_file) {
 
 	curr_section = sections;
 	while(curr_section) {
+		// Calculate the total section data size.
+		// The section headers will be placed after all of the binary section data in
+		// the file, so we need to compute the total binary data size to predict the
+		// offset of the section headers in the file.
 		total_section_data_size += curr_section->size;
 		curr_section = curr_section->next;
 	}
 
-	// Set the section offset in the header.
+	// Set the section header offset in the ELF file header.
 	elf_header->e_shoff = elf_header->e_ehsize + total_section_data_size;
 
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Opening output file `%s`...\n", "FFFFFFF");
 #endif
 
+	// Open the output file.
 	FILE *out_file = fopen("./out.elf", "w");
 	if(!out_file) {
 		fprintf(stderr, "Error opening output file: `%u`\n", errno);
 	}
 
-	// Write header.
+	// Write the ELF file header.
 	size_t written = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(written != 1) {
 		if(ferror(out_file)) {
@@ -781,10 +688,11 @@ void assemble(FILE *input_file) {
 		}
 	}
 
-	// Write section data.
+	// Write the binary section data to the file.
 	curr_section = sections;
 	while(curr_section) {
-		// Store the current file offset as the offset of this section in the file.
+		// Update the section information to store the current file location as the
+		// offset of this section's binary data in the file.
 		curr_section->file_offset = ftell(out_file);
 
 #if DEBUG_OUTPUT == 1
@@ -794,6 +702,7 @@ void assemble(FILE *input_file) {
 
 		Encoding_Entity *curr_entity = curr_section->encoding_entities;
 		while(curr_entity) {
+			// Write each encoding entity contained in each section.
 			written = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
 			if(written != 1) {
 				if(ferror(out_file)) {
@@ -817,6 +726,7 @@ void assemble(FILE *input_file) {
 		// Encode the section header in the ELF format.
 		Elf32_Shdr *section_header = encode_section_header(curr_section);
 
+		// Write each ELF header to the output file.
 		written = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(written != 1) {
 			if(ferror(out_file)) {

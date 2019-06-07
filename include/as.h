@@ -229,6 +229,9 @@ void symtab_add_symbol(Symbol_Table *symtab,
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *name);
 
+Section *create_section(char *name,
+	uint32_t type,
+	uint32_t flags);
 
 void add_section(Section **section_list,
 	Section *section);
