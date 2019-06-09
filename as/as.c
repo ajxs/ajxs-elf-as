@@ -1,3 +1,14 @@
+/**
+ * @file as.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Main program.
+ * Contains the main assembler process functions. The actual assembly logic is
+ * contained within this file.
+ * The `assemble` function is where the process begins.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <as.h>
 #include <ctype.h>
 #include <errno.h>
@@ -8,11 +19,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 void populate_symtab(Section *sections,
 	Symbol_Table *symbol_table);
 
 void populate_relocation_entries(Section *sections);
-
 
 Section *initialise_sections(void);
 
@@ -66,16 +77,17 @@ Section *initialise_sections(void) {
 	add_section(&sections, section_shstrtab);
 	add_section(&sections, section_strtab);
 
-	// Populate the 'link' fields of the sections.
+	// Find the index of the string table section, so we can link the symbol
+	// table section to the string table section.
 	ssize_t section_strtab_index = find_section_index(sections, ".strtab");
-	section_strtab_index = find_section_index(sections, ".strtab");
 	if(section_strtab_index == -1) {
 		printf("Error linking .symtab to .strtab.");
 	}
 
 	section_symtab->link = section_strtab_index;
 
-
+	// Find the index of the data section, so we can link its relevant relocation
+	// entry section to it.
 	ssize_t section_data_index = find_section_index(sections, ".data");
 	if(section_data_index == -1) {
 		printf("Error linking .rel.data to .data.");
@@ -84,6 +96,8 @@ Section *initialise_sections(void) {
 	section_data_rel->info = section_data_index;
 
 
+	// Find the index of the text section, so we can link its relevant relocation
+	// entry section to it.
 	ssize_t section_text_index = find_section_index(sections, ".text");
 	if(section_text_index == -1) {
 		printf("Error linking .rel.text to .text.");
@@ -92,12 +106,12 @@ Section *initialise_sections(void) {
 	section_text_rel->info = section_text_index;
 
 
+	// Find the index of the symbol table section, so we can link the program data
+	// sections to it.
 	ssize_t section_symtab_index = find_section_index(sections, ".symtab");
-	section_symtab_index = find_section_index(sections, ".symtab");
 	if(section_symtab_index == -1) {
 		printf("Error linking .rel.data to .symtab.");
 	}
-
 
 	section_data_rel->link = section_symtab_index;
 	section_text_rel->link = section_symtab_index;
@@ -560,7 +574,17 @@ Statement *read_input(FILE *input_file) {
  * @param output_filename The file path for the output source file.
  */
 void assemble(const char *input_filename,
-	const char *output_filename) {
+	const char *output_filename,
+	bool verbose) {
+
+#if DEBUG_ASSEMBLER == 1
+	printf("Debug Assembler: Beginning main assembler process.\n");
+	printf("  Using input file `%s`.\n", input_filename);
+	printf("  Using output file `%s`.\n", output_filename);
+	if(verbose) {
+		printf("  Verbose output enabled.\n");
+	}
+#endif
 
 	FILE *input_file = fopen(input_filename, "r");
 	if(!input_file) {
@@ -684,7 +708,7 @@ void assemble(const char *input_filename,
 	elf_header->e_shoff = elf_header->e_ehsize + total_section_data_size;
 
 #if DEBUG_OUTPUT == 1
-		printf("Debug Output: Opening output file `%s`...\n", "FFFFFFF");
+		printf("Debug Output: Opening output file `%s`...\n", output_filename);
 #endif
 
 	// Open the output file.
@@ -694,8 +718,8 @@ void assemble(const char *input_filename,
 	}
 
 	// Write the ELF file header.
-	size_t written = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
-	if(written != 1) {
+	size_t entity_write_count = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
+	if(entity_write_count != 1) {
 		if(ferror(out_file)) {
 			perror("Error writing ELF header.\n");
 		}
@@ -716,8 +740,8 @@ void assemble(const char *input_filename,
 		Encoding_Entity *curr_entity = curr_section->encoding_entities;
 		while(curr_entity) {
 			// Write each encoding entity contained in each section.
-			written = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
-			if(written != 1) {
+			entity_write_count = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
+			if(entity_write_count != 1) {
 				if(ferror(out_file)) {
 					perror("Error writing section data.\n");
 				}
@@ -740,8 +764,8 @@ void assemble(const char *input_filename,
 		Elf32_Shdr *section_header = encode_section_header(curr_section);
 
 		// Write each ELF header to the output file.
-		written = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
-		if(written != 1) {
+		entity_write_count = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
+		if(entity_write_count != 1) {
 			if(ferror(out_file)) {
 				perror("Error writing section header data.\n");
 			}

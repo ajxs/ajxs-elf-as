@@ -12,10 +12,10 @@
 
 #include <elf.h>
 #include <arch.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 // These control whether or not debug information specific to certain processes
 // is printed to STDOUT.
@@ -213,7 +213,8 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 ssize_t get_statement_size(Statement *statement);
 
 void assemble(const char *input_filename,
-	const char *output_filename);
+	const char *output_filename,
+	bool verbose);
 
 void assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
