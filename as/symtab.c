@@ -65,3 +65,40 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 
 	return NULL;
 }
+
+
+/**
+ * @brief Finds a symbol in the symbol-table.
+ *
+ * Finds a symbol contained in the symbol table.
+ * @param symtab A pointer to symbol table to find the symbol in.
+ * @param name The name of the symbol to search for.
+ * @return A pointer to the first symbol matching the supplied name, or `NULL` if none exists.
+ */
+ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
+	char *name) {
+
+	int name_len = strlen(name);
+	for(size_t i = 0; i < symtab->n_entries; i++) {
+		if(strncmp(name, symtab->symbols[i].name, name_len) == 0) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+
+/**
+ * @brief Frees the symbol table.
+ * Frees the symbol table, freeing all of the symbols contained therein.
+ * @param symtab The symbol table to free.
+ * @warning Deletes all entries, and the table itself.
+ */
+void free_symbol_table(Symbol_Table *symtab) {
+	for(size_t i = 0; i < symtab->n_entries; i++) {
+		free(symtab->symbols[i].name);
+	}
+
+	free(symtab->symbols);
+}

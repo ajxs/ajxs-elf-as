@@ -22,9 +22,9 @@ void free_statement(Statement *statement) {
 	}
 
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
-		free_directive(&statement->body.directive);
+		free_directive(&statement->directive);
 	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
-		free_instruction(&statement->body.instruction);
+		free_instruction(&statement->instruction);
 	}
 
 	free(statement);

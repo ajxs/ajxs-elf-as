@@ -113,17 +113,26 @@ typedef struct statement {
 	size_t n_labels;
 	char **labels;
 	Statement_Type type;
-	union _statement_body {
+	union {
 		Instruction instruction;
 		Directive directive;
-	} body;
+	};
 	size_t line_num;
 	struct statement *next;
 } Statement;
 
 
+struct _section;
+typedef struct _section Section;
+
 typedef struct {
-	char *section;
+	char *name;
+	Section *section;
+	size_t offset;
+} Symbol;
+
+typedef struct {
+	Symbol *symbol;
 	size_t offset;
 	uint32_t type;
 } Reloc_Entry;
@@ -152,13 +161,6 @@ typedef struct _section {
 	Encoding_Entity *encoding_entities;
 	struct _section *next;
 } Section;
-
-
-typedef struct {
-	char *name;
-	Section *section;
-	size_t offset;
-} Symbol;
 
 
 typedef struct {
@@ -231,6 +233,11 @@ void symtab_add_symbol(Symbol_Table *symtab,
 
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *name);
+
+ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
+	char *name);
+
+void free_symbol_table(Symbol_Table *symtab);
 
 Section *create_section(char *name,
 	uint32_t type,

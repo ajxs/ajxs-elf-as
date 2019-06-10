@@ -17,24 +17,6 @@ void handle_opts_error(const char *error);
  * Prints the help text for the program's command line options to STDOUT.
  */
 void print_help(void) {
-	/*
-echo "Usage $0 [-?|--help]" \
-		"-d|--db" \
-		"-u|--db_user" \
-		"-p|--db_pass" \
-		"-h|--db_host" \
-		"-r|--db_port" \
-		"-td|--target_db" \
-		"-tu|--target_db_user" \
-		"-tp|--target_db_pass" \
-		"-th|--target_db_host" \
-		"-tr|--target_db_port" \
-	echo "db: The source postgres database"
-	echo "db_user: The source postgres database user"
-	echo "db_pass: The source postgres database password"
-	echo "db_host: The source postgres database host"
-	echo "db_port: The source postgres database port"
-	*/
 	printf("Usage 'ajxs-{ARCH}-elf-as' input_file\n");
 	printf("[-?|--help]\n");
 	printf("-o|--output\n");

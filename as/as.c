@@ -23,7 +23,7 @@
 void populate_symtab(Section *sections,
 	Symbol_Table *symbol_table);
 
-void populate_relocation_entries(Section *sections);
+void populate_relocation_entries(Symbol_Table *symtab, Section *sections);
 
 Section *initialise_sections(void);
 
@@ -110,7 +110,7 @@ Section *initialise_sections(void) {
 	// sections to it.
 	ssize_t section_symtab_index = find_section_index(sections, ".symtab");
 	if(section_symtab_index == -1) {
-		printf("Error linking .rel.data to .symtab.");
+		printf("Error linking relocatable sections to .symtab.");
 	}
 
 	section_data_rel->link = section_symtab_index;
@@ -174,11 +174,11 @@ void assemble_first_pass(Section *sections,
 		// statements in. Adjust the current section accordingly.
 		// These have a size of zero, as returned from `get_statement_size`.
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
-			if(curr->body.directive.type == DIRECTIVE_BSS) {
+			if(curr->directive.type == DIRECTIVE_BSS) {
 				section_current = section_bss;
-			} else if(curr->body.directive.type == DIRECTIVE_DATA) {
+			} else if(curr->directive.type == DIRECTIVE_DATA) {
 				section_current = section_data;
-			} else if(curr->body.directive.type == DIRECTIVE_TEXT) {
+			} else if(curr->directive.type == DIRECTIVE_TEXT) {
 				section_current = section_text;
 			}
 		}
@@ -189,11 +189,11 @@ void assemble_first_pass(Section *sections,
 			printf("Error getting statement size for ");
 			if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
 				printf("directive `");
-				print_directive_type(curr->body.directive);
+				print_directive_type(curr->directive);
 				printf("`.\n");
 			} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 				printf("instruction `");
-				print_opcode(curr->body.instruction.opcode);
+				print_opcode(curr->instruction.opcode);
 				printf("`.\n");
 			} else {
 				printf("empty statement.\n");
@@ -204,11 +204,11 @@ void assemble_first_pass(Section *sections,
 		printf("Debug Assembler: Calculated size `0x%lx` for ", statement_size);
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
 			printf("directive `");
-			print_directive_type(curr->body.directive);
+			print_directive_type(curr->directive);
 			printf("`.\n");
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 			printf("instruction `");
-			print_opcode(curr->body.instruction.opcode);
+			print_opcode(curr->instruction.opcode);
 			printf("`.\n");
 		} else {
 			printf("empty statement.\n");
@@ -239,15 +239,23 @@ void assemble_first_pass(Section *sections,
  * statement for which code has been generated is parsed, and any relocation
  * entries generated are encoded in the correct ELF format and added to their
  * relevant relocation entry section.
+ * For more information on relocation entries, refer to:
+ * https://docs.oracle.com/cd/E23824_01/html/819-0690/chapter6-54839.html
  * @param sections A pointer to the section linked list.
  * @warning This function modifies the sections.
  */
-void populate_relocation_entries(Section *sections) {
+void populate_relocation_entries(Symbol_Table *symtab,
+	Section *sections) {
+
 	Section *curr_section = sections;
 	while(curr_section) {
 		Encoding_Entity *curr_entity = curr_section->encoding_entities;
 		while(curr_entity) {
 			if(curr_entity->n_reloc_entries > 0) {
+				// If the current entity has relocation entries.
+				// First we find the relocation section relevant to the section
+				// that contains this entity.
+				// Search for the section by concatenating `.rel` with the section name.
 				size_t curr_section_name_len = strlen(curr_section->name);
 				char *curr_section_rel_name = malloc(5 + curr_section_name_len);
 				strcpy(curr_section_rel_name, ".rel");
@@ -261,13 +269,26 @@ void populate_relocation_entries(Section *sections) {
 						curr_section_rel_name);
 				}
 
+				// Free the created string we used for searching.
 				free(curr_section_rel_name);
 
 				for(size_t r=0; r<curr_entity->n_reloc_entries; r++) {
+					// Create the ELF relocatione entry to encode in the file.
 					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
-					rel->r_info = curr_entity->reloc_entries[r].type;
-					rel->r_offset = curr_section->file_offset;
 
+					/** The index of the relevant symbol into the symbol table. */
+					ssize_t symbol_index = symtab_find_symbol_index(symtab,
+						curr_entity->reloc_entries[r].symbol->name);
+					if(symbol_index == -1) {
+						printf("Error finding symbol index.");
+					}
+
+					// The `info` field is encoded as the symbol index shifted right 8
+					// bits, OR'd with the symbol `type`.
+					rel->r_info = (symbol_index << 8) | curr_entity->reloc_entries[r].type;
+					rel->r_offset = curr_entity->reloc_entries[r].offset;
+
+					/** The encoding entity that encodes the relocation entry. */
 					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
 					reloc_entity->n_reloc_entries = 0;
 					reloc_entity->reloc_entries = NULL;
@@ -326,7 +347,7 @@ void assemble_second_pass(Section *sections,
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
-			switch(curr->body.directive.type) {
+			switch(curr->directive.type) {
 				case DIRECTIVE_BSS:
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Setting current section to `.bss`...\n");
@@ -351,13 +372,13 @@ void assemble_second_pass(Section *sections,
 					// Non directly encoded entities.
 					break;
 				default:
-					encoding = encode_directive(symbol_table, &curr->body.directive,
+					encoding = encode_directive(symbol_table, &curr->directive,
 						section_current->program_counter);
 					section_current->program_counter += encoding->size;
 					section_add_encoding_entity(section_current, encoding);
 			}
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
-			encoding = encode_instruction(symbol_table, curr->body.instruction,
+			encoding = encode_instruction(symbol_table, curr->instruction,
 				section_current->program_counter);
 
 			if(!encoding) {
@@ -375,7 +396,7 @@ void assemble_second_pass(Section *sections,
 	printf("Debug Assembler: Populating relocation entries...\n");
 #endif
 
-	populate_relocation_entries(sections);
+	populate_relocation_entries(symbol_table, sections);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Finished second pass.\n");
@@ -796,12 +817,7 @@ void assemble(const char *input_filename,
 	printf("Debug Assembler: Freeing Symbol Table...\n");
 #endif
 
-	for(size_t i = 0; i < symbol_table.n_entries; i++) {
-		free(symbol_table.symbols[i].name);
-	}
-
-	free(symbol_table.symbols);
-
+	free_symbol_table(&symbol_table);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing sections...\n");

@@ -30,8 +30,10 @@ Encoding_Entity *encode_i_type(Symbol_Table *symtab,
 	uint8_t opcode,
 	uint8_t rs,
 	uint8_t rt,
-	Operand imm);
+	Operand imm,
+	size_t program_counter);
 
 Encoding_Entity *encode_j_type(Symbol_Table *symtab,
 	uint8_t opcode,
-	Operand imm);
+	Operand imm,
+	size_t program_counter);

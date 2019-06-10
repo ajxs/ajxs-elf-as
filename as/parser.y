@@ -112,7 +112,7 @@ statement:
 	| instruction {
 		Statement *statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_INSTRUCTION;
-		statement->body.instruction = $<instruction>1;
+		statement->instruction = $<instruction>1;
 		statement->n_labels = 0;
 		statement->labels = NULL;
 		statement->next = NULL;
@@ -122,7 +122,7 @@ statement:
 	| directive {
 		Statement *statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_DIRECTIVE;
-		statement->body.directive = $1;
+		statement->directive = $1;
 		statement->n_labels = 0;
 		statement->labels = NULL;
 		statement->next = NULL;
