@@ -312,6 +312,7 @@ void populate_relocation_entries(Symbol_Table *symtab,
 
 					reloc_entity->size = sizeof(Elf32_Rel);
 					reloc_entity->data = (uint8_t*)rel;
+					reloc_entity->next = NULL;
 
 					// Add the relocatable entry to the relevant section.
 					section_add_encoding_entity(curr_section_rel, reloc_entity);
@@ -514,6 +515,8 @@ void populate_symtab(Section *sections,
 
 	null_byte_entity->data[0] = '\0';
 
+	null_byte_entity->next = NULL;
+
 	section_add_encoding_entity(strtab, null_byte_entity);
 
 #if DEBUG_OUTPUT == 1
@@ -576,6 +579,8 @@ void populate_symtab(Section *sections,
 		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
 			&symbol_entry, symbol_entry_size);
 
+		symbol_entry_entity->next = NULL;
+
 		section_add_encoding_entity(symtab, symbol_entry_entity);
 
 #if DEBUG_OUTPUT == 1
@@ -604,7 +609,9 @@ void populate_symtab(Section *sections,
 
 		symbol_name_entity->data = memcpy(symbol_name_entity->data,
 			symbol_table->symbols[i].name, symbol_name_len);
-		symbol_name_entity->data[symbol_name_len] = '\0';
+		symbol_name_entity->data[symbol_name_len-1] = '\0';
+
+		symbol_name_entity->next = NULL;
 
 		section_add_encoding_entity(strtab, symbol_name_entity);
 
@@ -626,7 +633,7 @@ void populate_symtab(Section *sections,
  * @param input_file The file pointer for the input source file.
  */
 Statement *read_input(FILE *input_file) {
-	char *line_buffer = 0;
+	char *line_buffer = NULL;
 	size_t line_buffer_length = 0;
 	ssize_t chars_read = 0;
 	size_t line_num = 1;
@@ -643,6 +650,7 @@ Statement *read_input(FILE *input_file) {
 		// If NULL is returned, assume error state and abort.
 		char *line = preprocess_line(line_buffer);
 		if(!line) {
+			// @ERROR
 			printf("Error preprocessing line.");
 			break;
 		}
@@ -657,6 +665,8 @@ Statement *read_input(FILE *input_file) {
 		// This returns a linked-list entity, since architecture-depending, a single
 		// line may contain multiple `statement`s.
 		Statement *parsed_statements = scan_string(line);
+
+		// Iterate through each processed statement and set its line number.
 		Statement *curr = parsed_statements;
 		curr->line_num = line_num;
 		while(curr->next) {
@@ -669,7 +679,7 @@ Statement *read_input(FILE *input_file) {
 			program_statements = parsed_statements;
 		} else {
 			// Add to tail of linked list.
-			Statement *curr = program_statements;
+			curr = program_statements;
 			while(curr->next) {
 				curr = curr->next;
 			}
@@ -691,6 +701,10 @@ Statement *read_input(FILE *input_file) {
 		curr = curr->next;
 	}
 #endif
+
+	// Prevent memory leak. Refer to:
+	// https://stackoverflow.com/questions/55731141/memory-leak-when-reading-file-line-by-line-using-getline
+	free(line_buffer);
 
 	return program_statements;
 }
@@ -776,6 +790,13 @@ void assemble(const char *input_filename,
 
 
 #if DEBUG_OUTPUT == 1
+	printf("Debug Assembler: Freeing parsed statements...\n");
+#endif
+
+	free_statement(program_statements);
+
+
+#if DEBUG_OUTPUT == 1
 	printf("Debug Output: Initialising output file...\n");
 #endif
 
@@ -846,7 +867,9 @@ void assemble(const char *input_filename,
 
 		string_entity->data = memcpy(string_entity->data, curr_section->name,
 			section_name_len);
-		string_entity->data[section_name_len] = '\0';
+		string_entity->data[section_name_len-1] = '\0';
+
+		string_entity->next = NULL;
 
 		// Add the encoded string to the `shstrtab` section.
 		section_add_encoding_entity(shstrtab, string_entity);

@@ -706,6 +706,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 			memcpy(data, word_data, total_len);
 			encoded_entity->size = total_len;
 			encoded_entity->data = data;
+			encoded_entity->next = NULL;
 
 			free(word_data);
 			break;

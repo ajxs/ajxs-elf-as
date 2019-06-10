@@ -138,6 +138,10 @@ instruction:
 		instruction.opcode = parse_opcode_symbol($1);
 		instruction.opseq.n_operands = 0;
 		$$ = instruction;
+
+		// Free the allocated text here.
+		// This was duplicated in the lexer.
+		free($1);
 	}
 	| SYMBOL operand_seq {
 		Instruction instruction;
@@ -146,6 +150,10 @@ instruction:
 		instruction.opseq = $2;
 
 		$$ = instruction;
+
+		// Free the allocated text here.
+		// This was duplicated in the lexer.
+		free($1);
 	}
 	;
 

@@ -50,5 +50,5 @@ void free_operand_sequence(Operand_Sequence *opseq) {
 		free_operand(&opseq->operands[i]);
 	}
 
-	free(&opseq->operands);
+	free(opseq->operands);
 }

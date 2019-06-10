@@ -155,7 +155,7 @@ void section_add_encoding_entity(Section *section,
 		Encoding_Entity *current_entity = section->encoding_entities;
 		section->size += entity->size;
 
-		while(current_entity->next) {
+		while(current_entity->next != NULL) {
 			current_entity = current_entity->next;
 		}
 
@@ -178,11 +178,15 @@ void free_encoding_entity(Encoding_Entity *entity) {
 		return;
 	}
 
-	if(entity->reloc_entries) {
+	if(entity->data != NULL) {
+		free(entity->data);
+	}
+
+	if(entity->reloc_entries != NULL) {
 		free(entity->reloc_entries);
 	}
 
-	if(entity->next) {
+	if(entity->next != NULL) {
 		free_encoding_entity(entity->next);
 	}
 
@@ -205,7 +209,7 @@ void free_section(Section *section) {
 		return;
 	}
 
-	if(section->next) {
+	if(section->next != NULL) {
 		free_section(section->next);
 	}
 

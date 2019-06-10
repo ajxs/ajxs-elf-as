@@ -26,6 +26,8 @@ void free_statement(Statement *statement) {
 		free(statement->labels[i]);
 	}
 
+	free(statement->labels);
+
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
 		free_directive(&statement->directive);
 	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {

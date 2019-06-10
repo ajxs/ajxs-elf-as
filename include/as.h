@@ -131,6 +131,7 @@ typedef struct {
 	size_t offset;
 } Symbol;
 
+
 typedef struct {
 	Symbol *symbol;
 	size_t offset;
