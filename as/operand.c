@@ -36,7 +36,9 @@ void free_operand(Operand *op) {
  * @param opseq A pointer to the operand sequence to free.
  */
 void free_operand_sequence(Operand_Sequence *opseq) {
-	for(size_t i=0; i<opseq->n_operands; i++) {
+	for(size_t i=0; i < opseq->n_operands; i++) {
 		free_operand(&opseq->operands[i]);
 	}
+
+	free(&opseq->operands);
 }

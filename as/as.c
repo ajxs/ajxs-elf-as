@@ -225,8 +225,12 @@ void assemble_first_pass(Section *sections,
 	// Print the symbol table.
 	printf("Debug Assembler: Symbol Table:\n");
 	for(size_t i = 0; i < symbol_table->n_entries; i++) {
-		printf("  Symbol: `%s` in `%s` at `%#zx`\n", symbol_table->symbols[i].name,
-			symbol_table->symbols[i].section->name, symbol_table->symbols[i].offset);
+		if(symbol_table->symbols[i].section) {
+			// Allow for null symbol entry.
+			printf("  Symbol: `%s`", symbol_table->symbols[i].name);
+			printf(" in section `%s`", symbol_table->symbols[i].section->name);
+			printf(" at `%#zx`\n", symbol_table->symbols[i].offset);
+		}
 	}
 #endif
 }
@@ -280,6 +284,7 @@ void populate_relocation_entries(Symbol_Table *symtab,
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
 						curr_entity->reloc_entries[r].symbol->name);
 					if(symbol_index == -1) {
+						// @ERROR
 						printf("Error finding symbol index.");
 					}
 
@@ -421,7 +426,7 @@ void populate_symtab(Section *sections,
 	Section *strtab = find_section(sections, ".strtab");
 	Section *symtab = find_section(sections, ".symtab");
 
-	// Add the initial null byte to strtab as per ELF documentation.
+	// Add the initial null byte to strtab as per ELF specification.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
 	null_byte_entity->n_reloc_entries = 0;
 	null_byte_entity->reloc_entries = NULL;
@@ -447,11 +452,17 @@ void populate_symtab(Section *sections,
 		symbol_entry.st_info = 0;
 		symbol_entry.st_other = 0;
 
-		ssize_t shndx = find_section_index(sections,
-			symbol_table->symbols[i].section->name);
+		ssize_t shndx = 0;
+		if(symbol_table->symbols[i].section) {
+			// Take into account that we need to successfully parse the null symbol
+			// entry. The null entry has zero for the section header index.
+			shndx = find_section_index(sections,
+				symbol_table->symbols[i].section->name);
+		}
 
 		// If we could not match the section index, abort.
 		if(shndx == -1) {
+			// @ERROR
 			printf("ERROR FINDING SYMBOL SECTION INDEX.\n");
 		}
 
@@ -622,8 +633,21 @@ void assemble(const char *input_filename,
 
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
-	symbol_table.n_entries = 0;
-	symbol_table.symbols = NULL;
+
+	// Initialise with room for the null symbol entry.
+	symbol_table.n_entries = 1;
+	symbol_table.symbols = malloc(sizeof(Symbol));
+
+
+	// Create the null symbol entry.
+	// This is required as per ELF specification.
+	symbol_table.symbols[0].section = NULL;
+	symbol_table.symbols[0].offset = 0;
+
+	// Create an empty name entry, so as to not disrupt other processes that
+	// require handling of this string.
+	symbol_table.symbols[0].name = malloc(1);
+	symbol_table.symbols[0].name[0] = '\0';
 
 	/** The binary section data. */
 	Section *sections = initialise_sections();

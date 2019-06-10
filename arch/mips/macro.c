@@ -65,6 +65,8 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		expansion->instruction.opseq.operands[2].symbol =
 			strdup(macro->instruction.opseq.operands[1].symbol);
 
+		// The expansion immediate operand will contain the lower half of the
+		// immediate value.
 		expansion->instruction.opseq.operands[2].flags.mask = OPERAND_MASK_LOW;
 
 		// Set the expanded second instruction to point at the original next instruction.
@@ -73,6 +75,9 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 
 		// Update the original instruction.
 		macro->instruction.opcode = OPCODE_LUI;
+
+		// The macro immediate operand will contain the higher half of the
+		// immediate value.
 		macro->instruction.opseq.operands[1].flags.mask = OPERAND_MASK_HIGH;
 
 		// Point the next pointer of the original instruction at the expansion instruction.

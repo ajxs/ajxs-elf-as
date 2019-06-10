@@ -19,9 +19,7 @@
  * @param directive The directive to free.
  */
 void free_directive(Directive *directive) {
-	for(size_t i=0; i<directive->opseq.n_operands; i++) {
-		free_operand(&directive->opseq.operands[i]);
-	}
+	free_operand_sequence(&directive->opseq);
 }
 
 

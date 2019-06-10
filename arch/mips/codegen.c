@@ -102,16 +102,31 @@ Encoding_Entity *encode_i_type(Symbol_Table *symtab,
 		// as the symbol's offset, and then create a relocation entry so that the
 		// symbol can be linked correctly.
 		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
+		if(!symbol) {
+			// @ERROR
+			printf("Error finding symbol.\n");
+		}
+
 		immediate = symbol->offset;
 
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
 
-		encoded_instruction->reloc_entries[0].type = R_MIPS_HI16;
+		encoded_instruction->reloc_entries[0].type = R_MIPS_PC16;
+		if(imm.flags.mask == OPERAND_MASK_HIGH) {
+			// If this is the higher component of a symbol.
+			// Most likely the result of a macro expansion. Refer to the macro
+			// expansion logic for the relevant architecture.
+			encoded_instruction->reloc_entries[0].type = R_MIPS_HI16;
+		} else if(imm.flags.mask == OPERAND_MASK_LOW) {
+			encoded_instruction->reloc_entries[0].type = R_MIPS_LO16;
+		}
+
 		encoded_instruction->reloc_entries[0].symbol = symbol;
 		encoded_instruction->reloc_entries[0].offset = program_counter;
 	} else {
 		// If the immediate is of any other type, it is an error.
+		// @ERROR
 		printf("BAD IMM TYPE: `%u` - `%u`\n", opcode, imm.type);
 		return NULL;
 	}
@@ -155,6 +170,7 @@ Encoding_Entity *encode_j_type(Symbol_Table *symtab,
 
 		immediate = symbol->offset;
 	} else {
+		// @ERROR
 		printf("BAD REG TYPE: `%u`\n", imm.type);
 		return NULL;
 	}
