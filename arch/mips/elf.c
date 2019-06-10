@@ -1,3 +1,12 @@
+/**
+ * @file elf.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Architecture specific ELF encoding functions.
+ * Contains architecture specific functions for encoding specific ELF entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <as.h>

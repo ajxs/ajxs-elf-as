@@ -1,3 +1,13 @@
+/**
+ * @file main.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Main application entry point.
+ * Contains the main application entry point and the application logic for
+ * managing input options.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #define _GNU_SOURCE
 
 #include <stddef.h>
