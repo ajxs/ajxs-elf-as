@@ -58,7 +58,7 @@ Encoding_Entity *encode_offset_type(uint8_t opcode,
 
 	// Truncate to 16bits.
 	uint16_t offset = offset_reg.offset & 0xFFFF;
-	uint8_t base = encode_operand_register(offset_reg.value.reg);
+	uint8_t base = encode_operand_register(offset_reg.reg);
 
 	uint32_t encoding = opcode << 26;
 	encoding |= base << 21;
@@ -96,12 +96,12 @@ Encoding_Entity *encode_i_type(Symbol_Table *symtab,
 	uint32_t immediate = 0;
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		// If the operand is a numeric literal, the raw value is encoded.
-		immediate = imm.value.numeric_literal;
+		immediate = imm.numeric_literal;
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
 		// If the operand is a symbolic reference, we encode the immediate value
 		// as the symbol's offset, and then create a relocation entry so that the
 		// symbol can be linked correctly.
-		Symbol *symbol = symtab_find_symbol(symtab, imm.value.symbol);
+		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
 		immediate = symbol->offset;
 
 		encoded_instruction->n_reloc_entries = 1;
@@ -142,9 +142,9 @@ Encoding_Entity *encode_j_type(Symbol_Table *symtab,
 
 	uint32_t immediate = 0;
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
-		immediate = imm.value.numeric_literal;
+		immediate = imm.numeric_literal;
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
-		Symbol *symbol = symtab_find_symbol(symtab, imm.value.symbol);
+		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
 
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
@@ -203,9 +203,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x20);
 			break;
 		case OPCODE_ADDI:
@@ -213,8 +213,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0x8, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -223,8 +223,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0x9, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -233,9 +233,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x21);
 			break;
 		case OPCODE_AND:
@@ -243,9 +243,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x24);
 			break;
 		case OPCODE_ANDI:
@@ -253,8 +253,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0xC, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -271,8 +271,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0x4, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -281,8 +281,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0x14, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -291,8 +291,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0x5, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -320,8 +320,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			if(instruction.opseq.n_operands == 1) {
 				rd = 0x1F;
 			} else {
-				rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-				rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
+				rd = encode_operand_register(instruction.opseq.operands[0].reg);
+				rs = encode_operand_register(instruction.opseq.operands[1].reg);
 			}
 
 			encoded_entity = encode_r_type(0, rd, rs, 0, 0, 0x9);
@@ -331,7 +331,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_r_type(0, 0, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_LB:
@@ -339,7 +339,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x20, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_LBU:
@@ -347,7 +347,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x24, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_LUI:
@@ -355,7 +355,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_i_type(symtab, 0xF, 0, rt,
 				instruction.opseq.operands[1], program_counter);
 			break;
@@ -364,7 +364,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x23, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_MUH:
@@ -372,15 +372,15 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x18);
 			break;
 		case OPCODE_MUHU:
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x19);
 			break;
 		case OPCODE_MUL:
@@ -388,9 +388,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x18);
 			break;
 		case OPCODE_MULU:
@@ -398,9 +398,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x19);
 			break;
 		case OPCODE_NOP:
@@ -415,9 +415,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x25);
 			break;
 		case OPCODE_ORI:
@@ -425,8 +425,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rs = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[1].value.reg);
+			rs = encode_operand_register(instruction.opseq.operands[0].reg);
+			rt = encode_operand_register(instruction.opseq.operands[1].reg);
 			encoded_entity = encode_i_type(symtab, 0xD, rs, rt,
 				instruction.opseq.operands[2], program_counter);
 			break;
@@ -435,7 +435,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x28, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_SH:
@@ -443,7 +443,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x29, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_SLL:
@@ -451,9 +451,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			sa = instruction.opseq.operands[2].value.numeric_literal;
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			sa = instruction.opseq.operands[2].numeric_literal;
 			encoded_entity = encode_r_type(0, rd, 0, rt, sa, 0x0);
 			break;
 		case OPCODE_SUB:
@@ -461,9 +461,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x22);
 			break;
 		case OPCODE_SUBU:
@@ -471,9 +471,9 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rd = encode_operand_register(instruction.opseq.operands[0].value.reg);
-			rs = encode_operand_register(instruction.opseq.operands[1].value.reg);
-			rt = encode_operand_register(instruction.opseq.operands[2].value.reg);
+			rd = encode_operand_register(instruction.opseq.operands[0].reg);
+			rs = encode_operand_register(instruction.opseq.operands[1].reg);
+			rt = encode_operand_register(instruction.opseq.operands[2].reg);
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x23);
 			break;
 		case OPCODE_SW:
@@ -481,7 +481,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				return NULL;
 			}
 
-			rt = encode_operand_register(instruction.opseq.operands[0].value.reg);
+			rt = encode_operand_register(instruction.opseq.operands[0].reg);
 			encoded_entity = encode_offset_type(0x2B, rt, instruction.opseq.operands[1]);
 			break;
 		case OPCODE_SYSCALL:
@@ -528,11 +528,11 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 		case DIRECTIVE_ASCII:
 			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
 				// Iterate through each string operand.
-				string_len = strlen(directive->opseq.operands[i].value.string_literal);
+				string_len = strlen(directive->opseq.operands[i].string_literal);
 				curr_pos = total_len;
 				total_len += string_len;
 				data = realloc(data, total_len);
-				memcpy(data + curr_pos, &directive->opseq.operands[i].value.string_literal, string_len);
+				memcpy(data + curr_pos, &directive->opseq.operands[i].string_literal, string_len);
 			}
 
 			encoded_entity->size = total_len;
@@ -541,12 +541,12 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 		case DIRECTIVE_STRING:
 		case DIRECTIVE_ASCIZ:
 			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
-				string_len = strlen(directive->opseq.operands[i].value.string_literal);
+				string_len = strlen(directive->opseq.operands[i].string_literal);
 				curr_pos = total_len;
 				total_len += (1 + string_len);    // Take NUL terminator into account.
 
 				data = realloc(data, total_len);
-				memcpy(data + curr_pos, directive->opseq.operands[i].value.string_literal, string_len);
+				memcpy(data + curr_pos, directive->opseq.operands[i].string_literal, string_len);
 
 				// Add NUL terminator.
 				data[total_len - 1] = '\0';
@@ -575,7 +575,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 				// Create an array of each of the word operands.
 				if(directive->opseq.operands[i].type == OPERAND_TYPE_SYMBOL) {
 					Symbol *symbol =
-							symtab_find_symbol(symtab, directive->opseq.operands[i].value.string_literal);
+							symtab_find_symbol(symtab, directive->opseq.operands[i].string_literal);
 
 					if(!symbol) {
 						printf("DEAD\n");
@@ -583,7 +583,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 					word_data[i] = symbol->offset;
 				} else if(directive->opseq.operands[i].type == OPERAND_TYPE_NUMERIC_LITERAL) {
-					word_data[i] = directive->opseq.operands[i].value.numeric_literal;
+					word_data[i] = directive->opseq.operands[i].numeric_literal;
 				} else {
 					printf("Invaliddddddd\n");
 				}

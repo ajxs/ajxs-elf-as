@@ -82,13 +82,13 @@ void print_directive_type(Directive dir) {
 
 void print_operand(Operand op) {
 	if(op.type == OPERAND_TYPE_NUMERIC_LITERAL) {
-		printf("      Operand: Numeric Literal: `%i`", op.value.numeric_literal);
+		printf("      Operand: Numeric Literal: `%i`", op.numeric_literal);
 	} else if(op.type == OPERAND_TYPE_STRING_LITERAL) {
-		printf("      Operand: String Literal: `%s`", op.value.string_literal);
+		printf("      Operand: String Literal: `%s`", op.string_literal);
 	} else if(op.type == OPERAND_TYPE_SYMBOL) {
-		printf("      Operand: Symbol Reference: `%s`", op.value.symbol);
+		printf("      Operand: Symbol Reference: `%s`", op.symbol);
 	} else if(op.type == OPERAND_TYPE_REGISTER) {
-		printf("      Operand: Register: `%i`", op.value.reg);
+		printf("      Operand: Register: `%i`", op.reg);
 	} else {
 		printf("      Unknown Operand Type");
 	}

@@ -22,9 +22,9 @@
  */
 void free_operand(Operand *op) {
 	if(op->type == OPERAND_TYPE_STRING_LITERAL) {
-		free(op->value.string_literal);
+		free(op->string_literal);
 	} else if(op->type == OPERAND_TYPE_SYMBOL) {
-		free(op->value.symbol);
+		free(op->symbol);
 	}
 }
 

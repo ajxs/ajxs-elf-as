@@ -198,7 +198,7 @@ operand:
 		operand.type = OPERAND_TYPE_REGISTER;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
 		operand.offset = 0;
-		operand.value.reg = $<reg>1;
+		operand.reg = $<reg>1;
 		$$ = operand;
 	}
 	| '(' REGISTER ')' {
@@ -206,7 +206,7 @@ operand:
 		operand.type = OPERAND_TYPE_REGISTER;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
 		operand.offset = 0;
-		operand.value.reg = $<reg>1;
+		operand.reg = $<reg>1;
 		$$ = operand;
 	}
 	| NUMERIC_LITERAL '(' REGISTER ')' { 
@@ -214,28 +214,28 @@ operand:
 		operand.type = OPERAND_TYPE_REGISTER;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
 		operand.offset = $1;
-		operand.value.reg = $<reg>3;
+		operand.reg = $<reg>3;
 		$$ = operand;
 	}
 	| NUMERIC_LITERAL {
 		Operand operand;
 		operand.type = OPERAND_TYPE_NUMERIC_LITERAL;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
-		operand.value.numeric_literal = $<imm>1;
+		operand.numeric_literal = $<imm>1;
 		$$ = operand;
 	}
 	| STRING_LITERAL {
 		Operand operand;
 		operand.type = OPERAND_TYPE_STRING_LITERAL;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
-		operand.value.string_literal = $<text>1;
+		operand.string_literal = $<text>1;
 		$$ = operand;
 	}
 	| SYMBOL {
 		Operand operand;
 		operand.type = OPERAND_TYPE_SYMBOL;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
-		operand.value.symbol = $<text>1;
+		operand.symbol = $<text>1;
 		$$ = operand;
 	}
 	| MASK '(' SYMBOL ')' {
@@ -243,7 +243,7 @@ operand:
 		operand.type = OPERAND_TYPE_SYMBOL;
 		operand.flags = DEFAULT_OPERAND_FLAGS;
 		operand.flags.mask = $<mask>1;
-		operand.value.symbol = $<text>3;
+		operand.symbol = $<text>3;
 		$$ = operand;
 	}
 	;

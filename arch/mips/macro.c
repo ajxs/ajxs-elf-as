@@ -58,14 +58,12 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		expansion->instruction.opcode = OPCODE_ORI;
 		expansion->instruction.opseq.n_operands = 3;
 		expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
-		expansion->instruction.opseq.operands[0] =
-			macro->instruction.opseq.operands[0];
-		expansion->instruction.opseq.operands[1] =
-			macro->instruction.opseq.operands[0];
+		expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
+		expansion->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
 
 		expansion->instruction.opseq.operands[2].type = OPERAND_TYPE_SYMBOL;
-		expansion->instruction.opseq.operands[2].value.symbol =
-			strdup(macro->instruction.opseq.operands[1].value.symbol);
+		expansion->instruction.opseq.operands[2].symbol =
+			strdup(macro->instruction.opseq.operands[1].symbol);
 
 		expansion->instruction.opseq.operands[2].flags.mask = OPERAND_MASK_LOW;
 
@@ -82,7 +80,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 	} else if(macro->instruction.opseq.operands[1].type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		// If the Immediate Operand is a numeric literal.
 
-		if(macro->instruction.opseq.operands[1].value.numeric_literal > 0xFFFF) {
+		if(macro->instruction.opseq.operands[1].numeric_literal > 0xFFFF) {
 			// If the immediate value is above 16bits in size, it will be expanded to use
 			// an LUI instruction loading the MSB of the numeric literal, and an ORI
 			// instruction loading the LSB.
@@ -98,16 +96,14 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			// Use the modified operands from the original pseudo-instruction.
 			expansion->instruction.opseq.n_operands = 3;
 			expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
-			expansion->instruction.opseq.operands[0] =
-				macro->instruction.opseq.operands[0];
-			expansion->instruction.opseq.operands[1] =
-				macro->instruction.opseq.operands[0];
+			expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
+			expansion->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
 
 			expansion->instruction.opseq.operands[2].type = OPERAND_TYPE_NUMERIC_LITERAL;
 
 			// Truncate the immediate value to 16bits.
-			expansion->instruction.opseq.operands[2].value.numeric_literal =
-				macro->instruction.opseq.operands[1].value.numeric_literal & 0xFFFF;
+			expansion->instruction.opseq.operands[2].numeric_literal =
+				macro->instruction.opseq.operands[1].numeric_literal & 0xFFFF;
 
 			// Set the expanded second instruction to point at the original next instruction.
 			// This ensures that the instruction is properly 'inserted'.
@@ -117,9 +113,8 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			macro->instruction.opcode = OPCODE_LUI;
 
 			// Use upper 16bits.
-			macro->instruction.opseq.operands[1].value.numeric_literal =
-				(macro->instruction.opseq.operands[1].value.numeric_literal >> 16) &
-				0xFFFF;
+			macro->instruction.opseq.operands[1].numeric_literal =
+				(macro->instruction.opseq.operands[1].numeric_literal >> 16) & 0xFFFF;
 			macro->next = expansion;
 		} else {
 			// If the instruction is below or equal to 16-bits in length, an `ADDIU`
@@ -131,12 +126,10 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			macro->instruction.opseq.operands =
 				realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
 
-			macro->instruction.opseq.operands[2] =
-				macro->instruction.opseq.operands[1];
-			macro->instruction.opseq.operands[1] =
-				macro->instruction.opseq.operands[0];
+			macro->instruction.opseq.operands[2] = macro->instruction.opseq.operands[1];
+			macro->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
 			macro->instruction.opseq.operands[0].type = OPERAND_TYPE_REGISTER;
-			macro->instruction.opseq.operands[0].value.reg = REGISTER_$ZERO;
+			macro->instruction.opseq.operands[0].reg = REGISTER_$ZERO;
 		}
 	} else {
 		// If the original expanded instruction uses any other kind of immediate
@@ -207,7 +200,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	macro->instruction.opseq.operands =
 		realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
 	macro->instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
-	macro->instruction.opseq.operands[2].value.reg = REGISTER_$ZERO;
+	macro->instruction.opseq.operands[2].reg = REGISTER_$ZERO;
 
 	return EXPAND_MACRO_SUCCESS;
 }

@@ -25,7 +25,7 @@ ssize_t get_statement_size(Statement *statement) {
 				return 0;
 			case DIRECTIVE_ASCII:
 				for(size_t i=0; i<statement->directive.opseq.n_operands; i++) {
-					string_len = strlen(statement->directive.opseq.operands[i].value.string_literal);
+					string_len = strlen(statement->directive.opseq.operands[i].string_literal);
 					total_len += string_len;
 				}
 
@@ -34,7 +34,7 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_ASCIZ:
 				for(size_t i=0; i<statement->directive.opseq.n_operands; i++) {
 					// Extra 1 added to account for the trailing NULL byte.
-					string_len = strlen(statement->directive.opseq.operands[i].value.string_literal);
+					string_len = strlen(statement->directive.opseq.operands[i].string_literal);
 					total_len += (string_len + 1);
 				}
 
@@ -48,8 +48,8 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_WORD:
 				return 4;
 			case DIRECTIVE_FILL:
-				count = statement->directive.opseq.operands[0].value.numeric_literal;
-				fill_size = statement->directive.opseq.operands[1].value.numeric_literal;
+				count = statement->directive.opseq.operands[0].numeric_literal;
+				fill_size = statement->directive.opseq.operands[1].numeric_literal;
 				if(fill_size > 8) {
 					// Fill size is capped at 8, as per GAS docs.
 					// https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_7.html#SEC91
@@ -59,7 +59,7 @@ ssize_t get_statement_size(Statement *statement) {
 				return count;
 			case DIRECTIVE_SKIP:
 			case DIRECTIVE_SPACE:
-				return statement->directive.opseq.operands[0].value.numeric_literal;
+				return statement->directive.opseq.operands[0].numeric_literal;
 			default:
 				fprintf(stderr, "NO IDEA\n");
 				return -1;

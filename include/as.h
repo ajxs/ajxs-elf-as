@@ -53,12 +53,12 @@ typedef struct {
 	Operand_Flags flags;
 	Operand_Type type;
 	uint16_t offset;
-	union _operand_value {
+	union {
 		char *string_literal;
 		char *symbol;
 		uint32_t numeric_literal;
 		Register reg;
-	} value;
+	};
 } Operand;
 
 
