@@ -13,6 +13,11 @@
  * recursively.
  */
 void free_statement(Statement *statement) {
+	if(!statement) {
+		// @ERROR
+		return;
+	}
+
 	if(statement->next) {
 		free_statement(statement->next);
 	}

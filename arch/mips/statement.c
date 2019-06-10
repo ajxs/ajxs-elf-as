@@ -7,6 +7,11 @@
 
 
 ssize_t get_statement_size(Statement *statement) {
+	if(!statement) {
+		// @ERROR
+		return -1;
+	}
+
 	size_t total_len = 0;
 	size_t count = 0;
 	size_t fill_size = 0;
@@ -61,13 +66,15 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_SPACE:
 				return statement->directive.opseq.operands[0].numeric_literal;
 			default:
-				fprintf(stderr, "NO IDEA\n");
+				// @ERROR
+				fprintf(stderr, "Unknown directive.\n");
 				return -1;
 		}
 	} else if(statement->type == STATEMENT_TYPE_EMPTY) {
 		return 0;
 	} else {
-		fprintf(stderr, "NO IDEA\n");
+		// @ERROR
+		fprintf(stderr, "Unknown statement type.\n");
 		return -1;
 	}
 }

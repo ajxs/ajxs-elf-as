@@ -13,6 +13,10 @@
  */
 Elf32_Ehdr *create_elf_header(void) {
 	Elf32_Ehdr *elf_header = malloc(sizeof(Elf32_Ehdr));
+	if(!elf_header) {
+		// @ERROR
+		return NULL;
+	}
 
 	char EI_IDENT[EI_NIDENT] = {
 		0x7F, 'E', 'L', 'F',

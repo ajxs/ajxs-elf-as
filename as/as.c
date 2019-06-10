@@ -262,6 +262,10 @@ void populate_relocation_entries(Symbol_Table *symtab,
 				// Search for the section by concatenating `.rel` with the section name.
 				size_t curr_section_name_len = strlen(curr_section->name);
 				char *curr_section_rel_name = malloc(5 + curr_section_name_len);
+				if(!curr_section_rel_name) {
+					// @ERROR
+				}
+
 				strcpy(curr_section_rel_name, ".rel");
 				strcpy(curr_section_rel_name + 4, curr_section->name);
 				curr_section_rel_name[curr_section_name_len + 4] = '\0';
@@ -269,6 +273,7 @@ void populate_relocation_entries(Symbol_Table *symtab,
 				/** The section to add the reloc entry to. */
 				Section *curr_section_rel = find_section(sections, curr_section_rel_name);
 				if(!curr_section_rel) {
+					// @ERROR
 					printf("Error: Unable to find relocatable entry section: `%s`\n",
 						curr_section_rel_name);
 				}
@@ -279,6 +284,9 @@ void populate_relocation_entries(Symbol_Table *symtab,
 				for(size_t r=0; r<curr_entity->n_reloc_entries; r++) {
 					// Create the ELF relocatione entry to encode in the file.
 					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
+					if(!rel) {
+						// @ERROR
+					}
 
 					/** The index of the relevant symbol into the symbol table. */
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
@@ -295,6 +303,10 @@ void populate_relocation_entries(Symbol_Table *symtab,
 
 					/** The encoding entity that encodes the relocation entry. */
 					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
+					if(!reloc_entity) {
+						// @ERROR
+					}
+
 					reloc_entity->n_reloc_entries = 0;
 					reloc_entity->reloc_entries = NULL;
 
@@ -328,6 +340,21 @@ void assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
+	if(!sections) {
+		// @ERROR
+		return;
+	}
+
+	if(!symbol_table) {
+		// @ERROR
+		return;
+	}
+
+	if(!statements) {
+		// @ERROR
+		return;
+	}
+
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Begin second pass...\n");
 #endif
@@ -341,8 +368,23 @@ void assemble_second_pass(Section *sections,
 	}
 
 	Section *section_text = find_section(sections, ".text");
+	if(!section_text) {
+		// @ERROR
+		return;
+	}
+
 	Section *section_data = find_section(sections, ".data");
+	if(!section_data) {
+		// @ERROR
+		return;
+	}
+
 	Section *section_bss = find_section(sections, ".bss");
+	if(!section_bss) {
+		// @ERROR
+		return;
+	}
+
 	// Start in the .text section by default.
 	Section *section_current = section_text;
 
@@ -374,20 +416,27 @@ void assemble_second_pass(Section *sections,
 				case DIRECTIVE_ALIGN:
 				case DIRECTIVE_SIZE:
 				case DIRECTIVE_GLOBAL:
-					// Non directly encoded entities.
+					// These entities are not directly encoded.
+					// They represent instructions to the assembler which do not result
+					// in encoded binary entities.
 					break;
 				default:
 					encoding = encode_directive(symbol_table, &curr->directive,
 						section_current->program_counter);
+					if(!encoding) {
+						printf("Error encoding directive.\n");
+						// @ERROR
+					}
+
 					section_current->program_counter += encoding->size;
 					section_add_encoding_entity(section_current, encoding);
 			}
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
-			encoding = encode_instruction(symbol_table, curr->instruction,
+			encoding = encode_instruction(symbol_table, &curr->instruction,
 				section_current->program_counter);
-
 			if(!encoding) {
-				// handle error.
+				printf("Error encoding instruction.\n");
+				// ERROR.
 			}
 
 			section_current->program_counter += encoding->size;
@@ -423,16 +472,46 @@ void assemble_second_pass(Section *sections,
 void populate_symtab(Section *sections,
 	Symbol_Table *symbol_table) {
 
+	if(!sections) {
+		// @ERROR
+		return;
+	}
+
+	if(!symbol_table) {
+		// @ERROR
+		return;
+	}
+
+
 	Section *strtab = find_section(sections, ".strtab");
+	if(!strtab) {
+		// @ERROR
+		return;
+	}
+
 	Section *symtab = find_section(sections, ".symtab");
+	if(!symtab) {
+		// @ERROR
+		return;
+	}
 
 	// Add the initial null byte to strtab as per ELF specification.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
+	if(!null_byte_entity) {
+		// @ERROR
+		return;
+	}
+
 	null_byte_entity->n_reloc_entries = 0;
 	null_byte_entity->reloc_entries = NULL;
 
 	null_byte_entity->size = 1;
 	null_byte_entity->data = malloc(1);
+	if(!null_byte_entity->data) {
+		// @ERROR
+		return;
+	}
+
 	null_byte_entity->data[0] = '\0';
 
 	section_add_encoding_entity(strtab, null_byte_entity);
@@ -479,11 +558,21 @@ void populate_symtab(Section *sections,
 		// Create an encoding entity for each symbol entry, this will be encoded
 		// in the symbol table section during the writing of the section data.
 		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
+		if(!symbol_entry_entity) {
+			// @ERROR
+			return;
+		}
+
 		symbol_entry_entity->n_reloc_entries = 0;
 		symbol_entry_entity->reloc_entries = NULL;
 
 		symbol_entry_entity->size = symbol_entry_size;
 		symbol_entry_entity->data = malloc(symbol_entry_size);
+		if(!symbol_entry_entity->data) {
+			// @ERROR
+			return;
+		}
+
 		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
 			&symbol_entry, symbol_entry_size);
 
@@ -497,12 +586,22 @@ void populate_symtab(Section *sections,
 		// Create an encoding entity for each symbol name, this will be encoded
 		// in the string table during the writing of the section data.
 		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
+		if(!symbol_name_entity) {
+			// @ERROR
+			return;
+		}
+
 		symbol_name_entity->n_reloc_entries = 0;
 		symbol_name_entity->reloc_entries = NULL;
 
 		size_t symbol_name_len = strlen(symbol_table->symbols[i].name) + 1;
 		symbol_name_entity->size = symbol_name_len;
 		symbol_name_entity->data = malloc(symbol_name_len);
+		if(!symbol_name_entity->data) {
+			// @ERROR
+			return;
+		}
+
 		symbol_name_entity->data = memcpy(symbol_name_entity->data,
 			symbol_table->symbols[i].name, symbol_name_len);
 		symbol_name_entity->data[symbol_name_len] = '\0';
@@ -620,7 +719,9 @@ void assemble(const char *input_filename,
 
 	FILE *input_file = fopen(input_filename, "r");
 	if(!input_file) {
+		// @ERROR
 		fprintf(stderr, "Error opening file: %i\n", errno);
+		return;
 	}
 
 	/** The individual statements parsed from the source input file. */
@@ -637,7 +738,10 @@ void assemble(const char *input_filename,
 	// Initialise with room for the null symbol entry.
 	symbol_table.n_entries = 1;
 	symbol_table.symbols = malloc(sizeof(Symbol));
-
+	if(!symbol_table.symbols) {
+		// ERROR
+		return;
+	}
 
 	// Create the null symbol entry.
 	// This is required as per ELF specification.
@@ -647,6 +751,11 @@ void assemble(const char *input_filename,
 	// Create an empty name entry, so as to not disrupt other processes that
 	// require handling of this string.
 	symbol_table.symbols[0].name = malloc(1);
+	if(!symbol_table.symbols[0].name) {
+		// ERROR
+		return;
+	}
+
 	symbol_table.symbols[0].name[0] = '\0';
 
 	/** The binary section data. */
@@ -672,6 +781,10 @@ void assemble(const char *input_filename,
 
 	/** The ELF file header. */
 	Elf32_Ehdr *elf_header = create_elf_header();
+	if(!elf_header) {
+		// @ERROR
+		return;
+	}
 
 	// Find the index into the section header block of the section header
 	// string table. This is needed by the ELF header.
@@ -689,7 +802,9 @@ void assemble(const char *input_filename,
 
 	Section *shstrtab = find_section(sections, ".shstrtab");
 	if(!shstrtab) {
+		// @ERROR
 		printf("Error finding `.shstrtab` section.\n");
+		return;
 	}
 
 	Section *curr_section = sections;
@@ -714,11 +829,21 @@ void assemble(const char *input_filename,
 		// This raw data will be added to the section header string table binary
 		// data and encoded into the final encoded file.
 		Encoding_Entity *string_entity = malloc(sizeof(Encoding_Entity));
+		if(!string_entity) {
+			// @ERROR
+			return;
+		}
+
 		string_entity->n_reloc_entries = 0;
 		string_entity->reloc_entries = NULL;
 
 		string_entity->size = section_name_len;
 		string_entity->data = malloc(section_name_len);
+		if(!string_entity->data) {
+			// @ERROR
+			return;
+		}
+
 		string_entity->data = memcpy(string_entity->data, curr_section->name,
 			section_name_len);
 		string_entity->data[section_name_len] = '\0';
@@ -759,6 +884,7 @@ void assemble(const char *input_filename,
 	// Open the output file.
 	FILE *out_file = fopen(output_filename, "w");
 	if(!out_file) {
+		// @ERROR
 		fprintf(stderr, "Error opening output file: `%u`\n", errno);
 	}
 
@@ -766,6 +892,7 @@ void assemble(const char *input_filename,
 	size_t entity_write_count = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(entity_write_count != 1) {
 		if(ferror(out_file)) {
+			// @ERROR
 			perror("Error writing ELF header.\n");
 		}
 	}
@@ -787,6 +914,7 @@ void assemble(const char *input_filename,
 			// Write each encoding entity contained in each section.
 			entity_write_count = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
 			if(entity_write_count != 1) {
+				// @ERROR
 				if(ferror(out_file)) {
 					perror("Error writing section data.\n");
 				}
@@ -807,10 +935,15 @@ void assemble(const char *input_filename,
 
 		// Encode the section header in the ELF format.
 		Elf32_Shdr *section_header = encode_section_header(curr_section);
+		if(!section_header) {
+			// @ERROR
+			return;
+		}
 
 		// Write each ELF header to the output file.
 		entity_write_count = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(entity_write_count != 1) {
+			// @ERROR
 			if(ferror(out_file)) {
 				perror("Error writing section header data.\n");
 			}

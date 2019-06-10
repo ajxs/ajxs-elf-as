@@ -31,8 +31,26 @@ void symtab_add_symbol(Symbol_Table *symtab,
 	Section *section,
 	size_t offset) {
 
+	if(!symtab) {
+		// @ERROR
+		return;
+	}
+
+	if(!name) {
+		// @ERROR
+		return;
+	}
+
+	if(!section) {
+		// @ERROR
+		return;
+	}
+
 	symtab->n_entries++;
 	symtab->symbols = realloc(symtab->symbols, sizeof(Symbol) * symtab->n_entries);
+	if(!symtab->symbols) {
+		// @ERROR
+	}
 
 	symtab->symbols[symtab->n_entries - 1].name = strdup(name);
 	symtab->symbols[symtab->n_entries - 1].section = section;
@@ -56,6 +74,16 @@ void symtab_add_symbol(Symbol_Table *symtab,
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *name) {
 
+	if(!symtab) {
+		// @ERROR
+		return NULL;
+	}
+
+	if(!name) {
+		// @ERROR
+		return NULL;
+	}
+
 	int name_len = strlen(name);
 	for(size_t i = 0; i < symtab->n_entries; i++) {
 		if(strncmp(name, symtab->symbols[i].name, name_len) == 0) {
@@ -78,6 +106,16 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 	char *name) {
 
+	if(!symtab) {
+		// @ERROR
+		return -1;
+	}
+
+	if(!name) {
+		// @ERROR
+		return -1;
+	}
+
 	int name_len = strlen(name);
 	for(size_t i = 0; i < symtab->n_entries; i++) {
 		if(strncmp(name, symtab->symbols[i].name, name_len) == 0) {
@@ -96,6 +134,12 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
  * @warning Deletes all entries, and the table itself.
  */
 void free_symbol_table(Symbol_Table *symtab) {
+
+	if(!symtab) {
+		// @ERROR
+		return;
+	}
+
 	for(size_t i = 0; i < symtab->n_entries; i++) {
 		free(symtab->symbols[i].name);
 	}

@@ -34,9 +34,9 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 	printf("Debug Macro: Expanding `LA` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, macro->instruction)) {
+	if(!instruction_check_operand_length(2, &macro->instruction)) {
 		// Check operand length is equal to 2, if not abort.
-		// @TODO
+		// @ERROR
 		printf("Operand count mismatch.");
 		return EXPAND_MACRO_FAILURE;
 	}
@@ -51,6 +51,11 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		// Create the expansion instruction.
 		// This instruction will be appended to the original instruction.
 		Statement *expansion = malloc(sizeof(Statement));
+		if(!expansion) {
+			// @ERROR
+			return EXPAND_MACRO_FAILURE;
+		}
+
 		expansion->n_labels = 0;
 		expansion->labels = NULL;
 
@@ -58,6 +63,11 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		expansion->instruction.opcode = OPCODE_ORI;
 		expansion->instruction.opseq.n_operands = 3;
 		expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
+		if(!expansion->instruction.opseq.operands) {
+			// @ERROR
+			return EXPAND_MACRO_FAILURE;
+		}
+
 		expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
 		expansion->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
 
@@ -92,6 +102,11 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 
 			// Create the expansion instruction to store the `ORI` instruction.
 			Statement *expansion = malloc(sizeof(Statement));
+			if(!expansion) {
+				// @ERROR
+				return EXPAND_MACRO_FAILURE;
+			}
+
 			expansion->n_labels = 0;
 			expansion->labels = NULL;
 
@@ -101,6 +116,11 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			// Use the modified operands from the original pseudo-instruction.
 			expansion->instruction.opseq.n_operands = 3;
 			expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
+			if(!expansion->instruction.opseq.operands) {
+				// @ERROR
+				return EXPAND_MACRO_FAILURE;
+			}
+
 			expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
 			expansion->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
 
@@ -130,6 +150,10 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			macro->instruction.opseq.n_operands = 3;
 			macro->instruction.opseq.operands =
 				realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
+			if(!macro->instruction.opseq.operands) {
+				// @ERROR
+				return EXPAND_MACRO_FAILURE;
+			}
 
 			macro->instruction.opseq.operands[2] = macro->instruction.opseq.operands[1];
 			macro->instruction.opseq.operands[1] = macro->instruction.opseq.operands[0];
@@ -161,6 +185,11 @@ Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
 
 	// Create the expansion instruction which will store the inserted `NOP`.
 	Statement *expansion = malloc(sizeof(Statement));
+	if(!expansion) {
+		// @ERROR
+		return EXPAND_MACRO_FAILURE;
+	}
+
 	expansion->n_labels = 0;
 	expansion->labels = NULL;
 
@@ -193,7 +222,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, macro->instruction)) {
+	if(!instruction_check_operand_length(2, &macro->instruction)) {
 		return EXPAND_MACRO_FAILURE;
 	}
 
@@ -204,6 +233,11 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	macro->instruction.opseq.n_operands = 3;
 	macro->instruction.opseq.operands =
 		realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
+	if(!macro->instruction.opseq.operands) {
+		// @ERROR
+		return EXPAND_MACRO_FAILURE;
+	}
+
 	macro->instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
 	macro->instruction.opseq.operands[2].reg = REGISTER_$ZERO;
 

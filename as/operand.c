@@ -21,6 +21,11 @@
  * @param op A pointer to the operand to free.
  */
 void free_operand(Operand *op) {
+	if(!op) {
+		// @ERROR
+		return;
+	}
+
 	if(op->type == OPERAND_TYPE_STRING_LITERAL) {
 		free(op->string_literal);
 	} else if(op->type == OPERAND_TYPE_SYMBOL) {
@@ -36,6 +41,11 @@ void free_operand(Operand *op) {
  * @param opseq A pointer to the operand sequence to free.
  */
 void free_operand_sequence(Operand_Sequence *opseq) {
+	if(!opseq) {
+		// @ERROR
+		return;
+	}
+
 	for(size_t i=0; i < opseq->n_operands; i++) {
 		free_operand(&opseq->operands[i]);
 	}

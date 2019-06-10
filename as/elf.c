@@ -5,6 +5,10 @@
 
 Elf32_Shdr *encode_section_header(Section *section) {
 	Elf32_Shdr *section_header = malloc(sizeof(Elf32_Shdr));
+	if(!section_header) {
+		// @ERROR
+		return NULL;
+	}
 
 	section_header->sh_name = section->name_strtab_offset;
 	section_header->sh_type = section->type;

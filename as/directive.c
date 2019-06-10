@@ -19,6 +19,11 @@
  * @param directive The directive to free.
  */
 void free_directive(Directive *directive) {
+	if(!directive) {
+		// @ERROR
+		return;
+	}
+
 	free_operand_sequence(&directive->opseq);
 }
 
@@ -31,6 +36,11 @@ void free_directive(Directive *directive) {
  * @return A directive type.
  */
 Directive_Type parse_directive_symbol(char *directive_symbol) {
+	if(!directive_symbol) {
+		// @ERROR
+		return DIRECTIVE_UNKNOWN;
+	}
+
 	if(!strncasecmp(directive_symbol, ".asciiz", 7) ||
 		!strncasecmp(directive_symbol, ".asciz", 6)) {
 		return DIRECTIVE_ASCIZ;

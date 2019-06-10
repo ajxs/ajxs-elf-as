@@ -1,9 +1,33 @@
+/**
+ * @file print.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Functions for printing information about entities.
+ * Functions for printing debugging information about various program entities.
+ * Contains functions for identifying and printing instructions/directives and
+ * operands/arguments.
+ * These functions are for debugging purposes, and will print their output to
+ * STDOUT.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <as.h>
 
 
+/**
+ * @brief Prints a statement.
+ *
+ * This function prints information about a statement entity.
+ * @param statement The statement to print.
+ */
 void print_statement(Statement *statement) {
+	if(!statement) {
+		// @ERROR
+		return;
+	}
+
 	printf("Debug Parser: Statement: Type: `%i`\n", statement->type);
 	if(statement->n_labels > 0) {
 		printf("  Labels: `%zu`:\n", statement->n_labels);
@@ -20,6 +44,12 @@ void print_statement(Statement *statement) {
 }
 
 
+/**
+ * @brief Prints an instruction.
+ *
+ * This function prints information about an instruction entity.
+ * @param instruction The instruction to print.
+ */
 void print_instruction(Instruction instruction) {
 	printf("  Instruction: Opcode: `");
 	print_opcode(instruction.opcode);
@@ -30,6 +60,12 @@ void print_instruction(Instruction instruction) {
 }
 
 
+/**
+ * @brief Prints a directive.
+ *
+ * This function prints information about a directive entity.
+ * @param dir The directive to print.
+ */
 void print_directive(Directive dir) {
 	printf("  Directive: Type: `");
 	print_directive_type(dir);
@@ -41,6 +77,12 @@ void print_directive(Directive dir) {
 }
 
 
+/**
+ * @brief Prints a directive type.
+ *
+ * This function identifies and prints the type of a directive entity.
+ * @param dir The directive to print the type of.
+ */
 void print_directive_type(Directive dir) {
 	if(dir.type == DIRECTIVE_ALIGN) {
 		printf(".align");
@@ -80,6 +122,12 @@ void print_directive_type(Directive dir) {
 }
 
 
+/**
+ * @brief Prints an instruction operand.
+ *
+ * This function prints information about an instruction operand.
+ * @param op The operand to print information about.
+ */
 void print_operand(Operand op) {
 	if(op.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		printf("      Operand: Numeric Literal: `%i`", op.numeric_literal);
@@ -109,6 +157,12 @@ void print_operand(Operand op) {
 }
 
 
+/**
+ * @brief Prints an operand sequence.
+ *
+ * This function prints an operand sequence entity, printing each operand.
+ * @param opseq The operand sequence to print.
+ */
 void print_operand_sequence(Operand_Sequence opseq) {
 	printf("    Operand sequence: len: `%zu`\n", opseq.n_operands);
 	for(size_t i=0; i<opseq.n_operands; i++) {
@@ -117,6 +171,12 @@ void print_operand_sequence(Operand_Sequence opseq) {
 }
 
 
+/**
+ * @brief Prints an operand.
+ *
+ * This function prints information about an operand.
+ * @param op The operand to print.
+ */
 void print_opcode(Opcode op) {
 	if(op == OPCODE_ADDIU) {
 		printf("addiu");

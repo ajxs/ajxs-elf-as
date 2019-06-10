@@ -1,5 +1,5 @@
 CC=gcc
-CC_FLAGS:=-std=gnu11 -O2 -Wall -Wextra -Wmissing-prototypes \
+CC_FLAGS:=-std=gnu11 -O2 -g -Wall -Wextra -Wmissing-prototypes \
 	-Wstrict-prototypes
 
 CC_INCLUDES=include arch/${ARCH}/include

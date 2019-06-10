@@ -34,9 +34,9 @@ void free_instruction(Instruction *instruction) {
  * @return A boolean indicating whether the operand count matches the  expected count.
  */
 bool instruction_check_operand_length(size_t expected_operand_length,
-	Instruction instruction) {
+	Instruction *instruction) {
 
-	if(instruction.opseq.n_operands != expected_operand_length) {
+	if(instruction->opseq.n_operands != expected_operand_length) {
 		return false;
 	} else {
 		return true;

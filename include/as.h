@@ -182,7 +182,7 @@ void print_statement(Statement *statement);
 void print_opcode(Opcode op);
 
 bool instruction_check_operand_length(size_t expected_operand_length,
-	Instruction instruction);
+	Instruction *instruction);
 
 
 Statement *scan_string(const char *str);
@@ -205,7 +205,7 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 void expand_macros(Statement *statements);
 
 Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
-	Instruction instruction,
+	Instruction *instruction,
 	size_t program_counter);
 
 Encoding_Entity *encode_directive(Symbol_Table *symtab,
