@@ -260,3 +260,21 @@ void print_opcode(Opcode op) {
 		printf("Unknown opcode: %u", op);
 	}
 }
+
+
+/**
+ * @brief Prints a symbol table.
+ *
+ * This function prints all of the entries inside a symbol table.
+ * @param symbol_table The symbol table to print.
+ */
+void print_symbol_table(Symbol_Table *symbol_table) {
+	for(size_t i = 0; i < symbol_table->n_entries; i++) {
+		if(symbol_table->symbols[i].section) {
+			// Allow for null symbol entry.
+			printf("  Symbol: `%s`", symbol_table->symbols[i].name);
+			printf(" in section `%s`", symbol_table->symbols[i].section->name);
+			printf(" at `%#zx`\n", symbol_table->symbols[i].offset);
+		}
+	}
+}

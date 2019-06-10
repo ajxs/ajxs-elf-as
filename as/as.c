@@ -81,6 +81,7 @@ Section *initialise_sections(void) {
 	// table section to the string table section.
 	ssize_t section_strtab_index = find_section_index(sections, ".strtab");
 	if(section_strtab_index == -1) {
+		// @ERROR
 		printf("Error linking .symtab to .strtab.");
 	}
 
@@ -90,6 +91,7 @@ Section *initialise_sections(void) {
 	// entry section to it.
 	ssize_t section_data_index = find_section_index(sections, ".data");
 	if(section_data_index == -1) {
+		// @ERROR
 		printf("Error linking .rel.data to .data.");
 	}
 
@@ -100,6 +102,7 @@ Section *initialise_sections(void) {
 	// entry section to it.
 	ssize_t section_text_index = find_section_index(sections, ".text");
 	if(section_text_index == -1) {
+		// @ERROR
 		printf("Error linking .rel.text to .text.");
 	}
 
@@ -110,6 +113,7 @@ Section *initialise_sections(void) {
 	// sections to it.
 	ssize_t section_symtab_index = find_section_index(sections, ".symtab");
 	if(section_symtab_index == -1) {
+		// @ERROR
 		printf("Error linking relocatable sections to .symtab.");
 	}
 
@@ -131,7 +135,7 @@ Section *initialise_sections(void) {
  * @param statements A pointer to the parsed statement linked list.
  * @warning This function modifies the symbol table.
  */
-void assemble_first_pass(Section *sections,
+Assemble_Pass_Status assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
@@ -141,17 +145,20 @@ void assemble_first_pass(Section *sections,
 
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
-		printf("Error finding section: `.text`\n");
+		set_error_message("Unable to locate .text section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_text) {
-		printf("Error finding section: `.data`\n");
+		set_error_message("Unable to locate .data section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_text) {
-		printf("Error finding section: `.bss`\n");
+		set_error_message("Unable to locate .bss section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	// Start in the .text section by default.
@@ -164,8 +171,12 @@ void assemble_first_pass(Section *sections,
 		// Since a label _can_ precede a section directive, but not the other way around.
 		if(curr->labels) {
 			for(size_t i = 0; i < curr->n_labels; i++) {
-				symtab_add_symbol(symbol_table, curr->labels[i], section_current,
+				Symbol *added_sybmol = symtab_add_symbol(symbol_table, curr->labels[i], section_current,
 					section_current->program_counter);
+				if(!added_sybmol) {
+					// Error should already have been set.
+					return ASSEMBLE_FAILURE;
+				}
 			}
 		}
 
@@ -186,36 +197,16 @@ void assemble_first_pass(Section *sections,
 		/** The encoded size of the statement. */
 		ssize_t statement_size = get_statement_size(curr);
 		if(statement_size == -1) {
-			printf("Error getting statement size for ");
-			if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
-				printf("directive `");
-				print_directive_type(curr->directive);
-				printf("`.\n");
-			} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
-				printf("instruction `");
-				print_opcode(curr->instruction.opcode);
-				printf("`.\n");
-			} else {
-				printf("empty statement.\n");
-			}
+			// Error should already have been set.
+			return ASSEMBLE_FAILURE;
 		}
 
 #if DEBUG_ASSEMBLER == 1
-		printf("Debug Assembler: Calculated size `0x%lx` for ", statement_size);
-		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
-			printf("directive `");
-			print_directive_type(curr->directive);
-			printf("`.\n");
-		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
-			printf("instruction `");
-			print_opcode(curr->instruction.opcode);
-			printf("`.\n");
-		} else {
-			printf("empty statement.\n");
-		}
+		printf("Debug Assembler: Calculated size `0x%lx` for statement.\n", statement_size);
 #endif
 
-		// Increment the program counter by the size of the statement found.
+		// Increment the current section's program counter by the size of the
+		// statement that has been computed.
 		section_current->program_counter += (size_t)statement_size;
 		curr = curr->next;
 	}
@@ -224,15 +215,10 @@ void assemble_first_pass(Section *sections,
 #if DEBUG_SYMBOLS == 1
 	// Print the symbol table.
 	printf("Debug Assembler: Symbol Table:\n");
-	for(size_t i = 0; i < symbol_table->n_entries; i++) {
-		if(symbol_table->symbols[i].section) {
-			// Allow for null symbol entry.
-			printf("  Symbol: `%s`", symbol_table->symbols[i].name);
-			printf(" in section `%s`", symbol_table->symbols[i].section->name);
-			printf(" at `%#zx`\n", symbol_table->symbols[i].offset);
-		}
-	}
+	print_symbol_table(symbol_table);
 #endif
+
+	return ASSEMBLE_SUCCESS;
 }
 
 
@@ -250,6 +236,9 @@ void assemble_first_pass(Section *sections,
  */
 void populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections) {
+
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
 
 	Section *curr_section = sections;
 	while(curr_section) {
@@ -315,7 +304,10 @@ void populate_relocation_entries(Symbol_Table *symtab,
 					reloc_entity->next = NULL;
 
 					// Add the relocatable entry to the relevant section.
-					section_add_encoding_entity(curr_section_rel, reloc_entity);
+					added_entity = section_add_encoding_entity(curr_section_rel, reloc_entity);
+					if(!added_entity) {
+						// @ERROR
+					}
 				}
 			}
 
@@ -337,23 +329,23 @@ void populate_relocation_entries(Symbol_Table *symtab,
  * @param statements A pointer to the parsed statement linked list.
  * @warning This function modifies the sections.
  */
-void assemble_second_pass(Section *sections,
+Assemble_Pass_Status assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
 	if(!sections) {
-		// @ERROR
-		return;
+		set_error_message("Invalid section data.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	if(!symbol_table) {
-		// @ERROR
-		return;
+		set_error_message("Invalid symbol table data.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	if(!statements) {
-		// @ERROR
-		return;
+		set_error_message("Invalid statement data.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 #if DEBUG_ASSEMBLER == 1
@@ -370,20 +362,20 @@ void assemble_second_pass(Section *sections,
 
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
-		// @ERROR
-		return;
+		set_error_message("Unable to locate .text section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_data) {
-		// @ERROR
-		return;
+		set_error_message("Unable to locate .data section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_bss) {
-		// @ERROR
-		return;
+		set_error_message("Unable to locate .bss section.\n");
+		return ASSEMBLE_FAILURE;
 	}
 
 	// Start in the .text section by default.
@@ -392,6 +384,8 @@ void assemble_second_pass(Section *sections,
 	Statement *curr = statements;
 
 	Encoding_Entity *encoding = NULL;
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
@@ -425,23 +419,32 @@ void assemble_second_pass(Section *sections,
 					encoding = encode_directive(symbol_table, &curr->directive,
 						section_current->program_counter);
 					if(!encoding) {
-						printf("Error encoding directive.\n");
-						// @ERROR
+						// Error message should already be set in the encode function.
+						return ASSEMBLE_FAILURE;
 					}
 
 					section_current->program_counter += encoding->size;
-					section_add_encoding_entity(section_current, encoding);
+					added_entity = section_add_encoding_entity(section_current, encoding);
+					if(!added_entity) {
+						// Error message should already be set in the encode function.
+						return ASSEMBLE_FAILURE;
+					}
+
 			}
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 			encoding = encode_instruction(symbol_table, &curr->instruction,
 				section_current->program_counter);
 			if(!encoding) {
-				printf("Error encoding instruction.\n");
-				// ERROR.
+				// Error message should already be set in the encode function.
+				return ASSEMBLE_FAILURE;
 			}
 
 			section_current->program_counter += encoding->size;
-			section_add_encoding_entity(section_current, encoding);
+			added_entity = section_add_encoding_entity(section_current, encoding);
+			if(!added_entity) {
+				// Error message should already be set in the encode function.
+				return ASSEMBLE_FAILURE;
+			}
 		}
 
 		curr = curr->next;
@@ -456,6 +459,8 @@ void assemble_second_pass(Section *sections,
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Finished second pass.\n");
 #endif
+
+	return ASSEMBLE_SUCCESS;
 }
 
 
@@ -496,6 +501,9 @@ void populate_symtab(Section *sections,
 		return;
 	}
 
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
+
 	// Add the initial null byte to strtab as per ELF specification.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
 	if(!null_byte_entity) {
@@ -517,7 +525,10 @@ void populate_symtab(Section *sections,
 
 	null_byte_entity->next = NULL;
 
-	section_add_encoding_entity(strtab, null_byte_entity);
+	added_entity = section_add_encoding_entity(strtab, null_byte_entity);
+	if(!added_entity) {
+		// @ERROR
+	}
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Added null byte to .strtab.\n");
@@ -581,7 +592,10 @@ void populate_symtab(Section *sections,
 
 		symbol_entry_entity->next = NULL;
 
-		section_add_encoding_entity(symtab, symbol_entry_entity);
+		added_entity = section_add_encoding_entity(symtab, symbol_entry_entity);
+		if(!added_entity) {
+			// @ERROR
+		}
 
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Adding symbol: `%s` to .symtab at offset `0x%lx`...\n",
@@ -613,7 +627,10 @@ void populate_symtab(Section *sections,
 
 		symbol_name_entity->next = NULL;
 
-		section_add_encoding_entity(strtab, symbol_name_entity);
+		added_entity = section_add_encoding_entity(strtab, symbol_name_entity);
+		if(!added_entity) {
+			// @ERROR
+		}
 
 #if DEBUG_OUTPUT == 1
 		printf("Debug Output: Added symbol name: `%s` to .strtab at offset `0x%lx`.\n",
@@ -740,9 +757,13 @@ void assemble(const char *input_filename,
 
 	/** The individual statements parsed from the source input file. */
 	Statement *program_statements = read_input(input_file);
+	if(!program_statements) {
+		// @ERROR.
+	}
 
 	int close_status = fclose(input_file);
 	if(close_status) {
+		// @ERROR.
 		fprintf(stderr, "Error closing file handler: %u! Exiting.\n", errno);
 	}
 
@@ -774,6 +795,9 @@ void assemble(const char *input_filename,
 
 	/** The binary section data. */
 	Section *sections = initialise_sections();
+	if(!sections) {
+		// @ERROR.
+	}
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Beginning macro expansion...\n");
@@ -783,11 +807,18 @@ void assemble(const char *input_filename,
 	expand_macros(program_statements);
 
 	// Begin the first assembler pass. Populating the symbol table.
-	assemble_first_pass(sections, &symbol_table, program_statements);
+	Assemble_Pass_Status first_pass_status = assemble_first_pass(sections,
+		&symbol_table, program_statements);
+	if(first_pass_status == ASSEMBLE_FAILURE) {
+		// @ERROR.
+	}
 
 	// Begin the second assembler pass, which handles code generation.
-	assemble_second_pass(sections, &symbol_table, program_statements);
-
+	Assemble_Pass_Status second_pass_status = assemble_second_pass(sections,
+		&symbol_table, program_statements);
+	if(second_pass_status == ASSEMBLE_FAILURE) {
+		// @ERROR.
+	}
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Assembler: Freeing parsed statements...\n");
@@ -811,6 +842,7 @@ void assemble(const char *input_filename,
 	// string table. This is needed by the ELF header.
 	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
 	if(section_shstrtab_index == -1) {
+		// @ERROR.
 		printf("Error finding `.shstrtab` index.\n");
 	}
 
@@ -827,6 +859,9 @@ void assemble(const char *input_filename,
 		printf("Error finding `.shstrtab` section.\n");
 		return;
 	}
+
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
 
 	Section *curr_section = sections;
 	while(curr_section) {
@@ -872,7 +907,10 @@ void assemble(const char *input_filename,
 		string_entity->next = NULL;
 
 		// Add the encoded string to the `shstrtab` section.
-		section_add_encoding_entity(shstrtab, string_entity);
+		added_entity = section_add_encoding_entity(shstrtab, string_entity);
+		if(!added_entity) {
+			// @ERROR
+		}
 
 		curr_section = curr_section->next;
 	}
@@ -981,11 +1019,7 @@ void assemble(const char *input_filename,
 	printf("Debug Assembler: Cleaning up main program.\n");
 #endif
 
-#if DEBUG_ASSEMBLER == 1
-	printf("Debug Assembler: Closing output file...\n");
-#endif
-
-	fclose(out_file);
+FAIL_CLOSE_FILE:
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing statements...\n");
@@ -994,10 +1028,19 @@ void assemble(const char *input_filename,
 	free(elf_header);
 
 #if DEBUG_ASSEMBLER == 1
+	printf("Debug Assembler: Closing output file...\n");
+#endif
+	fclose(out_file);
+
+FAIL_FREE_SYMBOL_TABLE:
+
+#if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing Symbol Table...\n");
 #endif
 
 	free_symbol_table(&symbol_table);
+
+FAIL_FREE_SECTIONS:
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing sections...\n");

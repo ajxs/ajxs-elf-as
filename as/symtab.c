@@ -26,30 +26,31 @@
  * @warning @p symtab is modified in this function. The symbol entry array
  * is resized to accomodate the new symbol.
  */
-void symtab_add_symbol(Symbol_Table *symtab,
+Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	char *name,
 	Section *section,
 	size_t offset) {
 
 	if(!symtab) {
-		// @ERROR
-		return;
+		set_error_message("Error adding symbol: Invalid symbol table data.\n");
+		return NULL;
 	}
 
 	if(!name) {
-		// @ERROR
-		return;
+		set_error_message("Error adding symbol: Invalid symbol name.\n");
+		return NULL;
 	}
 
 	if(!section) {
-		// @ERROR
-		return;
+		set_error_message("Error adding symbol: Invalid section data.\n");
+		return NULL;
 	}
 
 	symtab->n_entries++;
 	symtab->symbols = realloc(symtab->symbols, sizeof(Symbol) * symtab->n_entries);
 	if(!symtab->symbols) {
-		// @ERROR
+		set_error_message("Error adding symbol: Unable to resize symbol table array.\n");
+		return NULL;
 	}
 
 	symtab->symbols[symtab->n_entries - 1].name = strdup(name);
@@ -60,6 +61,8 @@ void symtab_add_symbol(Symbol_Table *symtab,
 	printf("Debug Assembler: Added symbol `%s` in section `%s` at `%#zx`\n",
 		name, section->name, offset);
 #endif
+
+	return &symtab->symbols[symtab->n_entries - 1];
 }
 
 

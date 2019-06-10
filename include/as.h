@@ -27,6 +27,26 @@
 #define DEBUG_PARSED_STATEMENTS 1
 #define DEBUG_SYMBOLS 1
 
+#define ERROR_MSG_MAX_LEN 256
+
+char error_msg[ERROR_MSG_MAX_LEN];
+
+void set_error_message(const char *error);
+void print_error(void);
+
+
+/**
+ * @brief The result of a macro expansion.
+ *
+ * Indicates the result of the expansion of a macro. The expansion functions
+ * do not return an actual value, so this is used to track the success of
+ * the expansion operation.
+ */
+typedef enum _expand_macro_status_result {
+	EXPAND_MACRO_FAILURE,
+	EXPAND_MACRO_SUCCESS,
+} Expand_Macro_Result_Status;
+
 
 typedef enum { OPERAND_MASK_NONE, OPERAND_MASK_HIGH, OPERAND_MASK_LOW } Operand_Mask;
 
@@ -181,6 +201,7 @@ void print_directive(Directive dir);
 void print_directive_type(Directive dir);
 void print_statement(Statement *statement);
 void print_opcode(Opcode op);
+void print_symbol_table(Symbol_Table *symbol_table);
 
 bool instruction_check_operand_length(size_t expected_operand_length,
 	Instruction *instruction);
@@ -219,15 +240,28 @@ void assemble(const char *input_filename,
 	const char *output_filename,
 	bool verbose);
 
-void assemble_first_pass(Section *sections,
+
+/**
+ * @brief The result of an assembler pass.
+ *
+ * Indicates the result of an assembler pass. The assembler pass functions
+ * do not return an actual value, so this is used to track the success of
+ * the operation.
+ */
+typedef enum _assemble_pass_status {
+	ASSEMBLE_FAILURE,
+	ASSEMBLE_SUCCESS,
+} Assemble_Pass_Status;
+
+Assemble_Pass_Status assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements);
 
-void assemble_second_pass(Section *sections,
+Assemble_Pass_Status assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements);
 
-void symtab_add_symbol(Symbol_Table *symtab,
+Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	char *name,
 	Section *section,
 	size_t offset);
@@ -253,12 +287,13 @@ Section *find_section(Section *section_list,
 ssize_t find_section_index(Section *section_list,
 	const char *name);
 
-void section_add_encoding_entity(Section *section,
+Encoding_Entity *section_add_encoding_entity(Section *section,
 	Encoding_Entity *entity);
 
 void free_encoding_entity(Encoding_Entity *entity);
 
 Elf32_Ehdr *create_elf_header(void);
 Elf32_Shdr *encode_section_header(Section *section);
+
 
 #endif

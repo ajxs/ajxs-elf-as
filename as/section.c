@@ -137,30 +137,44 @@ ssize_t find_section_index(Section *section_list,
  * @param section A pointer to the program section to add the encoded
  * entity to.
  * @param entity The encoded entity to add to the section.
+ * @return Returns the added encoding entity or NULL in the case of error.
  */
-void section_add_encoding_entity(Section *section,
+Encoding_Entity *section_add_encoding_entity(Section *section,
 	Encoding_Entity *entity) {
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Adding encoded entity to `%s`...\n", section->name);
 #endif
 
+	if(!section) {
+		set_error_message("Error adding symbol: Invalid section data.\n");
+		return NULL;
+	}
+
+	if(!entity) {
+		set_error_message("Error adding symbol: Invalid encoding entity.\n");
+		return NULL;
+	}
+
 	if(!section->encoding_entities) {
 		// If there is no current head of the encoded entities linked list.
 		section->encoding_entities = entity;
 		section->size += entity->size;
-	} else {
-		// If there is an encoded entities linked list, append the new entity
-		// to the end of the list.
-		Encoding_Entity *current_entity = section->encoding_entities;
-		section->size += entity->size;
 
-		while(current_entity->next != NULL) {
-			current_entity = current_entity->next;
-		}
-
-		current_entity->next = entity;
+		return section->encoding_entities;
 	}
+
+	// If there is an encoded entities linked list, append the new entity
+	// to the end of the list.
+	Encoding_Entity *current_entity = section->encoding_entities;
+	section->size += entity->size;
+
+	while(current_entity->next != NULL) {
+		current_entity = current_entity->next;
+	}
+
+	current_entity->next = entity;
+	return current_entity->next;
 }
 
 
