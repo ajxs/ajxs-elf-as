@@ -36,8 +36,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 
 	if(!instruction_check_operand_length(2, &macro->instruction)) {
 		// Check operand length is equal to 2, if not abort.
-		// @ERROR
-		printf("Operand count mismatch.");
+		set_error_message("Operand count mismatch for `LA` pseudo-instruction.");
 		return EXPAND_MACRO_FAILURE;
 	}
 
@@ -52,7 +51,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		// This instruction will be appended to the original instruction.
 		Statement *expansion = malloc(sizeof(Statement));
 		if(!expansion) {
-			// @ERROR
+			set_error_message("Error allocating statement for macro expansion.");
 			return EXPAND_MACRO_FAILURE;
 		}
 
@@ -64,7 +63,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		expansion->instruction.opseq.n_operands = 3;
 		expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
 		if(!expansion->instruction.opseq.operands) {
-			// @ERROR
+			set_error_message("Error allocating operand sequence for macro expansion.");
 			return EXPAND_MACRO_FAILURE;
 		}
 
@@ -103,7 +102,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			// Create the expansion instruction to store the `ORI` instruction.
 			Statement *expansion = malloc(sizeof(Statement));
 			if(!expansion) {
-				// @ERROR
+				set_error_message("Error allocating statement for macro expansion.");
 				return EXPAND_MACRO_FAILURE;
 			}
 
@@ -117,7 +116,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			expansion->instruction.opseq.n_operands = 3;
 			expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
 			if(!expansion->instruction.opseq.operands) {
-				// @ERROR
+				set_error_message("Error allocating operand sequence for macro expansion.");
 				return EXPAND_MACRO_FAILURE;
 			}
 
@@ -151,7 +150,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			macro->instruction.opseq.operands =
 				realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
 			if(!macro->instruction.opseq.operands) {
-				// @ERROR
+				set_error_message("Error allocating operand sequence for macro expansion.");
 				return EXPAND_MACRO_FAILURE;
 			}
 
@@ -186,7 +185,7 @@ Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
 	// Create the expansion instruction which will store the inserted `NOP`.
 	Statement *expansion = malloc(sizeof(Statement));
 	if(!expansion) {
-		// @ERROR
+		set_error_message("Error allocating statement for macro expansion.");
 		return EXPAND_MACRO_FAILURE;
 	}
 
@@ -223,6 +222,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 #endif
 
 	if(!instruction_check_operand_length(2, &macro->instruction)) {
+		set_error_message("Operand count mismatch for `MOVE` pseudo-instruction.");
 		return EXPAND_MACRO_FAILURE;
 	}
 
@@ -234,7 +234,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	macro->instruction.opseq.operands =
 		realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
 	if(!macro->instruction.opseq.operands) {
-		// @ERROR
+		set_error_message("Error allocating operand sequence for macro expansion.");
 		return EXPAND_MACRO_FAILURE;
 	}
 

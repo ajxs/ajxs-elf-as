@@ -24,7 +24,7 @@
  */
 void print_statement(Statement *statement) {
 	if(!statement) {
-		// @ERROR
+		set_error_message("Invalid statement provided to print function.");
 		return;
 	}
 
@@ -269,6 +269,11 @@ void print_opcode(Opcode op) {
  * @param symbol_table The symbol table to print.
  */
 void print_symbol_table(Symbol_Table *symbol_table) {
+	if(!symbol_table) {
+		set_error_message("Invalid symbol table provided to print function.");
+		return;
+	}
+
 	for(size_t i = 0; i < symbol_table->n_entries; i++) {
 		if(symbol_table->symbols[i].section) {
 			// Allow for null symbol entry.

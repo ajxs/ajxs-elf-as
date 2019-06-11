@@ -11,11 +11,22 @@
 #include <as.h>
 
 
+/**
+ * @brief Sets the global error message.
+ * Sets the global error message, this message is accessible through the whole
+ * application. This function can be used to ensure that the details behind
+ * an application failure is correctly propagated to the final error handler.
+ * @param error The error to print
+ */
 void set_error_message(const char *error) {
 	strncpy(assembler_error_msg, error, ERROR_MSG_MAX_LEN-1);
 }
 
 
+/**
+ * @brief Prints the global error message.
+ * Prints the global assembler error message to STDERR.
+ */
 void print_error(void) {
-	return;
+	fprintf(stderr, "Errror: %s", assembler_error_msg);
 }

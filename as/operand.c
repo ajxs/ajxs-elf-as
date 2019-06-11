@@ -22,7 +22,7 @@
  */
 void free_operand(Operand *op) {
 	if(!op) {
-		// @ERROR
+		set_error_message("Invalid operand provided to free function.");
 		return;
 	}
 
@@ -42,7 +42,7 @@ void free_operand(Operand *op) {
  */
 void free_operand_sequence(Operand_Sequence *opseq) {
 	if(!opseq) {
-		// @ERROR
+		set_error_message("Invalid operand sequence provided to free function.");
 		return;
 	}
 

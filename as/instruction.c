@@ -20,6 +20,11 @@
  * @param instruction The instruction to free.
  */
 void free_instruction(Instruction *instruction) {
+	if(!instruction) {
+		set_error_message("Invalid instruction provided to free function.");
+		return;
+	}
+
 	free_operand_sequence(&instruction->opseq);
 }
 
@@ -35,6 +40,11 @@ void free_instruction(Instruction *instruction) {
  */
 bool instruction_check_operand_length(size_t expected_operand_length,
 	Instruction *instruction) {
+
+	if(!instruction) {
+		set_error_message("Invalid instruction provided to check operand function.");
+		return false;
+	}
 
 	if(instruction->opseq.n_operands != expected_operand_length) {
 		return false;

@@ -29,6 +29,7 @@ Section *create_section(char *name,
 
 	Section *section = malloc(sizeof(Section));
 	if(!section) {
+		set_error_message("Error allocating section.");
 		return NULL;
 	}
 
@@ -60,10 +61,12 @@ Section *add_section(Section **section_list,
 	Section *section) {
 
 	if(!section_list) {
+		set_error_message("Invalid section list provided to add section function.");
 		return NULL;
 	}
 
 	if(!section) {
+		set_error_message("Invalid section provided to add section function.");
 		return NULL;
 	}
 
@@ -93,6 +96,11 @@ Section *add_section(Section **section_list,
  */
 Section *find_section(Section *section_list,
 	const char *name) {
+
+	if(!section_list) {
+		set_error_message("Invalid section list provided to find section function.");
+		return NULL;
+	}
 
 	int name_len = strlen(name);
 	Section *curr = section_list;
@@ -163,12 +171,12 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
 #endif
 
 	if(!section) {
-		set_error_message("Error adding symbol: Invalid section data.\n");
+		set_error_message("Invalid section provided to add entity function.");
 		return NULL;
 	}
 
 	if(!entity) {
-		set_error_message("Error adding symbol: Invalid encoding entity.\n");
+		set_error_message("Invalid entity provided to add entity function.");
 		return NULL;
 	}
 
@@ -204,7 +212,7 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
  */
 void free_encoding_entity(Encoding_Entity *entity) {
 	if(!entity) {
-		printf("Warning: Attempting to free NULL encoded entity.\n");
+		set_error_message("Attempting to free NULL encoded entity.");
 		return;
 	}
 
@@ -235,7 +243,7 @@ void free_encoding_entity(Encoding_Entity *entity) {
  */
 void free_section(Section *section) {
 	if(!section) {
-		printf("Warning: Attempting to free NULL section.\n");
+		set_error_message("Warning: Attempting to free NULL section.");
 		return;
 	}
 

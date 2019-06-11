@@ -8,7 +8,7 @@
 
 ssize_t get_statement_size(Statement *statement) {
 	if(!statement) {
-		// @ERROR
+		set_error_message("Invalid statement provided to get statement size function.");
 		return -1;
 	}
 
@@ -19,7 +19,9 @@ ssize_t get_statement_size(Statement *statement) {
 
 	if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
 		return 4;
-	} else if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
+	}
+
+	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
 		switch(statement->directive.type) {
 			case DIRECTIVE_ALIGN:
 			case DIRECTIVE_DATA:
@@ -66,15 +68,15 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_SPACE:
 				return statement->directive.opseq.operands[0].numeric_literal;
 			default:
-				// @ERROR
-				fprintf(stderr, "Unknown directive.\n");
+				set_error_message("Unknown directive type in get statement size function.");
 				return -1;
 		}
-	} else if(statement->type == STATEMENT_TYPE_EMPTY) {
-		return 0;
-	} else {
-		// @ERROR
-		fprintf(stderr, "Unknown statement type.\n");
-		return -1;
 	}
+
+	if(statement->type == STATEMENT_TYPE_EMPTY) {
+		return 0;
+	}
+
+	set_error_message("Unknown statement type in get statement size function.");
+	return -1;
 }

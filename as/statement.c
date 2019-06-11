@@ -23,7 +23,7 @@
  */
 void free_statement(Statement *statement) {
 	if(!statement) {
-		// @ERROR
+		set_error_message("Invalid statement provided to free function.");
 		return;
 	}
 

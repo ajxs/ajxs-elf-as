@@ -259,7 +259,13 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE
 } Assembler_Process_Result;
 
+Assembler_Process_Result read_input(FILE *input_file,
+	Statement **program_statements);
+
 Assembler_Process_Result initialise_sections(Section **sections);
+
+Assembler_Process_Result populate_symtab(Section *sections,
+	Symbol_Table *symbol_table);
 
 Assembler_Process_Result assemble(const char *input_filename,
 	const char *output_filename,

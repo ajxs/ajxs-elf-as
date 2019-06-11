@@ -105,7 +105,13 @@ int main(int argc, char **argv) {
 
 
 	// Begin the main assembler process.
-	assemble(input_filename, output_filename, verbose);
+	Assembler_Process_Result assembler_result = assemble(input_filename,
+		output_filename, verbose);
+	if(assembler_result != ASSEMBLER_PROCESS_SUCCESS) {
+		// If the main assembly process was not successful.
+		print_error();
+		exit(EXIT_FAILURE);
+	}
 
 	exit(EXIT_SUCCESS);
 }

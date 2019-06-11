@@ -20,7 +20,7 @@
  */
 void free_directive(Directive *directive) {
 	if(!directive) {
-		// @ERROR
+		set_error_message("Invalid directive provided to free function.");
 		return;
 	}
 
@@ -37,7 +37,7 @@ void free_directive(Directive *directive) {
  */
 Directive_Type parse_directive_symbol(char *directive_symbol) {
 	if(!directive_symbol) {
-		// @ERROR
+		set_error_message("Invalid directive symbol provided to parse function.");
 		return DIRECTIVE_UNKNOWN;
 	}
 

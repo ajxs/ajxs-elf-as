@@ -32,24 +32,24 @@ Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	size_t offset) {
 
 	if(!symtab) {
-		set_error_message("Error adding symbol: Invalid symbol table data.\n");
+		set_error_message("Invalid symbol table provided to add symbol function.");
 		return NULL;
 	}
 
 	if(!name) {
-		set_error_message("Error adding symbol: Invalid symbol name.\n");
+		set_error_message("Invalid symbol provided to add symbol function.");
 		return NULL;
 	}
 
 	if(!section) {
-		set_error_message("Error adding symbol: Invalid section data.\n");
+		set_error_message("Invalid section data provided to add symbol function.");
 		return NULL;
 	}
 
 	symtab->n_entries++;
 	symtab->symbols = realloc(symtab->symbols, sizeof(Symbol) * symtab->n_entries);
 	if(!symtab->symbols) {
-		set_error_message("Error adding symbol: Unable to resize symbol table array.\n");
+		set_error_message("Error resizing symbol table array.");
 		return NULL;
 	}
 
@@ -78,12 +78,12 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *name) {
 
 	if(!symtab) {
-		// @ERROR
+		set_error_message("Invalid symbol table provided to find symbol function.");
 		return NULL;
 	}
 
 	if(!name) {
-		// @ERROR
+		set_error_message("Invalid name provided to find symbol function.");
 		return NULL;
 	}
 
@@ -110,12 +110,12 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 	char *name) {
 
 	if(!symtab) {
-		// @ERROR
+		set_error_message("Invalid symbol table provided to find symbol function.");
 		return -1;
 	}
 
 	if(!name) {
-		// @ERROR
+		set_error_message("Invalid name provided to find symbol function.");
 		return -1;
 	}
 
@@ -139,7 +139,7 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 void free_symbol_table(Symbol_Table *symtab) {
 
 	if(!symtab) {
-		// @ERROR
+		set_error_message("Invalid symbol table provided to free function.");
 		return;
 	}
 
@@ -148,4 +148,189 @@ void free_symbol_table(Symbol_Table *symtab) {
 	}
 
 	free(symtab->symbols);
+}
+
+
+/**
+ * @brief Populates the ELF symbol table.
+ *
+ * This function parses through the program symbol table and encodes the necessary
+ * ELF entities to write to the final assembled ELF file.
+ * This function will add all of the necessary encoded entities to the symbol
+ * table and string table sections.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
+Assembler_Process_Result populate_symtab(Section *sections,
+	Symbol_Table *symbol_table) {
+
+	if(!sections) {
+		set_error_message("Invalid section data.\n");
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
+	}
+
+	if(!symbol_table) {
+		set_error_message("Invalid symbol table data.\n");
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
+	}
+
+
+	Section *strtab = find_section(sections, ".strtab");
+	if(!strtab) {
+		set_error_message("Unable to locate .strtab section.\n");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	Section *symtab = find_section(sections, ".symtab");
+	if(!symtab) {
+		set_error_message("Unable to locate .symtab section.\n");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
+
+	// Add the initial null byte to strtab as per ELF specification.
+	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
+	if(!null_byte_entity) {
+		set_error_message("Error allocating null byte symbol entity.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	null_byte_entity->n_reloc_entries = 0;
+	null_byte_entity->reloc_entries = NULL;
+
+	null_byte_entity->size = 1;
+	null_byte_entity->data = malloc(1);
+	if(!null_byte_entity->data) {
+		set_error_message("Error allocating null byte symbol entity data.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	null_byte_entity->data[0] = '\0';
+
+	null_byte_entity->next = NULL;
+
+	added_entity = section_add_encoding_entity(strtab, null_byte_entity);
+	if(!added_entity) {
+		// Error message should already be set.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+#if DEBUG_OUTPUT == 1
+	printf("Debug Output: Added null byte to .strtab.\n");
+#endif
+
+	for(size_t i = 0; i < symbol_table->n_entries; i++) {
+		// Add each symbol name to the string table, and each symbol entry to the
+		// symbol table section.
+
+		Elf32_Sym symbol_entry;
+		symbol_entry.st_name = strtab->size;
+		symbol_entry.st_value = symbol_table->symbols[i].offset;
+		symbol_entry.st_size = 0;
+		symbol_entry.st_info = 0;
+		symbol_entry.st_other = 0;
+
+		ssize_t shndx = 0;
+		if(symbol_table->symbols[i].section) {
+			// Take into account that we need to successfully parse the null symbol
+			// entry. The null entry has zero for the section header index.
+			shndx = find_section_index(sections,
+				symbol_table->symbols[i].section->name);
+		}
+
+		// If we could not match the section index, abort.
+		if(shndx == -1) {
+			char error_message[ERROR_MSG_MAX_LEN];
+			sprintf(error_message, "Unable to find section index for: `%s`.",
+				symbol_table->symbols[i].section->name);
+			set_error_message(error_message);
+			return ASSEMBLER_ERROR_MISSING_SECTION;
+		}
+
+		// Get the section index.
+		symbol_entry.st_shndx = shndx;
+
+#if DEBUG_OUTPUT == 1
+			printf("Debug Output: Matched section index: `%i` for symbol name `%s`.\n",
+				symbol_entry.st_shndx, symbol_table->symbols[i].name);
+#endif
+
+		size_t symbol_entry_size = sizeof(Elf32_Sym);
+
+		// Create an encoding entity for each symbol entry, this will be encoded
+		// in the symbol table section during the writing of the section data.
+		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
+		if(!symbol_entry_entity) {
+			set_error_message("Error allocating symbol entity.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
+		}
+
+		symbol_entry_entity->n_reloc_entries = 0;
+		symbol_entry_entity->reloc_entries = NULL;
+
+		symbol_entry_entity->size = symbol_entry_size;
+		symbol_entry_entity->data = malloc(symbol_entry_size);
+		if(!symbol_entry_entity->data) {
+			set_error_message("Error allocating symbol entity data.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
+		}
+
+		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
+			&symbol_entry, symbol_entry_size);
+
+		symbol_entry_entity->next = NULL;
+
+		added_entity = section_add_encoding_entity(symtab, symbol_entry_entity);
+		if(!added_entity) {
+			// Error message should already be set.
+			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+		}
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Adding symbol: `%s` to .symtab at offset `0x%lx`...\n",
+			symbol_table->symbols[i].name, symtab->size);
+#endif
+
+		// Create an encoding entity for each symbol name, this will be encoded
+		// in the string table during the writing of the section data.
+		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
+		if(!symbol_name_entity) {
+			set_error_message("Error allocating symbol name entity.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
+		}
+
+		symbol_name_entity->n_reloc_entries = 0;
+		symbol_name_entity->reloc_entries = NULL;
+
+		size_t symbol_name_len = strlen(symbol_table->symbols[i].name) + 1;
+		symbol_name_entity->size = symbol_name_len;
+		symbol_name_entity->data = malloc(symbol_name_len);
+		if(!symbol_name_entity->data) {
+			set_error_message("Error allocating symbol name entity data.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
+		}
+
+		symbol_name_entity->data = memcpy(symbol_name_entity->data,
+			symbol_table->symbols[i].name, symbol_name_len);
+		symbol_name_entity->data[symbol_name_len-1] = '\0';
+
+		symbol_name_entity->next = NULL;
+
+		added_entity = section_add_encoding_entity(strtab, symbol_name_entity);
+		if(!added_entity) {
+			// Error message should already be set.
+			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+		}
+
+#if DEBUG_OUTPUT == 1
+		printf("Debug Output: Added symbol name: `%s` to .strtab at offset `0x%lx`.\n",
+			symbol_table->symbols[i].name, strtab->size);
+#endif
+	}
+
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
