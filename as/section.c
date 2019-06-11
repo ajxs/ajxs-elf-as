@@ -17,15 +17,21 @@
 /**
  * @brief Creates a section.
  *
- * Adds a program section to the linked list of program sections.
- * @param section_list A pointer-to-pointer to the program section linked list.
- * @param section The section to add.
+ * Creates a section program entity.
+ * @param name The name for the newly created section.
+ * @param type The type of the newly created section.
+ * @param flags The flags for the newly created section.
+ * @return A pointer to the newly created section, or NULL if an error occurred.
  */
 Section *create_section(char *name,
 	uint32_t type,
 	uint32_t flags) {
 
 	Section *section = malloc(sizeof(Section));
+	if(!section) {
+		return NULL;
+	}
+
 	section->name = name;
 	section->name_strtab_offset = 0;
 	section->program_counter = 0;
@@ -48,13 +54,22 @@ Section *create_section(char *name,
  * Adds a program section to the linked list of program sections.
  * @param section_list A pointer-to-pointer to the program section linked list.
  * @param section The section to add.
+ * @return The added section, or NULL if an error occurred.
  */
-void add_section(Section **section_list,
+Section *add_section(Section **section_list,
 	Section *section) {
+
+	if(!section_list) {
+		return NULL;
+	}
+
+	if(!section) {
+		return NULL;
+	}
 
 	if(!*section_list) {
 		*section_list = section;
-		return;
+		return section;
 	}
 
 	Section *curr = *section_list;
@@ -63,6 +78,7 @@ void add_section(Section **section_list,
 	}
 
 	curr->next = section;
+	return section;
 }
 
 

@@ -242,22 +242,31 @@ void assemble(const char *input_filename,
 
 
 /**
- * @brief The result of an assembler pass.
+ * @brief The result of an assembler process.
  *
- * Indicates the result of an assembler pass. The assembler pass functions
+ * Indicates the result of an assembler process. The assembler process functions
  * do not return an actual value, so this is used to track the success of
- * the operation.
+ * the operations.
  */
 typedef enum _assemble_pass_status {
-	ASSEMBLE_FAILURE,
-	ASSEMBLE_SUCCESS,
-} Assemble_Pass_Status;
+	ASSEMBLER_PROCESS_SUCCESS,
+	ASSEMBLER_ERROR_BAD_ALLOC,
+	ASSEMBLER_ERROR_BAD_FUNCTION_ARGS,
+	ASSEMBLER_ERROR_BAD_SECTION_DATA,
+	ASSEMBLER_ERROR_CODEGEN_FAILURE,
+	ASSEMBLER_ERROR_MISSING_SECTION,
+	ASSEMBLER_ERROR_MISSING_SYMBOL,
+	ASSEMBLER_ERROR_PREPROCESSING_FAILURE,
+	ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE,
+	ASSEMBLER_ERROR_STATEMENT_SIZE,
+	ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE
+} Assembler_Process_Result;
 
-Assemble_Pass_Status assemble_first_pass(Section *sections,
+Assembler_Process_Result assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements);
 
-Assemble_Pass_Status assemble_second_pass(Section *sections,
+Assembler_Process_Result assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements);
 
@@ -278,7 +287,7 @@ Section *create_section(char *name,
 	uint32_t type,
 	uint32_t flags);
 
-void add_section(Section **section_list,
+Section *add_section(Section **section_list,
 	Section *section);
 
 Section *find_section(Section *section_list,

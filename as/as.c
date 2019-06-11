@@ -20,14 +20,15 @@
 #include <string.h>
 
 
-void populate_symtab(Section *sections,
+Assembler_Process_Result populate_symtab(Section *sections,
 	Symbol_Table *symbol_table);
 
-void populate_relocation_entries(Symbol_Table *symtab, Section *sections);
+Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
+	Section *sections);
 
-Section *initialise_sections(void);
+Assembler_Process_Result initialise_sections(Section **sections);
 
-Statement *read_input(FILE *input_file);
+Assembler_Process_Result read_input(FILE *input_file, Statement **program_statements);
 
 
 /**
@@ -37,16 +38,22 @@ Statement *read_input(FILE *input_file);
  * ELF file. This will create all of the sections, as well as their relocation
  * entry sections.
  * Creates a linked list of the sections.
- * @return A pointer to the created section linked list.
+ * @param sections A pointer-to-pointer to the section data.
+ * @return A status result object showing the result of the process.
  */
-Section *initialise_sections(void) {
-	Section *sections = NULL;
-
+Assembler_Process_Result initialise_sections(Section **sections) {
 	// The section header data will be filled as the sections are serialised.
 	Section *section_null = create_section("\0", SHT_NULL, 0);
+	if(!section_null) {
+		set_error_message("Error creating `NULL` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
-	Section *section_text = create_section(".text", SHT_PROGBITS,
-		SHF_ALLOC | SHF_EXECINSTR);
+	Section *section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
+	if(!section_text) {
+		set_error_message("Error creating `.text` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	// The ELF man page suggests that the flags for relocatable sections are
 	// set to SHF_ALLOC, but from readelf we can see that gcc itself
@@ -54,45 +61,121 @@ Section *initialise_sections(void) {
 	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
 	// for the undocumented flags.
 	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
+	if(!section_text_rel) {
+		set_error_message("Error creating `.rel.text` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
+	if(!section_data) {
+		set_error_message("Error creating `.data` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
+	if(!section_data_rel) {
+		set_error_message("Error creating `.rel.data` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
+	if(!section_bss) {
+		set_error_message("Error creating `.bss` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
+	if(!section_symtab) {
+		set_error_message("Error creating `.symtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
+	if(!section_shstrtab) {
+		set_error_message("Error creating `.shstrtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
 	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
+	if(!section_strtab) {
+		set_error_message("Error creating `.strtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
-	add_section(&sections, section_null);
-	add_section(&sections, section_text);
-	add_section(&sections, section_text_rel);
-	add_section(&sections, section_data);
-	add_section(&sections, section_data_rel);
-	add_section(&sections, section_bss);
-	add_section(&sections, section_symtab);
-	add_section(&sections, section_shstrtab);
-	add_section(&sections, section_strtab);
+
+	/** Value to track the results of adding the newly created sections. */
+	Section *added_section = NULL;
+
+	added_section = add_section(sections, section_null);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_text);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_text_rel);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_data);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_data_rel);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_bss);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_symtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_shstrtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_strtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
 
 	// Find the index of the string table section, so we can link the symbol
 	// table section to the string table section.
-	ssize_t section_strtab_index = find_section_index(sections, ".strtab");
+	ssize_t section_strtab_index = find_section_index(*sections, ".strtab");
 	if(section_strtab_index == -1) {
-		// @ERROR
-		printf("Error linking .symtab to .strtab.");
+		set_error_message("Unable to find `.strtab` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	section_symtab->link = section_strtab_index;
 
 	// Find the index of the data section, so we can link its relevant relocation
 	// entry section to it.
-	ssize_t section_data_index = find_section_index(sections, ".data");
+	ssize_t section_data_index = find_section_index(*sections, ".data");
 	if(section_data_index == -1) {
-		// @ERROR
-		printf("Error linking .rel.data to .data.");
+		set_error_message("Unable to find `.data` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	section_data_rel->info = section_data_index;
@@ -100,10 +183,10 @@ Section *initialise_sections(void) {
 
 	// Find the index of the text section, so we can link its relevant relocation
 	// entry section to it.
-	ssize_t section_text_index = find_section_index(sections, ".text");
+	ssize_t section_text_index = find_section_index(*sections, ".text");
 	if(section_text_index == -1) {
-		// @ERROR
-		printf("Error linking .rel.text to .text.");
+		set_error_message("Unable to find `.text` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	section_text_rel->info = section_text_index;
@@ -111,16 +194,16 @@ Section *initialise_sections(void) {
 
 	// Find the index of the symbol table section, so we can link the program data
 	// sections to it.
-	ssize_t section_symtab_index = find_section_index(sections, ".symtab");
+	ssize_t section_symtab_index = find_section_index(*sections, ".symtab");
 	if(section_symtab_index == -1) {
-		// @ERROR
-		printf("Error linking relocatable sections to .symtab.");
+		set_error_message("Unable to find `.symtab` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	section_data_rel->link = section_symtab_index;
 	section_text_rel->link = section_symtab_index;
 
-	return sections;
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -134,8 +217,9 @@ Section *initialise_sections(void) {
  * @param symbol_table A pointer to the symbol table.
  * @param statements A pointer to the parsed statement linked list.
  * @warning This function modifies the symbol table.
+ * @return A status entity indicating whether or not the pass was successful.
  */
-Assemble_Pass_Status assemble_first_pass(Section *sections,
+Assembler_Process_Result assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
@@ -146,19 +230,19 @@ Assemble_Pass_Status assemble_first_pass(Section *sections,
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
 		set_error_message("Unable to locate .text section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_text) {
 		set_error_message("Unable to locate .data section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_text) {
 		set_error_message("Unable to locate .bss section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	// Start in the .text section by default.
@@ -175,7 +259,7 @@ Assemble_Pass_Status assemble_first_pass(Section *sections,
 					section_current->program_counter);
 				if(!added_sybmol) {
 					// Error should already have been set.
-					return ASSEMBLE_FAILURE;
+					return ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE;
 				}
 			}
 		}
@@ -198,7 +282,7 @@ Assemble_Pass_Status assemble_first_pass(Section *sections,
 		ssize_t statement_size = get_statement_size(curr);
 		if(statement_size == -1) {
 			// Error should already have been set.
-			return ASSEMBLE_FAILURE;
+			return ASSEMBLER_ERROR_STATEMENT_SIZE;
 		}
 
 #if DEBUG_ASSEMBLER == 1
@@ -218,7 +302,7 @@ Assemble_Pass_Status assemble_first_pass(Section *sections,
 	print_symbol_table(symbol_table);
 #endif
 
-	return ASSEMBLE_SUCCESS;
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -234,7 +318,7 @@ Assemble_Pass_Status assemble_first_pass(Section *sections,
  * @param sections A pointer to the section linked list.
  * @warning This function modifies the sections.
  */
-void populate_relocation_entries(Symbol_Table *symtab,
+Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections) {
 
 	/** Used for tracking the result of adding the entity to a section. */
@@ -252,7 +336,8 @@ void populate_relocation_entries(Symbol_Table *symtab,
 				size_t curr_section_name_len = strlen(curr_section->name);
 				char *curr_section_rel_name = malloc(5 + curr_section_name_len);
 				if(!curr_section_rel_name) {
-					// @ERROR
+					set_error_message("Unable to allocate space for reloc section name.\n");
+					return ASSEMBLER_ERROR_BAD_ALLOC;
 				}
 
 				strcpy(curr_section_rel_name, ".rel");
@@ -262,9 +347,10 @@ void populate_relocation_entries(Symbol_Table *symtab,
 				/** The section to add the reloc entry to. */
 				Section *curr_section_rel = find_section(sections, curr_section_rel_name);
 				if(!curr_section_rel) {
-					// @ERROR
-					printf("Error: Unable to find relocatable entry section: `%s`\n",
+					char error_message[ERROR_MSG_MAX_LEN];
+					sprintf(error_message, "Unable to find relocatable entry section: `%s`.",
 						curr_section_rel_name);
+					return ASSEMBLER_ERROR_MISSING_SECTION;
 				}
 
 				// Free the created string we used for searching.
@@ -274,15 +360,18 @@ void populate_relocation_entries(Symbol_Table *symtab,
 					// Create the ELF relocatione entry to encode in the file.
 					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
 					if(!rel) {
-						// @ERROR
+						set_error_message("Unable to allocate space for reloc entry.\n");
+						return ASSEMBLER_ERROR_BAD_ALLOC;
 					}
 
 					/** The index of the relevant symbol into the symbol table. */
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
 						curr_entity->reloc_entries[r].symbol->name);
 					if(symbol_index == -1) {
-						// @ERROR
-						printf("Error finding symbol index.");
+						char error_message[ERROR_MSG_MAX_LEN];
+						sprintf(error_message, "Unable to find symbol index for: `%s`.",
+							curr_entity->reloc_entries[r].symbol->name);
+						return ASSEMBLER_ERROR_MISSING_SYMBOL;
 					}
 
 					// The `info` field is encoded as the symbol index shifted right 8
@@ -293,7 +382,8 @@ void populate_relocation_entries(Symbol_Table *symtab,
 					/** The encoding entity that encodes the relocation entry. */
 					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
 					if(!reloc_entity) {
-						// @ERROR
+						set_error_message("Unable to allocate space for reloc entry encoding entity.\n");
+						return ASSEMBLER_ERROR_BAD_ALLOC;
 					}
 
 					reloc_entity->n_reloc_entries = 0;
@@ -306,7 +396,8 @@ void populate_relocation_entries(Symbol_Table *symtab,
 					// Add the relocatable entry to the relevant section.
 					added_entity = section_add_encoding_entity(curr_section_rel, reloc_entity);
 					if(!added_entity) {
-						// @ERROR
+						// Error message should already have been set.
+						return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 					}
 				}
 			}
@@ -316,6 +407,8 @@ void populate_relocation_entries(Symbol_Table *symtab,
 
 		curr_section = curr_section->next;
 	}
+
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -328,24 +421,25 @@ void populate_relocation_entries(Symbol_Table *symtab,
  * @param symbol_table A pointer to the symbol table.
  * @param statements A pointer to the parsed statement linked list.
  * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
  */
-Assemble_Pass_Status assemble_second_pass(Section *sections,
+Assembler_Process_Result assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
 	if(!sections) {
 		set_error_message("Invalid section data.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!symbol_table) {
 		set_error_message("Invalid symbol table data.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!statements) {
 		set_error_message("Invalid statement data.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 #if DEBUG_ASSEMBLER == 1
@@ -363,19 +457,19 @@ Assemble_Pass_Status assemble_second_pass(Section *sections,
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
 		set_error_message("Unable to locate .text section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_data) {
 		set_error_message("Unable to locate .data section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_bss) {
 		set_error_message("Unable to locate .bss section.\n");
-		return ASSEMBLE_FAILURE;
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	// Start in the .text section by default.
@@ -420,14 +514,14 @@ Assemble_Pass_Status assemble_second_pass(Section *sections,
 						section_current->program_counter);
 					if(!encoding) {
 						// Error message should already be set in the encode function.
-						return ASSEMBLE_FAILURE;
+						return ASSEMBLER_ERROR_CODEGEN_FAILURE;
 					}
 
 					section_current->program_counter += encoding->size;
 					added_entity = section_add_encoding_entity(section_current, encoding);
 					if(!added_entity) {
-						// Error message should already be set in the encode function.
-						return ASSEMBLE_FAILURE;
+						// Error message should already be set.
+						return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 					}
 
 			}
@@ -436,14 +530,14 @@ Assemble_Pass_Status assemble_second_pass(Section *sections,
 				section_current->program_counter);
 			if(!encoding) {
 				// Error message should already be set in the encode function.
-				return ASSEMBLE_FAILURE;
+				return ASSEMBLER_ERROR_CODEGEN_FAILURE;
 			}
 
 			section_current->program_counter += encoding->size;
 			added_entity = section_add_encoding_entity(section_current, encoding);
 			if(!added_entity) {
-				// Error message should already be set in the encode function.
-				return ASSEMBLE_FAILURE;
+				// Error message should already be set.
+				return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 			}
 		}
 
@@ -460,7 +554,7 @@ Assemble_Pass_Status assemble_second_pass(Section *sections,
 	printf("Debug Assembler: Finished second pass.\n");
 #endif
 
-	return ASSEMBLE_SUCCESS;
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -474,31 +568,32 @@ Assemble_Pass_Status assemble_second_pass(Section *sections,
  * @param sections A pointer to the section linked list.
  * @param symbol_table A pointer to the symbol table.
  * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
  */
-void populate_symtab(Section *sections,
+Assembler_Process_Result populate_symtab(Section *sections,
 	Symbol_Table *symbol_table) {
 
 	if(!sections) {
-		// @ERROR
-		return;
+		set_error_message("Invalid section data.\n");
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!symbol_table) {
-		// @ERROR
-		return;
+		set_error_message("Invalid symbol table data.\n");
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 
 	Section *strtab = find_section(sections, ".strtab");
 	if(!strtab) {
-		// @ERROR
-		return;
+		set_error_message("Unable to locate .strtab section.\n");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *symtab = find_section(sections, ".symtab");
 	if(!symtab) {
-		// @ERROR
-		return;
+		set_error_message("Unable to locate .symtab section.\n");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	/** Used for tracking the result of adding the entity to a section. */
@@ -507,8 +602,8 @@ void populate_symtab(Section *sections,
 	// Add the initial null byte to strtab as per ELF specification.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
 	if(!null_byte_entity) {
-		// @ERROR
-		return;
+		set_error_message("Error allocating null byte symbol entity.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	null_byte_entity->n_reloc_entries = 0;
@@ -517,8 +612,8 @@ void populate_symtab(Section *sections,
 	null_byte_entity->size = 1;
 	null_byte_entity->data = malloc(1);
 	if(!null_byte_entity->data) {
-		// @ERROR
-		return;
+		set_error_message("Error allocating null byte symbol entity data.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	null_byte_entity->data[0] = '\0';
@@ -527,7 +622,8 @@ void populate_symtab(Section *sections,
 
 	added_entity = section_add_encoding_entity(strtab, null_byte_entity);
 	if(!added_entity) {
-		// @ERROR
+		// Error message should already be set.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 	}
 
 #if DEBUG_OUTPUT == 1
@@ -555,8 +651,10 @@ void populate_symtab(Section *sections,
 
 		// If we could not match the section index, abort.
 		if(shndx == -1) {
-			// @ERROR
-			printf("ERROR FINDING SYMBOL SECTION INDEX.\n");
+			char error_message[ERROR_MSG_MAX_LEN];
+			sprintf(error_message, "Unable to find section index for: `%s`.",
+				symbol_table->symbols[i].section->name);
+			return ASSEMBLER_ERROR_MISSING_SECTION;
 		}
 
 		// Get the section index.
@@ -573,8 +671,8 @@ void populate_symtab(Section *sections,
 		// in the symbol table section during the writing of the section data.
 		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_entry_entity) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating symbol entity.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		symbol_entry_entity->n_reloc_entries = 0;
@@ -583,8 +681,8 @@ void populate_symtab(Section *sections,
 		symbol_entry_entity->size = symbol_entry_size;
 		symbol_entry_entity->data = malloc(symbol_entry_size);
 		if(!symbol_entry_entity->data) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating symbol entity data.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		symbol_entry_entity->data = memcpy(symbol_entry_entity->data,
@@ -594,7 +692,8 @@ void populate_symtab(Section *sections,
 
 		added_entity = section_add_encoding_entity(symtab, symbol_entry_entity);
 		if(!added_entity) {
-			// @ERROR
+			// Error message should already be set.
+			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 		}
 
 #if DEBUG_OUTPUT == 1
@@ -606,8 +705,8 @@ void populate_symtab(Section *sections,
 		// in the string table during the writing of the section data.
 		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_name_entity) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating symbol name entity.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		symbol_name_entity->n_reloc_entries = 0;
@@ -617,8 +716,8 @@ void populate_symtab(Section *sections,
 		symbol_name_entity->size = symbol_name_len;
 		symbol_name_entity->data = malloc(symbol_name_len);
 		if(!symbol_name_entity->data) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating symbol name entity data.");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		symbol_name_entity->data = memcpy(symbol_name_entity->data,
@@ -629,7 +728,8 @@ void populate_symtab(Section *sections,
 
 		added_entity = section_add_encoding_entity(strtab, symbol_name_entity);
 		if(!added_entity) {
-			// @ERROR
+			// Error message should already be set.
+			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 		}
 
 #if DEBUG_OUTPUT == 1
@@ -637,6 +737,8 @@ void populate_symtab(Section *sections,
 			symbol_table->symbols[i].name, strtab->size);
 #endif
 	}
+
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -648,14 +750,16 @@ void populate_symtab(Section *sections,
  * these are passed to the two stage assembler.
  * The file handle is closed in the main function.
  * @param input_file The file pointer for the input source file.
+ * @param program_statements A pointer-to-pointer to the statement list.
+ * @return A status entity indicating whether or not the pass was successful.
  */
-Statement *read_input(FILE *input_file) {
+Assembler_Process_Result read_input(FILE *input_file,
+	Statement **program_statements) {
+
 	char *line_buffer = NULL;
 	size_t line_buffer_length = 0;
 	ssize_t chars_read = 0;
 	size_t line_num = 1;
-
-	Statement *program_statements = NULL;
 
 	// Read all the lines in the file.
 	while((chars_read = getline(&line_buffer, &line_buffer_length, input_file)) != -1) {
@@ -667,9 +771,10 @@ Statement *read_input(FILE *input_file) {
 		// If NULL is returned, assume error state and abort.
 		char *line = preprocess_line(line_buffer);
 		if(!line) {
-			// @ERROR
-			printf("Error preprocessing line.");
-			break;
+			// Error message should have been set in callee.
+			// Free the line buffer.
+			free(line_buffer);
+			return ASSEMBLER_ERROR_PREPROCESSING_FAILURE;
 		}
 
 		// If the resulting line has no length, do not parse any further.
@@ -691,12 +796,12 @@ Statement *read_input(FILE *input_file) {
 			curr->line_num = line_num;
 		}
 
-		if(!program_statements) {
+		if(!*program_statements) {
 			// Add to start of linked list.
-			program_statements = parsed_statements;
+			*program_statements = parsed_statements;
 		} else {
 			// Add to tail of linked list.
-			curr = program_statements;
+			curr = *program_statements;
 			while(curr->next) {
 				curr = curr->next;
 			}
@@ -711,7 +816,7 @@ Statement *read_input(FILE *input_file) {
 
 #if DEBUG_PARSED_STATEMENTS == 1
 	// Iterate over all parsed statements, printing each one.
-	Statement *curr = program_statements;
+	Statement *curr = *program_statements;
 
 	while(curr) {
 		print_statement(curr);
@@ -723,7 +828,7 @@ Statement *read_input(FILE *input_file) {
 	// https://stackoverflow.com/questions/55731141/memory-leak-when-reading-file-line-by-line-using-getline
 	free(line_buffer);
 
-	return program_statements;
+	return ASSEMBLER_PROCESS_SUCCESS;
 }
 
 
@@ -756,8 +861,11 @@ void assemble(const char *input_filename,
 	}
 
 	/** The individual statements parsed from the source input file. */
-	Statement *program_statements = read_input(input_file);
-	if(!program_statements) {
+	Statement *program_statements = NULL;
+
+	Assembler_Process_Result read_input_status = read_input(input_file,
+		&program_statements);
+	if(read_input_status != ASSEMBLER_PROCESS_SUCCESS) {
 		// @ERROR.
 	}
 
@@ -774,7 +882,7 @@ void assemble(const char *input_filename,
 	symbol_table.n_entries = 1;
 	symbol_table.symbols = malloc(sizeof(Symbol));
 	if(!symbol_table.symbols) {
-		// ERROR
+		// @ERROR
 		return;
 	}
 
@@ -787,15 +895,18 @@ void assemble(const char *input_filename,
 	// require handling of this string.
 	symbol_table.symbols[0].name = malloc(1);
 	if(!symbol_table.symbols[0].name) {
-		// ERROR
+		// @ERROR
 		return;
 	}
 
 	symbol_table.symbols[0].name[0] = '\0';
 
 	/** The binary section data. */
-	Section *sections = initialise_sections();
-	if(!sections) {
+	Section *sections = NULL;
+
+	// Initialise the section list.
+	Assembler_Process_Result init_section_status = initialise_sections(&sections);
+	if(init_section_status != ASSEMBLER_PROCESS_SUCCESS) {
 		// @ERROR.
 	}
 
@@ -807,16 +918,16 @@ void assemble(const char *input_filename,
 	expand_macros(program_statements);
 
 	// Begin the first assembler pass. Populating the symbol table.
-	Assemble_Pass_Status first_pass_status = assemble_first_pass(sections,
+	Assembler_Process_Result first_pass_status = assemble_first_pass(sections,
 		&symbol_table, program_statements);
-	if(first_pass_status == ASSEMBLE_FAILURE) {
+	if(first_pass_status != ASSEMBLER_PROCESS_SUCCESS) {
 		// @ERROR.
 	}
 
 	// Begin the second assembler pass, which handles code generation.
-	Assemble_Pass_Status second_pass_status = assemble_second_pass(sections,
+	Assembler_Process_Result second_pass_status = assemble_second_pass(sections,
 		&symbol_table, program_statements);
-	if(second_pass_status == ASSEMBLE_FAILURE) {
+	if(second_pass_status != ASSEMBLER_PROCESS_SUCCESS) {
 		// @ERROR.
 	}
 
