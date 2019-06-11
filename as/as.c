@@ -26,185 +26,7 @@ Assembler_Process_Result populate_symtab(Section *sections,
 Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections);
 
-Assembler_Process_Result initialise_sections(Section **sections);
-
 Assembler_Process_Result read_input(FILE *input_file, Statement **program_statements);
-
-
-/**
- * @brief Creates and initialises the executable sections.
- *
- * This function creates all of the sections required to generate a relocatable
- * ELF file. This will create all of the sections, as well as their relocation
- * entry sections.
- * Creates a linked list of the sections.
- * @param sections A pointer-to-pointer to the section data.
- * @return A status result object showing the result of the process.
- */
-Assembler_Process_Result initialise_sections(Section **sections) {
-	// The section header data will be filled as the sections are serialised.
-	Section *section_null = create_section("\0", SHT_NULL, 0);
-	if(!section_null) {
-		set_error_message("Error creating `NULL` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
-	if(!section_text) {
-		set_error_message("Error creating `.text` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	// The ELF man page suggests that the flags for relocatable sections are
-	// set to SHF_ALLOC, but from readelf we can see that gcc itself
-	// seems to use `SHF_INFO_LINK`.
-	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
-	// for the undocumented flags.
-	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
-	if(!section_text_rel) {
-		set_error_message("Error creating `.rel.text` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
-	if(!section_data) {
-		set_error_message("Error creating `.data` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
-	if(!section_data_rel) {
-		set_error_message("Error creating `.rel.data` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
-	if(!section_bss) {
-		set_error_message("Error creating `.bss` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
-	if(!section_symtab) {
-		set_error_message("Error creating `.symtab` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
-	if(!section_shstrtab) {
-		set_error_message("Error creating `.shstrtab` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
-	if(!section_strtab) {
-		set_error_message("Error creating `.strtab` section.");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
-	}
-
-
-	/** Value to track the results of adding the newly created sections. */
-	Section *added_section = NULL;
-
-	added_section = add_section(sections, section_null);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_text);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_text_rel);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_data);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_data_rel);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_bss);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_symtab);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_shstrtab);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	added_section = add_section(sections, section_strtab);
-	if(!added_section) {
-		// Error message set in callee.
-		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
-	}
-
-	// Find the index of the string table section, so we can link the symbol
-	// table section to the string table section.
-	ssize_t section_strtab_index = find_section_index(*sections, ".strtab");
-	if(section_strtab_index == -1) {
-		set_error_message("Unable to find `.strtab` section index.");
-		return ASSEMBLER_ERROR_MISSING_SECTION;
-	}
-
-	section_symtab->link = section_strtab_index;
-
-	// Find the index of the data section, so we can link its relevant relocation
-	// entry section to it.
-	ssize_t section_data_index = find_section_index(*sections, ".data");
-	if(section_data_index == -1) {
-		set_error_message("Unable to find `.data` section index.");
-		return ASSEMBLER_ERROR_MISSING_SECTION;
-	}
-
-	section_data_rel->info = section_data_index;
-
-
-	// Find the index of the text section, so we can link its relevant relocation
-	// entry section to it.
-	ssize_t section_text_index = find_section_index(*sections, ".text");
-	if(section_text_index == -1) {
-		set_error_message("Unable to find `.text` section index.");
-		return ASSEMBLER_ERROR_MISSING_SECTION;
-	}
-
-	section_text_rel->info = section_text_index;
-
-
-	// Find the index of the symbol table section, so we can link the program data
-	// sections to it.
-	ssize_t section_symtab_index = find_section_index(*sections, ".symtab");
-	if(section_symtab_index == -1) {
-		set_error_message("Unable to find `.symtab` section index.");
-		return ASSEMBLER_ERROR_MISSING_SECTION;
-	}
-
-	section_data_rel->link = section_symtab_index;
-	section_text_rel->link = section_symtab_index;
-
-	return ASSEMBLER_PROCESS_SUCCESS;
-}
 
 
 /**
@@ -350,6 +172,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					char error_message[ERROR_MSG_MAX_LEN];
 					sprintf(error_message, "Unable to find relocatable entry section: `%s`.",
 						curr_section_rel_name);
+					set_error_message(error_message);
 					return ASSEMBLER_ERROR_MISSING_SECTION;
 				}
 
@@ -371,6 +194,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 						char error_message[ERROR_MSG_MAX_LEN];
 						sprintf(error_message, "Unable to find symbol index for: `%s`.",
 							curr_entity->reloc_entries[r].symbol->name);
+						set_error_message(error_message);
 						return ASSEMBLER_ERROR_MISSING_SYMBOL;
 					}
 
@@ -654,6 +478,7 @@ Assembler_Process_Result populate_symtab(Section *sections,
 			char error_message[ERROR_MSG_MAX_LEN];
 			sprintf(error_message, "Unable to find section index for: `%s`.",
 				symbol_table->symbols[i].section->name);
+			set_error_message(error_message);
 			return ASSEMBLER_ERROR_MISSING_SECTION;
 		}
 
@@ -840,7 +665,7 @@ Assembler_Process_Result read_input(FILE *input_file,
  * @param input_filename The file path for the input source file.
  * @param output_filename The file path for the output source file.
  */
-void assemble(const char *input_filename,
+Assembler_Process_Result assemble(const char *input_filename,
 	const char *output_filename,
 	bool verbose) {
 
@@ -853,26 +678,41 @@ void assemble(const char *input_filename,
 	}
 #endif
 
+	/**
+	 * @brief The main process result status.
+	 * This variable is used to track the success of all main assembly
+	 * procedures.
+	 */
+	Assembler_Process_Result process_status = ASSEMBLER_PROCESS_SUCCESS;
+
+
 	FILE *input_file = fopen(input_filename, "r");
 	if(!input_file) {
-		// @ERROR
-		fprintf(stderr, "Error opening file: %i\n", errno);
-		return;
+		char error_message[ERROR_MSG_MAX_LEN];
+		sprintf(error_message, "Error opening file: `%i`.", errno);
+		set_error_message(error_message);
+
+		// Return here, no cleanup necessary.
+		return ASSEMBLER_ERROR_FILE_FAILURE;
 	}
 
 	/** The individual statements parsed from the source input file. */
 	Statement *program_statements = NULL;
 
-	Assembler_Process_Result read_input_status = read_input(input_file,
-		&program_statements);
-	if(read_input_status != ASSEMBLER_PROCESS_SUCCESS) {
-		// @ERROR.
+	// Read in all the statements from the source file.
+	process_status = read_input(input_file, &program_statements);
+	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+		goto FAIL_FREE_STATEMENTS;
 	}
 
 	int close_status = fclose(input_file);
 	if(close_status) {
-		// @ERROR.
-		fprintf(stderr, "Error closing file handler: %u! Exiting.\n", errno);
+		char error_message[ERROR_MSG_MAX_LEN];
+		sprintf(error_message, "Error closing file handler: `%u`.", errno);
+		set_error_message(error_message);
+		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
+
+		goto FAIL_FREE_STATEMENTS;
 	}
 
 	/** The executable symbol table. */
@@ -882,8 +722,10 @@ void assemble(const char *input_filename,
 	symbol_table.n_entries = 1;
 	symbol_table.symbols = malloc(sizeof(Symbol));
 	if(!symbol_table.symbols) {
-		// @ERROR
-		return;
+		set_error_message("Error allocating symbol table.");
+		process_status = ASSEMBLER_ERROR_BAD_ALLOC;
+
+		goto FAIL_FREE_STATEMENTS;
 	}
 
 	// Create the null symbol entry.
@@ -895,8 +737,10 @@ void assemble(const char *input_filename,
 	// require handling of this string.
 	symbol_table.symbols[0].name = malloc(1);
 	if(!symbol_table.symbols[0].name) {
-		// @ERROR
-		return;
+		set_error_message("Error allocating null symbol entry.");
+		process_status = ASSEMBLER_ERROR_BAD_ALLOC;
+
+		goto FAIL_FREE_SYMBOL_TABLE;
 	}
 
 	symbol_table.symbols[0].name[0] = '\0';
@@ -905,9 +749,10 @@ void assemble(const char *input_filename,
 	Section *sections = NULL;
 
 	// Initialise the section list.
-	Assembler_Process_Result init_section_status = initialise_sections(&sections);
-	if(init_section_status != ASSEMBLER_PROCESS_SUCCESS) {
-		// @ERROR.
+	process_status = initialise_sections(&sections);
+	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+		// Error message set in callee.
+		goto FAIL_FREE_SYMBOL_TABLE;
 	}
 
 #if DEBUG_ASSEMBLER == 1
@@ -918,25 +763,20 @@ void assemble(const char *input_filename,
 	expand_macros(program_statements);
 
 	// Begin the first assembler pass. Populating the symbol table.
-	Assembler_Process_Result first_pass_status = assemble_first_pass(sections,
+	process_status = assemble_first_pass(sections,
 		&symbol_table, program_statements);
-	if(first_pass_status != ASSEMBLER_PROCESS_SUCCESS) {
-		// @ERROR.
+	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+		// Error message set in callee.
+		goto FAIL_FREE_SECTIONS;
 	}
 
 	// Begin the second assembler pass, which handles code generation.
-	Assembler_Process_Result second_pass_status = assemble_second_pass(sections,
+	process_status = assemble_second_pass(sections,
 		&symbol_table, program_statements);
-	if(second_pass_status != ASSEMBLER_PROCESS_SUCCESS) {
-		// @ERROR.
+	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+		// Error message set in callee.
+		goto FAIL_FREE_SECTIONS;
 	}
-
-#if DEBUG_OUTPUT == 1
-	printf("Debug Assembler: Freeing parsed statements...\n");
-#endif
-
-	free_statement(program_statements);
-
 
 #if DEBUG_OUTPUT == 1
 	printf("Debug Output: Initialising output file...\n");
@@ -945,16 +785,18 @@ void assemble(const char *input_filename,
 	/** The ELF file header. */
 	Elf32_Ehdr *elf_header = create_elf_header();
 	if(!elf_header) {
-		// @ERROR
-		return;
+		// Error message set in callee.
+		goto FAIL_FREE_SYMBOL_TABLE;
 	}
 
 	// Find the index into the section header block of the section header
 	// string table. This is needed by the ELF header.
 	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
 	if(section_shstrtab_index == -1) {
-		// @ERROR.
-		printf("Error finding `.shstrtab` index.\n");
+		set_error_message("Error finding `.shstrtab` index.");
+		process_status = ASSEMBLER_ERROR_MISSING_SECTION;
+
+		goto FAIL_FREE_SYMBOL_TABLE;
 	}
 
 	elf_header->e_shstrndx = section_shstrtab_index;
@@ -966,9 +808,10 @@ void assemble(const char *input_filename,
 
 	Section *shstrtab = find_section(sections, ".shstrtab");
 	if(!shstrtab) {
-		// @ERROR
-		printf("Error finding `.shstrtab` section.\n");
-		return;
+		set_error_message("Error finding `.shstrtab` index.");
+		process_status = ASSEMBLER_ERROR_MISSING_SECTION;
+
+		goto FAIL_FREE_SYMBOL_TABLE;
 	}
 
 	/** Used for tracking the result of adding the entity to a section. */
@@ -997,8 +840,10 @@ void assemble(const char *input_filename,
 		// data and encoded into the final encoded file.
 		Encoding_Entity *string_entity = malloc(sizeof(Encoding_Entity));
 		if(!string_entity) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating section name entity.");
+			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
+
+			goto FAIL_FREE_SYMBOL_TABLE;
 		}
 
 		string_entity->n_reloc_entries = 0;
@@ -1007,8 +852,10 @@ void assemble(const char *input_filename,
 		string_entity->size = section_name_len;
 		string_entity->data = malloc(section_name_len);
 		if(!string_entity->data) {
-			// @ERROR
-			return;
+			set_error_message("Error allocating section name entity data.");
+			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
+
+			goto FAIL_FREE_SYMBOL_TABLE;
 		}
 
 		string_entity->data = memcpy(string_entity->data, curr_section->name,
@@ -1020,7 +867,10 @@ void assemble(const char *input_filename,
 		// Add the encoded string to the `shstrtab` section.
 		added_entity = section_add_encoding_entity(shstrtab, string_entity);
 		if(!added_entity) {
-			// @ERROR
+			set_error_message("Error adding entity to section header string table.");
+			process_status = ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+
+			goto FAIL_FREE_SYMBOL_TABLE;
 		}
 
 		curr_section = curr_section->next;
@@ -1056,17 +906,29 @@ void assemble(const char *input_filename,
 	// Open the output file.
 	FILE *out_file = fopen(output_filename, "w");
 	if(!out_file) {
-		// @ERROR
-		fprintf(stderr, "Error opening output file: `%u`\n", errno);
+		char error_message[ERROR_MSG_MAX_LEN];
+		sprintf(error_message, "Error opening output file: `%u`", errno);
+		set_error_message(error_message);
+		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
+
+		goto FAIL_FREE_SECTIONS;
+
 	}
 
 	// Write the ELF file header.
 	size_t entity_write_count = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(entity_write_count != 1) {
 		if(ferror(out_file)) {
-			// @ERROR
-			perror("Error writing ELF header.\n");
+			char error_message[ERROR_MSG_MAX_LEN];
+			sprintf(error_message, "Error writing ELF header: `%u`.", errno);
+			set_error_message(error_message);
+		} else {
+			set_error_message("Error writing ELF header.");
 		}
+
+		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
+
+		goto FAIL_CLOSE_OUTPUT_FILE;
 	}
 
 	// Write the binary section data to the file.
@@ -1086,10 +948,17 @@ void assemble(const char *input_filename,
 			// Write each encoding entity contained in each section.
 			entity_write_count = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
 			if(entity_write_count != 1) {
-				// @ERROR
 				if(ferror(out_file)) {
-					perror("Error writing section data.\n");
+					char error_message[ERROR_MSG_MAX_LEN];
+					sprintf(error_message, "Error writing section data: `%u`.", errno);
+					set_error_message(error_message);
+				} else {
+					set_error_message("Error writing section data.");
 				}
+
+				process_status = ASSEMBLER_ERROR_FILE_FAILURE;
+
+				goto FAIL_CLOSE_OUTPUT_FILE;
 			}
 
 			curr_entity = curr_entity->next;
@@ -1108,17 +977,27 @@ void assemble(const char *input_filename,
 		// Encode the section header in the ELF format.
 		Elf32_Shdr *section_header = encode_section_header(curr_section);
 		if(!section_header) {
-			// @ERROR
-			return;
+			// Error message set in callee.
+			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
+
+			goto FAIL_CLOSE_OUTPUT_FILE;
 		}
 
 		// Write each ELF header to the output file.
 		entity_write_count = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(entity_write_count != 1) {
-			// @ERROR
 			if(ferror(out_file)) {
-				perror("Error writing section header data.\n");
+				char error_message[ERROR_MSG_MAX_LEN];
+				sprintf(error_message, "Error writing section header data: `%u`.", errno);
+				set_error_message(error_message);
+			} else {
+				set_error_message("Error writing section header data.");
 			}
+
+			process_status = ASSEMBLER_ERROR_FILE_FAILURE;
+
+			goto FAIL_CLOSE_OUTPUT_FILE;
+
 		}
 
 		free(section_header);
@@ -1130,28 +1009,25 @@ void assemble(const char *input_filename,
 	printf("Debug Assembler: Cleaning up main program.\n");
 #endif
 
-FAIL_CLOSE_FILE:
-
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing statements...\n");
 #endif
+
+	free_statement(program_statements);
 
 	free(elf_header);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Closing output file...\n");
 #endif
-	fclose(out_file);
 
-FAIL_FREE_SYMBOL_TABLE:
+	fclose(out_file);
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing Symbol Table...\n");
 #endif
 
 	free_symbol_table(&symbol_table);
-
-FAIL_FREE_SECTIONS:
 
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Freeing sections...\n");
@@ -1162,4 +1038,18 @@ FAIL_FREE_SECTIONS:
 #if DEBUG_ASSEMBLER == 1
 	printf("Debug Assembler: Finished.\n");
 #endif
+
+	return ASSEMBLER_PROCESS_SUCCESS;
+
+FAIL_CLOSE_OUTPUT_FILE:
+	free(elf_header);
+	fclose(out_file);
+FAIL_FREE_SECTIONS:
+	free_section(sections);
+FAIL_FREE_SYMBOL_TABLE:
+	free_symbol_table(&symbol_table);
+FAIL_FREE_STATEMENTS:
+	free_statement(program_statements);
+
+	return process_status;
 }

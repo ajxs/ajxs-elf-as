@@ -23,7 +23,7 @@
 Elf32_Ehdr *create_elf_header(void) {
 	Elf32_Ehdr *elf_header = malloc(sizeof(Elf32_Ehdr));
 	if(!elf_header) {
-		// @ERROR
+		set_error_message("Error allocating ELF Header.");
 		return NULL;
 	}
 

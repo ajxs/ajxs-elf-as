@@ -23,7 +23,7 @@
 Elf32_Shdr *encode_section_header(Section *section) {
 	Elf32_Shdr *section_header = malloc(sizeof(Elf32_Shdr));
 	if(!section_header) {
-		// @ERROR
+		set_error_message("Error allocating ELF section header entity.");
 		return NULL;
 	}
 

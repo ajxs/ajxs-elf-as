@@ -29,7 +29,7 @@
 
 #define ERROR_MSG_MAX_LEN 256
 
-char error_msg[ERROR_MSG_MAX_LEN];
+char assembler_error_msg[ERROR_MSG_MAX_LEN];
 
 void set_error_message(const char *error);
 void print_error(void);
@@ -236,10 +236,6 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 ssize_t get_statement_size(Statement *statement);
 
-void assemble(const char *input_filename,
-	const char *output_filename,
-	bool verbose);
-
 
 /**
  * @brief The result of an assembler process.
@@ -254,6 +250,7 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_BAD_FUNCTION_ARGS,
 	ASSEMBLER_ERROR_BAD_SECTION_DATA,
 	ASSEMBLER_ERROR_CODEGEN_FAILURE,
+	ASSEMBLER_ERROR_FILE_FAILURE,
 	ASSEMBLER_ERROR_MISSING_SECTION,
 	ASSEMBLER_ERROR_MISSING_SYMBOL,
 	ASSEMBLER_ERROR_PREPROCESSING_FAILURE,
@@ -261,6 +258,12 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_STATEMENT_SIZE,
 	ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE
 } Assembler_Process_Result;
+
+Assembler_Process_Result initialise_sections(Section **sections);
+
+Assembler_Process_Result assemble(const char *input_filename,
+	const char *output_filename,
+	bool verbose);
 
 Assembler_Process_Result assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,

@@ -257,3 +257,179 @@ void free_section(Section *section) {
 
 	free(section);
 }
+
+
+/**
+ * @brief Creates and initialises the executable sections.
+ *
+ * This function creates all of the sections required to generate a relocatable
+ * ELF file. This will create all of the sections, as well as their relocation
+ * entry sections.
+ * Creates a linked list of the sections.
+ * @param sections A pointer-to-pointer to the section data.
+ * @return A status result object showing the result of the process.
+ */
+Assembler_Process_Result initialise_sections(Section **sections) {
+	// The section header data will be filled as the sections are serialised.
+	Section *section_null = create_section("\0", SHT_NULL, 0);
+	if(!section_null) {
+		set_error_message("Error creating `NULL` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
+	if(!section_text) {
+		set_error_message("Error creating `.text` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	// The ELF man page suggests that the flags for relocatable sections are
+	// set to SHF_ALLOC, but from readelf we can see that gcc itself
+	// seems to use `SHF_INFO_LINK`.
+	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
+	// for the undocumented flags.
+	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
+	if(!section_text_rel) {
+		set_error_message("Error creating `.rel.text` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
+	if(!section_data) {
+		set_error_message("Error creating `.data` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
+	if(!section_data_rel) {
+		set_error_message("Error creating `.rel.data` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
+	if(!section_bss) {
+		set_error_message("Error creating `.bss` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
+	if(!section_symtab) {
+		set_error_message("Error creating `.symtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
+	if(!section_shstrtab) {
+		set_error_message("Error creating `.shstrtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
+	if(!section_strtab) {
+		set_error_message("Error creating `.strtab` section.");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+
+	/** Value to track the results of adding the newly created sections. */
+	Section *added_section = NULL;
+
+	added_section = add_section(sections, section_null);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_text);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_text_rel);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_data);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_data_rel);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_bss);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_symtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_shstrtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	added_section = add_section(sections, section_strtab);
+	if(!added_section) {
+		// Error message set in callee.
+		return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
+	}
+
+	// Find the index of the string table section, so we can link the symbol
+	// table section to the string table section.
+	ssize_t section_strtab_index = find_section_index(*sections, ".strtab");
+	if(section_strtab_index == -1) {
+		set_error_message("Unable to find `.strtab` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	section_symtab->link = section_strtab_index;
+
+	// Find the index of the data section, so we can link its relevant relocation
+	// entry section to it.
+	ssize_t section_data_index = find_section_index(*sections, ".data");
+	if(section_data_index == -1) {
+		set_error_message("Unable to find `.data` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	section_data_rel->info = section_data_index;
+
+
+	// Find the index of the text section, so we can link its relevant relocation
+	// entry section to it.
+	ssize_t section_text_index = find_section_index(*sections, ".text");
+	if(section_text_index == -1) {
+		set_error_message("Unable to find `.text` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	section_text_rel->info = section_text_index;
+
+
+	// Find the index of the symbol table section, so we can link the program data
+	// sections to it.
+	ssize_t section_symtab_index = find_section_index(*sections, ".symtab");
+	if(section_symtab_index == -1) {
+		set_error_message("Unable to find `.symtab` section index.");
+		return ASSEMBLER_ERROR_MISSING_SECTION;
+	}
+
+	section_data_rel->link = section_symtab_index;
+	section_text_rel->link = section_symtab_index;
+
+	return ASSEMBLER_PROCESS_SUCCESS;
+}
