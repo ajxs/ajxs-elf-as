@@ -27,28 +27,3 @@ void free_instruction(Instruction *instruction) {
 
 	free_operand_sequence(&instruction->opseq);
 }
-
-
-/**
- * @brief Checks the operand length for an instruction.
- *
- * Checks that the number of operands provided in a statement matches the expected
- * amount for the statement's instruction opcode.
- * @param expected_operand_length The expected operand length.
- * @param instruction The instruction to check.
- * @return A boolean indicating whether the operand count matches the expected count.
- */
-bool instruction_check_operand_length(size_t expected_operand_length,
-	Instruction *instruction) {
-
-	if(!instruction) {
-		set_error_message("Invalid instruction provided to check operand function.");
-		return false;
-	}
-
-	if(instruction->opseq.n_operands != expected_operand_length) {
-		return false;
-	} else {
-		return true;
-	}
-}

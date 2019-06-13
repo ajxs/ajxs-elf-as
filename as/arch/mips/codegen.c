@@ -341,7 +341,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 	switch(instruction->opcode) {
 		case OPCODE_ADD:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -351,7 +351,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x20);
 			break;
 		case OPCODE_ADDI:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -361,7 +361,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDIU:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -371,7 +371,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDU:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -381,7 +381,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x21);
 			break;
 		case OPCODE_AND:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -391,7 +391,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x24);
 			break;
 		case OPCODE_ANDI:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -401,7 +401,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BAL:
-			if(!instruction_check_operand_length(1, instruction)) {
+			if(!check_operand_count(1, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -409,7 +409,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BEQ:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -419,7 +419,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BGEZ:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -429,7 +429,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BNE:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -439,7 +439,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_J:
-			if(!instruction_check_operand_length(1, instruction)) {
+			if(!check_operand_count(1, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -447,7 +447,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JAL:
-			if(!instruction_check_operand_length(1, instruction)) {
+			if(!check_operand_count(1, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -455,7 +455,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JALR:
-			if(!instruction_check_operand_length(1, instruction)) {
+			if(!check_operand_count(1, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -469,7 +469,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_JR:
-			if(!instruction_check_operand_length(1, instruction)) {
+			if(!check_operand_count(1, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -477,7 +477,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, 0, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_LB:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -485,7 +485,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x20, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LBU:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -493,7 +493,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x24, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LUI:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -502,7 +502,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[1], program_counter);
 			break;
 		case OPCODE_LW:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -510,7 +510,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x23, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_MUH:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -526,7 +526,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x19);
 			break;
 		case OPCODE_MUL:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -536,7 +536,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x18);
 			break;
 		case OPCODE_MULU:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -552,14 +552,14 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			set_error_message("Instruction deprecated in `MIPS32r6`.");
 			break;
 		case OPCODE_NOP:
-			if(!instruction_check_operand_length(0, instruction)) {
+			if(!check_operand_count(0, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
 			encoded_entity = encode_r_type(0, 0, 0, 0, 0, 0);
 			break;
 		case OPCODE_OR:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -569,7 +569,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x25);
 			break;
 		case OPCODE_ORI:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -579,7 +579,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_SB:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -587,7 +587,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x28, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SH:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -595,7 +595,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x29, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SLL:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -605,7 +605,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, 0, rt, sa, 0x0);
 			break;
 		case OPCODE_SUB:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -615,7 +615,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x22);
 			break;
 		case OPCODE_SUBU:
-			if(!instruction_check_operand_length(3, instruction)) {
+			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -625,7 +625,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_r_type(0, rd, rs, rt, 0, 0x23);
 			break;
 		case OPCODE_SW:
-			if(!instruction_check_operand_length(2, instruction)) {
+			if(!check_operand_count(2, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
@@ -786,6 +786,9 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 					Symbol *symbol = symtab_find_symbol(symtab,
 						directive->opseq.operands[i].string_literal);
 					if(!symbol) {
+						// cleanup.
+						free(word_data);
+
 						sprintf(error_message, "Error finding symbol `%s`.",
 							directive->opseq.operands[i].string_literal);
 						set_error_message(error_message);
@@ -796,6 +799,9 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 				} else if(directive->opseq.operands[i].type == OPERAND_TYPE_NUMERIC_LITERAL) {
 					word_data[i] = directive->opseq.operands[i].numeric_literal;
 				} else {
+					// cleanup.
+					free(word_data);
+
 					sprintf(error_message, "Invalid operand type for `%s` directive.",
 						directive_name);
 					set_error_message(error_message);

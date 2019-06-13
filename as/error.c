@@ -19,7 +19,7 @@
  * @param error The error to print
  */
 void set_error_message(const char *error) {
-	strncpy(assembler_error_msg, error, ERROR_MSG_MAX_LEN-1);
+	assembler_error_msg = error;
 }
 
 

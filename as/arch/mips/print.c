@@ -76,8 +76,6 @@ char *get_opcode_string(Opcode op) {
 		return "MUL";
 	} else if(op == OPCODE_MULU) {
 		return "MULU";
-	} else if(op == OPCODE_MUH) {
-		return "MUH";
 	} else if(op == OPCODE_NOR) {
 		return "NOR";
 	} else if(op == OPCODE_NOP) {

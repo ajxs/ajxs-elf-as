@@ -29,7 +29,7 @@
 
 #define ERROR_MSG_MAX_LEN 512
 
-char assembler_error_msg[ERROR_MSG_MAX_LEN];
+const char *assembler_error_msg;
 
 void set_error_message(const char *error);
 void print_error(void);
@@ -203,11 +203,8 @@ void print_directive(Directive dir);
 void print_statement(Statement *statement);
 void print_symbol_table(Symbol_Table *symbol_table);
 
-bool instruction_check_operand_length(size_t expected_operand_length,
-	Instruction *instruction);
-
-bool directive_check_operand_length(size_t expected_operand_length,
-	Directive *directive);
+bool check_operand_count(size_t expected_operand_length,
+	Operand_Sequence *opseq);
 
 Statement *scan_string(const char *str);
 

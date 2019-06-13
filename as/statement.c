@@ -45,3 +45,28 @@ void free_statement(Statement *statement) {
 
 	free(statement);
 }
+
+
+/**
+ * @brief Checks the operand count for an operand sequence.
+ *
+ * Checks that the number of operands provided in a statement matches the expected
+ * amount for the statement's instruction opcode.
+ * @param expected_operand_length The expected operand length.
+ * @param opseq The operand sequence to check.
+ * @return A boolean indicating whether the operand count matches the expected count.
+ */
+bool check_operand_count(size_t expected_operand_length,
+	Operand_Sequence *opseq) {
+
+	if(!opseq) {
+		set_error_message("Invalid operand sequence provided to check operand function.");
+		return false;
+	}
+
+	if(opseq->n_operands != expected_operand_length) {
+		return false;
+	} else {
+		return true;
+	}
+}

@@ -206,6 +206,9 @@ Assembler_Process_Result populate_symtab(Section *sections,
 	null_byte_entity->data = malloc(1);
 	if(!null_byte_entity->data) {
 		set_error_message("Error allocating null byte symbol entity data.");
+
+		// Cleanup.
+		free(null_byte_entity);
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 

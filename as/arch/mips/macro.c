@@ -34,7 +34,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 	printf("Debug Macro: Expanding `LA` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, &macro->instruction)) {
+	if(!check_operand_count(2, &macro->instruction.opseq)) {
 		// Check operand length is equal to 2, if not abort.
 		set_error_message("Operand count mismatch for `LA` pseudo-instruction.");
 		return EXPAND_MACRO_FAILURE;
@@ -221,7 +221,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
 
-	if(!instruction_check_operand_length(2, &macro->instruction)) {
+	if(!check_operand_count(2, &macro->instruction.opseq)) {
 		set_error_message("Operand count mismatch for `MOVE` pseudo-instruction.");
 		return EXPAND_MACRO_FAILURE;
 	}
