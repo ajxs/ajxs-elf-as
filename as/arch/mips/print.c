@@ -11,8 +11,6 @@
  * @date 2019-03-09
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <as.h>
 
 
@@ -25,84 +23,84 @@
  */
 char *get_opcode_string(Opcode op) {
 	if(op == OPCODE_ADDIU) {
-		return "addiu";
+		return "ADDIU";
 	} else if(op == OPCODE_ADDI) {
-		return "addi";
+		return "ADDI";
 	} else if(op == OPCODE_ADDU) {
-		return "addu";
+		return "ADDU";
 	} else if(op == OPCODE_ADD) {
-		return "add";
+		return "ADD";
 	} else if(op == OPCODE_BAL) {
-		return "bal";
+		return "BAL";
 	} else if(op == OPCODE_BEQZ) {
-		return "beqz";
+		return "BEQZ";
 	} else if(op == OPCODE_BEQ) {
-		return "beq";
+		return "BEQ";
 	} else if(op == OPCODE_BGEZ) {
-		return "bgez";
+		return "BGEZ";
 	} else if(op == OPCODE_BNE) {
-		return "bne";
+		return "BNE";
 	} else if(op == OPCODE_BLEZ) {
-		return "blez";
+		return "BLEZ";
 	} else if(op == OPCODE_DIV) {
-		return "div";
+		return "DIV";
 	} else if(op == OPCODE_JALR) {
-		return "jalr";
+		return "JALR";
 	} else if(op == OPCODE_JAL) {
-		return "jal";
+		return "JAL";
 	} else if(op == OPCODE_JR) {
-		return "jr";
+		return "JR";
 	} else if(op == OPCODE_J) {
-		return "j";
+		return "J";
 	} else if(op == OPCODE_LA) {
-		return "la";
+		return "LA";
 	} else if(op == OPCODE_LBU) {
-		return "lbu";
+		return "LBU";
 	} else if(op == OPCODE_LB) {
-		return "lb";
+		return "LB";
 	} else if(op == OPCODE_LHU) {
-		return "lhu";
+		return "LHU";
 	} else if(op == OPCODE_LI) {
-		return "li";
+		return "LI";
 	} else if(op == OPCODE_LUI) {
-		return "lui";
+		return "LUI";
 	} else if(op == OPCODE_LW) {
-		return "lw";
+		return "LW";
 	} else if(op == OPCODE_ADD) {
-		return "move";
+		return "MOVE";
 	} else if(op == OPCODE_MUHU) {
-		return "muhu";
+		return "MUHU";
 	} else if(op == OPCODE_MUH) {
-		return "muh";
+		return "MUH";
 	} else if(op == OPCODE_MUL) {
-		return "mul";
+		return "MUL";
 	} else if(op == OPCODE_MULU) {
-		return "mulu";
+		return "MULU";
 	} else if(op == OPCODE_MUH) {
-		return "mul";
+		return "MUH";
 	} else if(op == OPCODE_NOR) {
-		return "nor";
+		return "NOR";
 	} else if(op == OPCODE_NOP) {
-		return "nop";
+		return "NOP";
 	} else if(op == OPCODE_ORI) {
-		return "ori";
+		return "ORI";
 	} else if(op == OPCODE_OR) {
-		return "or";
+		return "OR";
 	} else if(op == OPCODE_SB) {
-		return "sb";
+		return "SB";
 	} else if(op == OPCODE_SH) {
-		return "sh";
+		return "SH";
 	} else if(op == OPCODE_SLL) {
-		return "sll";
+		return "SLL";
 	} else if(op == OPCODE_SUBU) {
-		return "subu";
+		return "SUBU";
 	} else if(op == OPCODE_SUB) {
-		return "sub";
+		return "SUB";
 	} else if(op == OPCODE_SW) {
-		return "sw";
+		return "SW";
 	} else if(op == OPCODE_SYSCALL) {
-		return "syscall";
+		return "SYSCALL";
 	} else {
-		return "Unknown";
+		return "UNKNOWN";
 	}
 }

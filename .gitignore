@@ -9,4 +9,7 @@ include/parser.h
 *.elf
 
 # Produced executable
-ajxs-*-as
+ajxs-*elf-as
+
+# Test scripts
+test_run

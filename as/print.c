@@ -83,39 +83,39 @@ void print_directive(Directive dir) {
  */
 char *get_directive_string(Directive dir) {
 	if(dir.type == DIRECTIVE_ALIGN) {
-		return ".align";
+		return ".ALIGN";
 	} else if(dir.type == DIRECTIVE_ASCII) {
-		return ".ascii";
+		return ".ASCII";
 	} else if(dir.type == DIRECTIVE_ASCIZ) {
-		return ".asciz";
+		return ".ASCIZ";
 	} else if(dir.type == DIRECTIVE_BSS) {
-		return ".bss";
+		return ".BSS";
 	} else if(dir.type == DIRECTIVE_BYTE) {
-		return ".byte";
+		return ".BYTE";
 	} else if(dir.type == DIRECTIVE_DATA) {
-		return ".data";
+		return ".DATA";
 	} else if(dir.type == DIRECTIVE_FILL) {
-		return ".fill";
+		return ".FILL";
 	} else if(dir.type == DIRECTIVE_GLOBAL) {
-		return ".global";
+		return ".GLOBAL";
 	} else if(dir.type == DIRECTIVE_LONG) {
-		return ".long";
+		return ".LONG";
 	} else if(dir.type == DIRECTIVE_SHORT) {
-		return ".short";
+		return ".SHORT";
 	} else if(dir.type == DIRECTIVE_SIZE) {
-		return ".size";
+		return ".SIZE";
 	} else if(dir.type == DIRECTIVE_SKIP) {
-		return ".skip";
+		return ".SKIP";
 	} else if(dir.type == DIRECTIVE_SPACE) {
-		return ".space";
+		return ".SPACE";
 	} else if(dir.type == DIRECTIVE_STRING) {
-		return ".string";
+		return ".STRING";
 	} else if(dir.type == DIRECTIVE_TEXT) {
-		return ".text";
+		return ".TEXT";
 	} else if(dir.type == DIRECTIVE_WORD) {
-		return ".word";
+		return ".WORD";
 	} else {
-		return "unknown";
+		return "UNKNOWN";
 	}
 }
 

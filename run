@@ -1,4 +1,0 @@
-#!/bin/bash
-
-ARCH=mips
-./build && ./ajxs-${ARCH}-elf-as -o out.elf test/fac.s
