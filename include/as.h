@@ -27,7 +27,7 @@
 #define DEBUG_PARSED_STATEMENTS 1
 #define DEBUG_SYMBOLS 1
 
-#define ERROR_MSG_MAX_LEN 256
+#define ERROR_MSG_MAX_LEN 512
 
 char assembler_error_msg[ERROR_MSG_MAX_LEN];
 
@@ -194,13 +194,13 @@ Register parse_register_symbol(char *register_symbol);
 Opcode parse_opcode_symbol(char *opcode_symbol);
 Directive_Type parse_directive_symbol(char *directive_symbol);
 
+char *get_opcode_string(Opcode op);
+char *get_directive_string(Directive dir);
 void print_operand(Operand op);
 void print_operand_sequence(Operand_Sequence opseq);
 void print_instruction(Instruction inst);
 void print_directive(Directive dir);
-void print_directive_type(Directive dir);
 void print_statement(Statement *statement);
-void print_opcode(Opcode op);
 void print_symbol_table(Symbol_Table *symbol_table);
 
 bool instruction_check_operand_length(size_t expected_operand_length,

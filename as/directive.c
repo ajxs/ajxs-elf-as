@@ -71,3 +71,28 @@ Directive_Type parse_directive_symbol(char *directive_symbol) {
 
 	return DIRECTIVE_UNKNOWN;
 }
+
+
+/**
+ * @brief Checks the operand length for a directive.
+ *
+ * Checks that the number of operands provided in a statement matches the expected
+ * amount for the statement's directive.
+ * @param expected_operand_length The expected operand length.
+ * @param directive The directive to check.
+ * @return A boolean indicating whether the operand count matches the expected count.
+ */
+bool directive_check_operand_length(size_t expected_operand_length,
+	Directive *directive) {
+
+	if(!directive) {
+		set_error_message("Invalid directive provided to check operand function.");
+		return false;
+	}
+
+	if(directive->opseq.n_operands != expected_operand_length) {
+		return false;
+	} else {
+		return true;
+	}
+}

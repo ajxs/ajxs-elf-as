@@ -64,12 +64,12 @@ Opcode parse_opcode_symbol(char *opcode_symbol) {
 		return OPCODE_MUH;
 	} else if(!strncasecmp(opcode_symbol, "multu", 4)) {
 		// Deprecated.
-		return OPCODE_UNKNOWN;
+		return OPCODE_MULTU;
 	} else if(!strncasecmp(opcode_symbol, "mulu", 4)) {
 		return OPCODE_MULU;
 	} else if(!strncasecmp(opcode_symbol, "mult", 4)) {
 		// Deprecated.
-		return OPCODE_UNKNOWN;
+		return OPCODE_MULT;
 	} else if(!strncasecmp(opcode_symbol, "mul", 3)) {
 		return OPCODE_MUL;
 	} else if(!strncasecmp(opcode_symbol, "nor", 3)) {

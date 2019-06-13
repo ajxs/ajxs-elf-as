@@ -36,7 +36,7 @@ void free_instruction(Instruction *instruction) {
  * amount for the statement's instruction opcode.
  * @param expected_operand_length The expected operand length.
  * @param instruction The instruction to check.
- * @return A boolean indicating whether the operand count matches the  expected count.
+ * @return A boolean indicating whether the operand count matches the expected count.
  */
 bool instruction_check_operand_length(size_t expected_operand_length,
 	Instruction *instruction) {

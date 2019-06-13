@@ -1,3 +1,12 @@
+/**
+ * @file statement.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Architecture-specific functions for working with statement entities.
+ * Architecture-specific functionality for working with statement entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -6,6 +15,14 @@
 #include <as.h>
 
 
+/**
+ * @brief Gets the size of a statement entity.
+ *
+ * Returns the number of bytes required to encode a specific statement.
+ * @param statement The statement to encode.
+ * @returns The number of bytes required to encode the entity, or -1 if an error
+ * occurred.
+ */
 ssize_t get_statement_size(Statement *statement) {
 	if(!statement) {
 		set_error_message("Invalid statement provided to get statement size function.");
