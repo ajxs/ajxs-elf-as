@@ -256,15 +256,17 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
  * @param statements The linked list of parsed statements.
  * @warning @p statements is modified by this function.
  */
-void expand_macros(Statement *statements) {
+Assembler_Process_Result expand_macros(Statement *statements) {
 	Statement *curr = statements;
+
+	Expand_Macro_Result_Status macro_process_status;
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 			switch(curr->instruction.opcode) {
 				case OPCODE_LA:
 				case OPCODE_LI:
-					expand_macro_la(curr);
+					macro_process_status = expand_macro_la(curr);
 					break;
 				case OPCODE_BAL:
 				case OPCODE_BEQ:
@@ -274,16 +276,25 @@ void expand_macros(Statement *statements) {
 				case OPCODE_BNE:
 				case OPCODE_JAL:
 				case OPCODE_JR:
-					expand_branch_delay(curr);
+					macro_process_status = expand_branch_delay(curr);
 					break;
 				case OPCODE_MOVE:
-					expand_macro_move(curr);
+					macro_process_status = expand_macro_move(curr);
 					break;
 				default:
 					break;
 			}
 		}
 
+		if(macro_process_status != EXPAND_MACRO_SUCCESS) {
+			// If an error was encountered, return here.
+			// The error will have been set in the expansion function.
+			return ASSEMBLER_ERROR_MACRO_EXPANSION;
+		}
+
 		curr = curr->next;
 	}
+
+
+	return ASSEMBLER_PROCESS_SUCCESS;
 }

@@ -594,7 +594,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 	}
 
 #if DEBUG_CODEGEN == 1
-	printf("Debug Codegen: Encoded instruction `` at `0x%lx` as `0x%x`.\n",
+	printf("Debug Codegen: Encoded instruction `%s` at `0x%lx` as `0x%x`.\n",
 		opcode_name, program_counter, *(uint32_t *)encoded_entity->data);
 #endif
 

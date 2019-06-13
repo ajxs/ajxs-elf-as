@@ -206,6 +206,8 @@ void print_symbol_table(Symbol_Table *symbol_table);
 bool instruction_check_operand_length(size_t expected_operand_length,
 	Instruction *instruction);
 
+bool directive_check_operand_length(size_t expected_operand_length,
+	Directive *directive);
 
 Statement *scan_string(const char *str);
 
@@ -223,8 +225,6 @@ void free_encoding_entity(Encoding_Entity *encoding_entity);
 
 Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	char *label);
-
-void expand_macros(Statement *statements);
 
 Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
 	Instruction *instruction,
@@ -251,6 +251,7 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_BAD_SECTION_DATA,
 	ASSEMBLER_ERROR_CODEGEN_FAILURE,
 	ASSEMBLER_ERROR_FILE_FAILURE,
+	ASSEMBLER_ERROR_MACRO_EXPANSION,
 	ASSEMBLER_ERROR_MISSING_SECTION,
 	ASSEMBLER_ERROR_MISSING_SYMBOL,
 	ASSEMBLER_ERROR_PREPROCESSING_FAILURE,
@@ -278,6 +279,8 @@ Assembler_Process_Result assemble_first_pass(Section *sections,
 Assembler_Process_Result assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements);
+
+Assembler_Process_Result expand_macros(Statement *statements);
 
 Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	char *name,

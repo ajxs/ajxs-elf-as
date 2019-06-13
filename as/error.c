@@ -28,5 +28,5 @@ void set_error_message(const char *error) {
  * Prints the global assembler error message to STDERR.
  */
 void print_error(void) {
-	fprintf(stderr, "Errror: %s", assembler_error_msg);
+	fprintf(stderr, "Error: %s\n", assembler_error_msg);
 }

@@ -108,7 +108,10 @@ int main(int argc, char **argv) {
 	Assembler_Process_Result assembler_result = assemble(input_filename,
 		output_filename, verbose);
 	if(assembler_result != ASSEMBLER_PROCESS_SUCCESS) {
-		// If the main assembly process was not successful.
+		// If the main assembly process was not successful,
+		// print the error to STDOUT prior to exiting.
+		// The global  error message is set within the main application, at the
+		// point of failure.
 		print_error();
 		exit(EXIT_FAILURE);
 	}

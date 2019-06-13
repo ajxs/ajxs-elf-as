@@ -409,7 +409,8 @@ Assembler_Process_Result assemble(const char *input_filename,
 	FILE *input_file = fopen(input_filename, "r");
 	if(!input_file) {
 		char error_message[ERROR_MSG_MAX_LEN];
-		sprintf(error_message, "Error opening file: `%i`.", errno);
+		sprintf(error_message, "Error opening input file `%s`: `%i`.",
+			input_filename, errno);
 		set_error_message(error_message);
 
 		// Return here, no cleanup necessary.
@@ -480,7 +481,11 @@ Assembler_Process_Result assemble(const char *input_filename,
 #endif
 
 	// Loop through all statements, expanding all macros.
-	expand_macros(program_statements);
+	process_status = expand_macros(program_statements);
+	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+		// Error message set in callee.
+		goto FAIL_FREE_SYMBOL_TABLE;
+	}
 
 	// Begin the first assembler pass. Populating the symbol table.
 	process_status = assemble_first_pass(sections,
