@@ -18,6 +18,7 @@ Example command-line usage:
 
 ## Building
 This project requires GNU `flex` and `bison` in order to be built from source. Binaries are readily available for most Linux distros.
+The project currently targets Linux, and uses GCC extensions. Building and running on other platforms has not been tested.
 The target architecture is configured at build time by setting the `ARCH` environment variable. e.g.
 
 ```bash
@@ -48,7 +49,6 @@ The specified target name corresponds to the directories and files contained wit
 
 ## What does not work (yet)
 - Does not support subsections.
-- Does not support legacy instructions deprecated in, or prior to `mips32r6`.
 - *Currently* does not support expression expansion in assembler directives. However, this will eventually be implemented.
 - Does not support the `.set` directives used by GAS.
 - `.align` directive functionality within `.text` sections may be incorrect. GAS implementation of this directive varies by architecture. This is an area that needs more research. See: [Using as: 7.3 .align](https://sourceware.org/binutils/docs/as/Align.html)
