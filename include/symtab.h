@@ -17,5 +17,3 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 	char *name);
 
 void free_symbol_table(Symbol_Table *symtab);
-
-void free_encoding_entity(Encoding_Entity *entity);

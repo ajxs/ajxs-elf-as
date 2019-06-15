@@ -1,8 +1,6 @@
 #include <as.h>
 
 
-void free_encoding_entity(Encoding_Entity *encoding_entity);
-
 Section *create_section(char *name,
 	uint32_t type,
 	uint32_t flags);

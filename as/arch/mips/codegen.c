@@ -644,10 +644,11 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 	if(!encoded_entity) {
 		// Add the error message returned from the encoding function to a more
 		// generatlised error message that prints the instruction.
-		free(error_message);
-
 		fprintf(stderr, "Error encoding instruction `%s`: %s\n",
 			opcode_name, error_message);
+
+		free(error_message);
+
 		return NULL;
 	}
 

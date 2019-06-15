@@ -8,11 +8,15 @@
  * @date 2019-03-09
  */
 
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <as.h>
 #include <section.h>
+
+
+void free_encoding_entity(Encoding_Entity *entity);
 
 
 /**
@@ -167,19 +171,29 @@ ssize_t find_section_index(Section *section_list,
 Encoding_Entity *section_add_encoding_entity(Section *section,
 	Encoding_Entity *entity) {
 
-#if DEBUG_ASSEMBLER == 1
-	printf("Debug Assembler: Adding encoded entity to `%s`...\n", section->name);
-#endif
-
 	if(!section) {
-		fprintf(stderr, "Invalid section provided to add entity function.\n");
+		const char* error_message = "Invalid section provided to add entity function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return NULL;
 	}
 
 	if(!entity) {
-		fprintf(stderr, "Invalid entity provided to add entity function.\n");
+		const char* error_message = "Invalid entity provided to add entity function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return NULL;
 	}
+
+#if DEBUG_ASSEMBLER == 1
+	printf("Debug Assembler: Adding encoded entity to `%s`...\n", section->name);
+#endif
 
 	if(!section->encoding_entities) {
 		// If there is no current head of the encoded entities linked list.
@@ -213,7 +227,12 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
  */
 void free_encoding_entity(Encoding_Entity *entity) {
 	if(!entity) {
-		fprintf(stderr, "Attempting to free NULL encoded entity.\n");
+		const char* error_message = "Attempting to free NULL encoded entity.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 
@@ -244,7 +263,12 @@ void free_encoding_entity(Encoding_Entity *entity) {
  */
 void free_section(Section *section) {
 	if(!section) {
-		fprintf(stderr, "Warning: Attempting to free NULL section.\n");
+		const char* error_message = "Attempting to free NULL section.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 
@@ -279,17 +303,34 @@ void free_section(Section *section) {
  * @return A status result object showing the result of the process.
  */
 Assembler_Process_Result initialise_sections(Section **sections) {
+	/** Used for holding the error messages printed by this function. */
+	const char* error_message = NULL;
+	/** Holds the number of chars written to stderr in the error handler. */
+	int error_message_write_count = 0;
+
+	// The invididual section entities.
+	Section *section_null = NULL;
+	Section *section_text = NULL;
+	Section *section_text_rel = NULL;
+	Section *section_data = NULL;
+	Section *section_data_rel = NULL;
+	Section *section_bss = NULL;
+	Section *section_symtab = NULL;
+	Section *section_shstrtab = NULL;
+	Section *section_strtab = NULL;
+
+
 	// The section header data will be filled as the sections are serialised.
-	Section *section_null = create_section("\0", SHT_NULL, 0);
+	section_null = create_section("\0", SHT_NULL, 0);
 	if(!section_null) {
-		fprintf(stderr, "Error creating `NULL` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `NULL` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
+	section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
 	if(!section_text) {
-		fprintf(stderr, "Error creating `.text` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.text` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
 	// The ELF man page suggests that the flags for relocatable sections are
@@ -297,46 +338,46 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// seems to use `SHF_INFO_LINK`.
 	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
 	// for the undocumented flags.
-	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
+	section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
 	if(!section_text_rel) {
-		fprintf(stderr, "Error creating `.rel.text` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.rel.text` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
+	section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
 	if(!section_data) {
-		fprintf(stderr, "Error creating `.data` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.data` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
+	section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
 	if(!section_data_rel) {
-		fprintf(stderr, "Error creating `.rel.data` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.rel.data` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
+	section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
 	if(!section_bss) {
-		fprintf(stderr, "Error creating `.bss` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.bss` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
+	section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
 	if(!section_symtab) {
-		fprintf(stderr, "Error creating `.symtab` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.symtab` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
+	section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
 	if(!section_shstrtab) {
-		fprintf(stderr, "Error creating `.shstrtab` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.shstrtab` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
+	section_strtab = create_section(".strtab", SHT_STRTAB, 0);
 	if(!section_strtab) {
-		fprintf(stderr, "Error creating `.strtab` section.\n");
-		return ASSEMBLER_ERROR_BAD_ALLOC;
+		error_message = "Error creating `.strtab` section.\n";
+		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
 
@@ -441,4 +482,50 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	section_text_rel->link = section_symtab_index;
 
 	return ASSEMBLER_PROCESS_SUCCESS;
+
+SECTION_INIT_ALLOC_FAILURE:
+	// Print error message.
+	error_message_write_count = fprintf(stderr, error_message);
+	if(error_message_write_count != (int)strlen(error_message)) {
+		perror("Error printing error message to stderr");
+	}
+
+	// Free any allocated sections.
+	if(section_null) {
+		free_section(section_null);
+	}
+
+	if(section_text) {
+		free_section(section_text);
+	}
+
+	if(section_text_rel) {
+		free_section(section_text_rel);
+	}
+
+	if(section_data) {
+		free_section(section_data);
+	}
+
+	if(section_data_rel) {
+		free_section(section_data_rel);
+	}
+
+	if(section_bss) {
+		free_section(section_bss);
+	}
+
+	if(section_symtab) {
+		free_section(section_symtab);
+	}
+
+	if(section_shstrtab) {
+		free_section(section_shstrtab);
+	}
+
+	if(section_strtab) {
+		free_section(section_strtab);
+	}
+
+	return ASSEMBLER_ERROR_BAD_ALLOC;
 }
