@@ -21,7 +21,7 @@
  * @param op The operand to get the string for.
  * @returns a pointer to the string containing the operand name.
  */
-char *get_opcode_string(Opcode op) {
+const char *get_opcode_string(Opcode op) {
 	if(op == OPCODE_ADDIU) {
 		return "ADDIU";
 	} else if(op == OPCODE_ADDI) {
@@ -66,8 +66,6 @@ char *get_opcode_string(Opcode op) {
 		return "LUI";
 	} else if(op == OPCODE_LW) {
 		return "LW";
-	} else if(op == OPCODE_ADD) {
-		return "MOVE";
 	} else if(op == OPCODE_MUHU) {
 		return "MUHU";
 	} else if(op == OPCODE_MUH) {

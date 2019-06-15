@@ -48,7 +48,11 @@ typedef enum _expand_macro_status_result {
 } Expand_Macro_Result_Status;
 
 
-typedef enum { OPERAND_MASK_NONE, OPERAND_MASK_HIGH, OPERAND_MASK_LOW } Operand_Mask;
+typedef enum {
+	OPERAND_MASK_NONE,
+	OPERAND_MASK_HIGH,
+	OPERAND_MASK_LOW
+} Operand_Mask;
 
 
 typedef struct {
@@ -194,8 +198,8 @@ Register parse_register_symbol(char *register_symbol);
 Opcode parse_opcode_symbol(char *opcode_symbol);
 Directive_Type parse_directive_symbol(char *directive_symbol);
 
-char *get_opcode_string(Opcode op);
-char *get_directive_string(Directive dir);
+const char *get_opcode_string(Opcode op);
+const char *get_directive_string(Directive dir);
 void print_operand(Operand op);
 void print_operand_sequence(Operand_Sequence opseq);
 void print_instruction(Instruction inst);

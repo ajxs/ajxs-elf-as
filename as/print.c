@@ -51,7 +51,7 @@ void print_statement(Statement *statement) {
  * @param instruction The instruction to print.
  */
 void print_instruction(Instruction instruction) {
-	char *opcode_name = get_opcode_string(instruction.opcode);
+	const char *opcode_name = get_opcode_string(instruction.opcode);
 	printf("  Instruction: Opcode: `%s`\n", opcode_name);
 	if(instruction.opseq.n_operands > 0) {
 		print_operand_sequence(instruction.opseq);
@@ -66,7 +66,7 @@ void print_instruction(Instruction instruction) {
  * @param dir The directive to print.
  */
 void print_directive(Directive dir) {
-	char *directive_name = get_directive_string(dir);
+	const char *directive_name = get_directive_string(dir);
 	printf("  Directive: Type: `%s`\n", directive_name);
 	if(dir.opseq.n_operands > 0) {
 		print_operand_sequence(dir.opseq);
@@ -81,7 +81,7 @@ void print_directive(Directive dir) {
  * @param dir The directive to get the string for.
  * @returns a pointer to the string containing the directive name.
  */
-char *get_directive_string(Directive dir) {
+const char *get_directive_string(Directive dir) {
 	if(dir.type == DIRECTIVE_ALIGN) {
 		return ".ALIGN";
 	} else if(dir.type == DIRECTIVE_ASCII) {

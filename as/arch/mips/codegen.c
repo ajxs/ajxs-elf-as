@@ -510,31 +510,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			encoded_entity = encode_offset_type(0x23, rt, instruction->opseq.operands[1]);
 			break;
 		case OPCODE_MUH:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x18);
-			break;
 		case OPCODE_MUHU:
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x19);
-			break;
 		case OPCODE_MUL:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x18);
-			break;
 		case OPCODE_MULU:
 			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
@@ -543,7 +520,16 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x19);
+
+			if(instruction->opcode == OPCODE_MUH) {
+				encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x18);
+			} else if(instruction->opcode == OPCODE_MUHU) {
+				encoded_entity = encode_r_type(0, rd, rs, rt, 0x3, 0x19);
+			} else if(instruction->opcode == OPCODE_MUL) {
+				encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x18);
+			} else if(instruction->opcode == OPCODE_MULU) {
+				encoded_entity = encode_r_type(0, rd, rs, rt, 0x2, 0x19);
+			}
 			break;
 		case OPCODE_MULT:
 		case OPCODE_MULTU:
