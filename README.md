@@ -46,6 +46,8 @@ The interface for these functions can be seen in `as/include/as.h`. The MIPS imp
 
 The specified target name corresponds to the directories and files contained within the `as/arch/...` directory.
 
+The lexer is currently configured for a syntax resembling MIPS assembly, with register operands prefixed with the `$` symbol. In the future the lexer may be modified to support a more generic assembler syntax, or make this architecture configurable, but currently there are no plans to modify this.
+
 
 ## What does not work (yet)
 - Does not support subsections.
