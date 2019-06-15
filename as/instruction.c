@@ -23,7 +23,7 @@
  */
 void free_instruction(Instruction *instruction) {
 	if(!instruction) {
-		set_error_message("Invalid instruction provided to free function.");
+		fprintf(stderr, "Invalid instruction provided to free function.\n");
 		return;
 	}
 

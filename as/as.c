@@ -49,19 +49,19 @@ Assembler_Process_Result assemble_first_pass(Section *sections,
 
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
-		set_error_message("Unable to locate .text section.\n");
+		fprintf(stderr, "Unable to locate .text section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_text) {
-		set_error_message("Unable to locate .data section.\n");
+		fprintf(stderr, "Unable to locate .data section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_text) {
-		set_error_message("Unable to locate .bss section.\n");
+		fprintf(stderr, "Unable to locate .bss section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
@@ -156,7 +156,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 				size_t curr_section_name_len = strlen(curr_section->name);
 				char *curr_section_rel_name = malloc(5 + curr_section_name_len);
 				if(!curr_section_rel_name) {
-					set_error_message("Unable to allocate space for reloc section name.\n");
+					fprintf(stderr, "Unable to allocate space for reloc section name.\n");
 					return ASSEMBLER_ERROR_BAD_ALLOC;
 				}
 
@@ -167,10 +167,8 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 				/** The section to add the reloc entry to. */
 				Section *curr_section_rel = find_section(sections, curr_section_rel_name);
 				if(!curr_section_rel) {
-					char error_message[ERROR_MSG_MAX_LEN];
-					sprintf(error_message, "Unable to find relocatable entry section: `%s`.",
+					fprintf(stderr, "Unable to find relocatable entry section: `%s`.\n",
 						curr_section_rel_name);
-					set_error_message(error_message);
 					return ASSEMBLER_ERROR_MISSING_SECTION;
 				}
 
@@ -181,7 +179,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					// Create the ELF relocatione entry to encode in the file.
 					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
 					if(!rel) {
-						set_error_message("Unable to allocate space for reloc entry.\n");
+						fprintf(stderr, "Unable to allocate space for reloc entry.\n");
 						return ASSEMBLER_ERROR_BAD_ALLOC;
 					}
 
@@ -189,10 +187,8 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
 						curr_entity->reloc_entries[r].symbol->name);
 					if(symbol_index == -1) {
-						char error_message[ERROR_MSG_MAX_LEN];
-						sprintf(error_message, "Unable to find symbol index for: `%s`.",
+						fprintf(stderr, "Unable to find symbol index for: `%s`.\n",
 							curr_entity->reloc_entries[r].symbol->name);
-						set_error_message(error_message);
 						return ASSEMBLER_ERROR_MISSING_SYMBOL;
 					}
 
@@ -204,7 +200,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					/** The encoding entity that encodes the relocation entry. */
 					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
 					if(!reloc_entity) {
-						set_error_message("Unable to allocate space for reloc entry encoding entity.\n");
+						fprintf(stderr, "Unable to allocate space for reloc entry encoding entity.\n");
 						return ASSEMBLER_ERROR_BAD_ALLOC;
 					}
 
@@ -250,17 +246,17 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 	Statement *statements) {
 
 	if(!sections) {
-		set_error_message("Invalid section data.\n");
+		fprintf(stderr, "Invalid section data.\n");
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!symbol_table) {
-		set_error_message("Invalid symbol table data.\n");
+		fprintf(stderr, "Invalid symbol table data.\n");
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!statements) {
-		set_error_message("Invalid statement data.\n");
+		fprintf(stderr, "Invalid statement data.\n");
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
@@ -278,19 +274,19 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 
 	Section *section_text = find_section(sections, ".text");
 	if(!section_text) {
-		set_error_message("Unable to locate .text section.\n");
+		fprintf(stderr, "Unable to locate .text section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_data = find_section(sections, ".data");
 	if(!section_data) {
-		set_error_message("Unable to locate .data section.\n");
+		fprintf(stderr, "Unable to locate .data section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *section_bss = find_section(sections, ".bss");
 	if(!section_bss) {
-		set_error_message("Unable to locate .bss section.\n");
+		fprintf(stderr, "Unable to locate .bss section.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
@@ -411,10 +407,8 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	FILE *input_file = fopen(input_filename, "r");
 	if(!input_file) {
-		char error_message[ERROR_MSG_MAX_LEN];
-		sprintf(error_message, "Error opening input file `%s`: `%i`.",
+		fprintf(stderr, "Error opening input file `%s`: `%i`.\n",
 			input_filename, errno);
-		set_error_message(error_message);
 
 		// Return here, no cleanup necessary.
 		return ASSEMBLER_ERROR_FILE_FAILURE;
@@ -431,9 +425,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	int close_status = fclose(input_file);
 	if(close_status) {
-		char error_message[ERROR_MSG_MAX_LEN];
-		sprintf(error_message, "Error closing file handler: `%u`.", errno);
-		set_error_message(error_message);
+		fprintf(stderr, "Error closing file handler: `%u`.\n", errno);
 		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
 
 		goto FAIL_FREE_STATEMENTS;
@@ -446,7 +438,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	symbol_table.n_entries = 1;
 	symbol_table.symbols = malloc(sizeof(Symbol));
 	if(!symbol_table.symbols) {
-		set_error_message("Error allocating symbol table.");
+		fprintf(stderr, "Error allocating symbol table.\n");
 		process_status = ASSEMBLER_ERROR_BAD_ALLOC;
 
 		goto FAIL_FREE_STATEMENTS;
@@ -461,7 +453,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	// require handling of this string.
 	symbol_table.symbols[0].name = malloc(1);
 	if(!symbol_table.symbols[0].name) {
-		set_error_message("Error allocating null symbol entry.");
+		fprintf(stderr, "Error allocating null symbol entry.\n");
 		process_status = ASSEMBLER_ERROR_BAD_ALLOC;
 
 		goto FAIL_FREE_SYMBOL_TABLE;
@@ -521,7 +513,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	// string table. This is needed by the ELF header.
 	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
 	if(section_shstrtab_index == -1) {
-		set_error_message("Error finding `.shstrtab` index.");
+		fprintf(stderr, "Error finding `.shstrtab` index.\n");
 		process_status = ASSEMBLER_ERROR_MISSING_SECTION;
 
 		goto FAIL_FREE_SYMBOL_TABLE;
@@ -536,7 +528,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	Section *shstrtab = find_section(sections, ".shstrtab");
 	if(!shstrtab) {
-		set_error_message("Error finding `.shstrtab` index.");
+		fprintf(stderr, "Error finding `.shstrtab` index.");
 		process_status = ASSEMBLER_ERROR_MISSING_SECTION;
 
 		goto FAIL_FREE_SYMBOL_TABLE;
@@ -568,7 +560,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 		// data and encoded into the final encoded file.
 		Encoding_Entity *string_entity = malloc(sizeof(Encoding_Entity));
 		if(!string_entity) {
-			set_error_message("Error allocating section name entity.");
+			fprintf(stderr, "Error allocating section name entity.");
 			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
 
 			goto FAIL_FREE_SYMBOL_TABLE;
@@ -580,7 +572,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 		string_entity->size = section_name_len;
 		string_entity->data = malloc(section_name_len);
 		if(!string_entity->data) {
-			set_error_message("Error allocating section name entity data.");
+			fprintf(stderr, "Error allocating section name entity data.");
 			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
 
 			goto FAIL_FREE_SYMBOL_TABLE;
@@ -595,7 +587,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 		// Add the encoded string to the `shstrtab` section.
 		added_entity = section_add_encoding_entity(shstrtab, string_entity);
 		if(!added_entity) {
-			set_error_message("Error adding entity to section header string table.");
+			fprintf(stderr, "Error adding entity to section header string table.");
 			process_status = ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 
 			goto FAIL_FREE_SYMBOL_TABLE;
@@ -634,9 +626,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	// Open the output file.
 	FILE *out_file = fopen(output_filename, "w");
 	if(!out_file) {
-		char error_message[ERROR_MSG_MAX_LEN];
-		sprintf(error_message, "Error opening output file: `%u`", errno);
-		set_error_message(error_message);
+		fprintf(stderr, "Error opening output file: `%u`\n", errno);
 		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
 
 		goto FAIL_FREE_SECTIONS;
@@ -647,11 +637,9 @@ Assembler_Process_Result assemble(const char *input_filename,
 	size_t entity_write_count = fwrite(elf_header, sizeof(Elf32_Ehdr), 1, out_file);
 	if(entity_write_count != 1) {
 		if(ferror(out_file)) {
-			char error_message[ERROR_MSG_MAX_LEN];
-			sprintf(error_message, "Error writing ELF header: `%u`.", errno);
-			set_error_message(error_message);
+			fprintf(stderr, "Error writing ELF header: `%u`.\n", errno);
 		} else {
-			set_error_message("Error writing ELF header.");
+			fprintf(stderr, "Error writing ELF header.\n");
 		}
 
 		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
@@ -677,11 +665,9 @@ Assembler_Process_Result assemble(const char *input_filename,
 			entity_write_count = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
 			if(entity_write_count != 1) {
 				if(ferror(out_file)) {
-					char error_message[ERROR_MSG_MAX_LEN];
-					sprintf(error_message, "Error writing section data: `%u`.", errno);
-					set_error_message(error_message);
+					fprintf(stderr, "Error writing section data: `%u`.\n", errno);
 				} else {
-					set_error_message("Error writing section data.");
+					fprintf(stderr, "Error writing section data.\n");
 				}
 
 				process_status = ASSEMBLER_ERROR_FILE_FAILURE;
@@ -715,11 +701,9 @@ Assembler_Process_Result assemble(const char *input_filename,
 		entity_write_count = fwrite(section_header, sizeof(Elf32_Shdr), 1, out_file);
 		if(entity_write_count != 1) {
 			if(ferror(out_file)) {
-				char error_message[ERROR_MSG_MAX_LEN];
-				sprintf(error_message, "Error writing section header data: `%u`.", errno);
-				set_error_message(error_message);
+				fprintf(stderr, "Error writing section header data: `%u`.\n", errno);
 			} else {
-				set_error_message("Error writing section header data.");
+				fprintf(stderr, "Error writing section header data.\n");
 			}
 
 			process_status = ASSEMBLER_ERROR_FILE_FAILURE;

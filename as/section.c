@@ -30,7 +30,7 @@ Section *create_section(char *name,
 
 	Section *section = malloc(sizeof(Section));
 	if(!section) {
-		set_error_message("Error allocating section.");
+		fprintf(stderr, "Error allocating section.\n");
 		return NULL;
 	}
 
@@ -62,12 +62,12 @@ Section *add_section(Section **section_list,
 	Section *section) {
 
 	if(!section_list) {
-		set_error_message("Invalid section list provided to add section function.");
+		fprintf(stderr, "Invalid section list provided to add section function.\n");
 		return NULL;
 	}
 
 	if(!section) {
-		set_error_message("Invalid section provided to add section function.");
+		fprintf(stderr, "Invalid section provided to add section function.\n");
 		return NULL;
 	}
 
@@ -99,7 +99,7 @@ Section *find_section(Section *section_list,
 	const char *name) {
 
 	if(!section_list) {
-		set_error_message("Invalid section list provided to find section function.");
+		fprintf(stderr, "Invalid section list provided to find section function.\n");
 		return NULL;
 	}
 
@@ -172,12 +172,12 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
 #endif
 
 	if(!section) {
-		set_error_message("Invalid section provided to add entity function.");
+		fprintf(stderr, "Invalid section provided to add entity function.\n");
 		return NULL;
 	}
 
 	if(!entity) {
-		set_error_message("Invalid entity provided to add entity function.");
+		fprintf(stderr, "Invalid entity provided to add entity function.\n");
 		return NULL;
 	}
 
@@ -213,7 +213,7 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
  */
 void free_encoding_entity(Encoding_Entity *entity) {
 	if(!entity) {
-		set_error_message("Attempting to free NULL encoded entity.");
+		fprintf(stderr, "Attempting to free NULL encoded entity.\n");
 		return;
 	}
 
@@ -244,7 +244,7 @@ void free_encoding_entity(Encoding_Entity *entity) {
  */
 void free_section(Section *section) {
 	if(!section) {
-		set_error_message("Warning: Attempting to free NULL section.");
+		fprintf(stderr, "Warning: Attempting to free NULL section.\n");
 		return;
 	}
 
@@ -282,13 +282,13 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// The section header data will be filled as the sections are serialised.
 	Section *section_null = create_section("\0", SHT_NULL, 0);
 	if(!section_null) {
-		set_error_message("Error creating `NULL` section.");
+		fprintf(stderr, "Error creating `NULL` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
 	if(!section_text) {
-		set_error_message("Error creating `.text` section.");
+		fprintf(stderr, "Error creating `.text` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
@@ -299,43 +299,43 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// for the undocumented flags.
 	Section *section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
 	if(!section_text_rel) {
-		set_error_message("Error creating `.rel.text` section.");
+		fprintf(stderr, "Error creating `.rel.text` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
 	if(!section_data) {
-		set_error_message("Error creating `.data` section.");
+		fprintf(stderr, "Error creating `.data` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
 	if(!section_data_rel) {
-		set_error_message("Error creating `.rel.data` section.");
+		fprintf(stderr, "Error creating `.rel.data` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
 	if(!section_bss) {
-		set_error_message("Error creating `.bss` section.");
+		fprintf(stderr, "Error creating `.bss` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
 	if(!section_symtab) {
-		set_error_message("Error creating `.symtab` section.");
+		fprintf(stderr, "Error creating `.symtab` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
 	if(!section_shstrtab) {
-		set_error_message("Error creating `.shstrtab` section.");
+		fprintf(stderr, "Error creating `.shstrtab` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	Section *section_strtab = create_section(".strtab", SHT_STRTAB, 0);
 	if(!section_strtab) {
-		set_error_message("Error creating `.strtab` section.");
+		fprintf(stderr, "Error creating `.strtab` section.\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
@@ -401,7 +401,7 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// table section to the string table section.
 	ssize_t section_strtab_index = find_section_index(*sections, ".strtab");
 	if(section_strtab_index == -1) {
-		set_error_message("Unable to find `.strtab` section index.");
+		fprintf(stderr, "Unable to find `.strtab` section index.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
@@ -411,7 +411,7 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// entry section to it.
 	ssize_t section_data_index = find_section_index(*sections, ".data");
 	if(section_data_index == -1) {
-		set_error_message("Unable to find `.data` section index.");
+		fprintf(stderr, "Unable to find `.data` section index.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
@@ -422,7 +422,7 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// entry section to it.
 	ssize_t section_text_index = find_section_index(*sections, ".text");
 	if(section_text_index == -1) {
-		set_error_message("Unable to find `.text` section index.");
+		fprintf(stderr, "Unable to find `.text` section index.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
@@ -433,7 +433,7 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	// sections to it.
 	ssize_t section_symtab_index = find_section_index(*sections, ".symtab");
 	if(section_symtab_index == -1) {
-		set_error_message("Unable to find `.symtab` section index.");
+		fprintf(stderr, "Unable to find `.symtab` section index.\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 

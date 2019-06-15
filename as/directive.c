@@ -22,7 +22,7 @@
  */
 void free_directive(Directive *directive) {
 	if(!directive) {
-		set_error_message("Invalid directive provided to free function.");
+		fprintf(stderr, "Invalid directive provided to free function.\n");
 		return;
 	}
 
@@ -85,7 +85,7 @@ const char *get_directive_string(Directive dir) {
  */
 Directive_Type parse_directive_symbol(char *directive_symbol) {
 	if(!directive_symbol) {
-		set_error_message("Invalid directive symbol provided to parse function.");
+		fprintf(stderr, "Invalid directive symbol provided to parse function.\n");
 		return DIRECTIVE_UNKNOWN;
 	}
 
