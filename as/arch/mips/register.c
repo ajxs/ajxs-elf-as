@@ -142,7 +142,7 @@ uint8_t encode_operand_register(Register reg) {
 		return 30;
 	} else if(reg == REGISTER_$RA) {
 		return 31;
-	} else {
-		return REGISTER_NONE;
 	}
+
+	return REGISTER_NONE;
 }

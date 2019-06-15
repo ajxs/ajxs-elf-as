@@ -98,9 +98,9 @@ const char *get_opcode_string(Opcode op) {
 		return "SW";
 	} else if(op == OPCODE_SYSCALL) {
 		return "SYSCALL";
-	} else {
-		return "UNKNOWN";
 	}
+
+	return "UNKNOWN";
 }
 
 
@@ -114,7 +114,7 @@ const char *get_opcode_string(Opcode op) {
  */
 ssize_t get_statement_size(Statement *statement) {
 	if(!statement) {
-		set_error_message("Invalid statement provided to get statement size function.");
+		fprintf(stderr, "Invalid statement provided to get statement size function.\n");
 		return -1;
 	}
 
@@ -174,7 +174,7 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_SPACE:
 				return statement->directive.opseq.operands[0].numeric_literal;
 			default:
-				set_error_message("Unknown directive type in get statement size function.");
+				fprintf(stderr, "Unknown directive type in get statement size function.\n");
 				return -1;
 		}
 	}
@@ -183,6 +183,6 @@ ssize_t get_statement_size(Statement *statement) {
 		return 0;
 	}
 
-	set_error_message("Unknown statement type in get statement size function.");
+	fprintf(stderr, "Unknown statement type in get statement size function.\n");
 	return -1;
 }
