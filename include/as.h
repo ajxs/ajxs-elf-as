@@ -196,36 +196,12 @@ typedef struct {
 
 Register parse_register_symbol(char *register_symbol);
 Opcode parse_opcode_symbol(char *opcode_symbol);
-Directive_Type parse_directive_symbol(char *directive_symbol);
-
-const char *get_opcode_string(Opcode op);
-const char *get_directive_string(Directive dir);
-void print_operand(Operand op);
-void print_operand_sequence(Operand_Sequence opseq);
-void print_instruction(Instruction inst);
-void print_directive(Directive dir);
-void print_statement(Statement *statement);
-void print_symbol_table(Symbol_Table *symbol_table);
-
-bool check_operand_count(size_t expected_operand_length,
-	Operand_Sequence *opseq);
 
 Statement *scan_string(const char *str);
 
-
 char *preprocess_line(char *line_buffer);
 
-
-void free_operand(Operand *op);
-void free_operand_sequence(Operand_Sequence *opseq);
-void free_directive(Directive *directive);
-void free_instruction(Instruction *instruction);
-void free_statement(Statement *statement);
-void free_section(Section *section);
-void free_encoding_entity(Encoding_Entity *encoding_entity);
-
-Symbol *symtab_find_symbol(Symbol_Table *symtab,
-	char *label);
+ssize_t get_statement_size(Statement *statement);
 
 Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
 	Instruction *instruction,
@@ -234,8 +210,6 @@ Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
 Encoding_Entity *encode_directive(Symbol_Table *symtab,
 	Directive *directive,
 	size_t program_counter);
-
-ssize_t get_statement_size(Statement *statement);
 
 
 /**
@@ -282,37 +256,6 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 	Statement *statements);
 
 Assembler_Process_Result expand_macros(Statement *statements);
-
-Symbol *symtab_add_symbol(Symbol_Table *symtab,
-	char *name,
-	Section *section,
-	size_t offset);
-
-Symbol *symtab_find_symbol(Symbol_Table *symtab,
-	char *name);
-
-ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
-	char *name);
-
-void free_symbol_table(Symbol_Table *symtab);
-
-Section *create_section(char *name,
-	uint32_t type,
-	uint32_t flags);
-
-Section *add_section(Section **section_list,
-	Section *section);
-
-Section *find_section(Section *section_list,
-	const char *name);
-
-ssize_t find_section_index(Section *section_list,
-	const char *name);
-
-Encoding_Entity *section_add_encoding_entity(Section *section,
-	Encoding_Entity *entity);
-
-void free_encoding_entity(Encoding_Entity *entity);
 
 Elf32_Ehdr *create_elf_header(void);
 Elf32_Shdr *encode_section_header(Section *section);

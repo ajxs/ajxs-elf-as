@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <string.h>
 #include "as.h"
+#include "directive.h"
+#include "instruction.h"
+#include "statement.h"
 #include "token.h"
 
 

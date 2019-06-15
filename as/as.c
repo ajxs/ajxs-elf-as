@@ -9,7 +9,6 @@
  * @date 2019-03-09
  */
 
-#include <as.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -18,7 +17,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <as.h>
+#include <directive.h>
+#include <section.h>
+#include <statement.h>
+#include <symtab.h>
 
 Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections);

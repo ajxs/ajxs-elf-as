@@ -12,11 +12,11 @@
  * @date 2019-03-09
  */
 
-#include <as.h>
-#include <macro.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <as.h>
+#include <macro.h>
+#include <statement.h>
 
 /**
  * @brief Expands a `la` or `li` psuedo-instruction.

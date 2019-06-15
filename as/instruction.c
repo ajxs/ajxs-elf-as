@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <token.h>
 #include <as.h>
+#include <instruction.h>
+#include <statement.h>
 
 
 /**
@@ -26,4 +28,19 @@ void free_instruction(Instruction *instruction) {
 	}
 
 	free_operand_sequence(&instruction->opseq);
+}
+
+
+/**
+ * @brief Prints an instruction.
+ *
+ * This function prints information about an instruction entity.
+ * @param instruction The instruction to print.
+ */
+void print_instruction(Instruction instruction) {
+	const char *opcode_name = get_opcode_string(instruction.opcode);
+	printf("  Instruction: Opcode: `%s`\n", opcode_name);
+	if(instruction.opseq.n_operands > 0) {
+		print_operand_sequence(instruction.opseq);
+	}
 }

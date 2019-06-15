@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <as.h>
+#include <directive.h>
+#include <statement.h>
 
 
 /**
@@ -25,6 +27,52 @@ void free_directive(Directive *directive) {
 	}
 
 	free_operand_sequence(&directive->opseq);
+}
+
+
+/**
+ * @brief Gets the string representation of a directive type.
+ *
+ * This function returns the string representation of a directive type.
+ * @param dir The directive to get the string for.
+ * @returns a pointer to the string containing the directive name.
+ */
+const char *get_directive_string(Directive dir) {
+	if(dir.type == DIRECTIVE_ALIGN) {
+		return ".ALIGN";
+	} else if(dir.type == DIRECTIVE_ASCII) {
+		return ".ASCII";
+	} else if(dir.type == DIRECTIVE_ASCIZ) {
+		return ".ASCIZ";
+	} else if(dir.type == DIRECTIVE_BSS) {
+		return ".BSS";
+	} else if(dir.type == DIRECTIVE_BYTE) {
+		return ".BYTE";
+	} else if(dir.type == DIRECTIVE_DATA) {
+		return ".DATA";
+	} else if(dir.type == DIRECTIVE_FILL) {
+		return ".FILL";
+	} else if(dir.type == DIRECTIVE_GLOBAL) {
+		return ".GLOBAL";
+	} else if(dir.type == DIRECTIVE_LONG) {
+		return ".LONG";
+	} else if(dir.type == DIRECTIVE_SHORT) {
+		return ".SHORT";
+	} else if(dir.type == DIRECTIVE_SIZE) {
+		return ".SIZE";
+	} else if(dir.type == DIRECTIVE_SKIP) {
+		return ".SKIP";
+	} else if(dir.type == DIRECTIVE_SPACE) {
+		return ".SPACE";
+	} else if(dir.type == DIRECTIVE_STRING) {
+		return ".STRING";
+	} else if(dir.type == DIRECTIVE_TEXT) {
+		return ".TEXT";
+	} else if(dir.type == DIRECTIVE_WORD) {
+		return ".WORD";
+	} else {
+		return "UNKNOWN";
+	}
 }
 
 

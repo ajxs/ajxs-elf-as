@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <as.h>
+#include <directive.h>
 #include <token.h>
 #include <parser.h>
 

@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <as.h>
+#include <statement.h>
 
 /**
  * @brief Reads the source file input.

@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <codegen.h>
+#include <directive.h>
+#include <instruction.h>
+#include <statement.h>
 
 
 /**
@@ -330,7 +333,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 	/** The error messaged used in error handling in this function. */
 	char error_message[ERROR_MSG_MAX_LEN];
-	char *opcode_name = get_opcode_string(instruction->opcode);
+	const char *opcode_name = get_opcode_string(instruction->opcode);
 
 	/** The resulting encoding entity. */
 	Encoding_Entity *encoded_entity = NULL;
@@ -685,7 +688,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 
 	char error_message[ERROR_MSG_MAX_LEN];
-	char *directive_name = get_directive_string(*directive);
+	const char *directive_name = get_directive_string(*directive);
 
 #if DEBUG_CODEGEN == 1
 	printf("Debug Codegen: Encoding directive type `%u`...", directive->type);

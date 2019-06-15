@@ -18,11 +18,11 @@ PARSER_SRC:=as/parser.y
 
 ARCH_SOURCES:=as/arch/${ARCH}/codegen.c \
 	as/arch/${ARCH}/elf.c as/arch/${ARCH}/macro.c as/arch/${ARCH}/opcode.c \
-	as/arch/${ARCH}/print.c as/arch/${ARCH}/register.c as/arch/${ARCH}/statement.c
+	as/arch/${ARCH}/register.c as/arch/${ARCH}/statement.c
 
 SOURCES:=${ARCH_SOURCES} ${LEXER_GEN} ${PARSER_GEN} \
 	as/as.c as/directive.c as/elf.c as/error.c as/instruction.c as/input.c \
-	as/main.c as/operand.c as/preprocessor.c as/print.c \
+	as/main.c as/operand.c as/preprocessor.c \
 	as/section.c as/statement.c as/symtab.c
 
 OBJECTS+=${SOURCES:.c=.o}

@@ -10,6 +10,68 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <as.h>
+#include <instruction.h>
+#include <directive.h>
+#include <statement.h>
+
+
+/**
+ * @file instruction.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Functions for dealing with instruction entities.
+ * Contains functions for dealing with instruction entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <token.h>
+#include <as.h>
+#include <directive.h>
+#include <instruction.h>
+#include <statement.h>
+
+
+/**
+ * @brief Frees an operand pointer.
+ *
+ * Frees an operand pointer. Checks if the operand type is dynamically allocated,
+ * freeing it if necessary.
+ * @param op A pointer to the operand to free.
+ */
+void free_operand(Operand *op) {
+	if(!op) {
+		set_error_message("Invalid operand provided to free function.");
+		return;
+	}
+
+	if(op->type == OPERAND_TYPE_STRING_LITERAL) {
+		free(op->string_literal);
+	} else if(op->type == OPERAND_TYPE_SYMBOL) {
+		free(op->symbol);
+	}
+}
+
+
+/**
+ * @brief Frees an operand sequence.
+ *
+ * Frees a sequence of operands,
+ * @param opseq A pointer to the operand sequence to free.
+ */
+void free_operand_sequence(Operand_Sequence *opseq) {
+	if(!opseq) {
+		set_error_message("Invalid operand sequence provided to free function.");
+		return;
+	}
+
+	for(size_t i=0; i < opseq->n_operands; i++) {
+		free_operand(&opseq->operands[i]);
+	}
+
+	free(opseq->operands);
+}
 
 
 /**
@@ -68,5 +130,98 @@ bool check_operand_count(size_t expected_operand_length,
 		return false;
 	} else {
 		return true;
+	}
+}
+
+
+
+/**
+ * @brief Prints an instruction operand.
+ *
+ * This function prints information about an instruction operand.
+ * @param op The operand to print information about.
+ */
+void print_operand(Operand op) {
+	if(op.type == OPERAND_TYPE_NUMERIC_LITERAL) {
+		printf("      Operand: Numeric Literal: `%i`", op.numeric_literal);
+	} else if(op.type == OPERAND_TYPE_STRING_LITERAL) {
+		printf("      Operand: String Literal: `%s`", op.string_literal);
+	} else if(op.type == OPERAND_TYPE_SYMBOL) {
+		printf("      Operand: Symbol Reference: `%s`", op.symbol);
+	} else if(op.type == OPERAND_TYPE_REGISTER) {
+		printf("      Operand: Register: `%i`", op.reg);
+	} else {
+		printf("      Unknown Operand Type");
+	}
+
+	if(op.offset != 0) {
+		printf(" Offset: `%i`", op.offset);
+	}
+
+	if(op.flags.mask != OPERAND_MASK_NONE) {
+		printf(" Mask: `%i`", op.flags.mask);
+	}
+
+	if(op.flags.shift != 0) {
+		printf(" Shift: `%i`", op.flags.shift);
+	}
+
+	printf("\n");
+}
+
+
+/**
+ * @brief Prints an operand sequence.
+ *
+ * This function prints an operand sequence entity, printing each operand.
+ * @param opseq The operand sequence to print.
+ */
+void print_operand_sequence(Operand_Sequence opseq) {
+	printf("    Operand sequence: len: `%zu`\n", opseq.n_operands);
+	for(size_t i=0; i<opseq.n_operands; i++) {
+		print_operand(opseq.operands[i]);
+	}
+}
+
+
+/**
+ * @brief Prints a directive.
+ *
+ * This function prints information about a directive entity.
+ * @param dir The directive to print.
+ */
+void print_directive(Directive dir) {
+	const char *directive_name = get_directive_string(dir);
+	printf("  Directive: Type: `%s`\n", directive_name);
+	if(dir.opseq.n_operands > 0) {
+		print_operand_sequence(dir.opseq);
+	}
+}
+
+
+/**
+ * @brief Prints a statement.
+ *
+ * This function prints information about a statement entity.
+ * @param statement The statement to print.
+ */
+void print_statement(Statement *statement) {
+	if(!statement) {
+		set_error_message("Invalid statement provided to print function.");
+		return;
+	}
+
+	printf("Debug Parser: Statement: Type: `%i`\n", statement->type);
+	if(statement->n_labels > 0) {
+		printf("  Labels: `%zu`:\n", statement->n_labels);
+		for(size_t i=0; i<statement->n_labels; i++) {
+			printf("    Label: `%s`\n", statement->labels[i]);
+		}
+	}
+
+	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
+		print_directive(statement->directive);
+	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
+		print_instruction(statement->instruction);
 	}
 }
