@@ -64,6 +64,9 @@ Encoding_Entity *encode_r_type(char *error_message,
 	encoded_instruction->size = 4;
 	encoded_instruction->data = malloc(4);
 	if(!encoded_instruction->data) {
+		// cleanup.
+		free(encoded_instruction);
+
 		sprintf(error_message, "Error allocating encoded instruction data.\n");
 		return NULL;
 	}
@@ -118,6 +121,9 @@ Encoding_Entity *encode_offset_type(char *error_message,
 	encoded_instruction->size = 4;
 	encoded_instruction->data = malloc(4);
 	if(!encoded_instruction->data) {
+		// cleanup.
+		free(encoded_instruction);
+
 		sprintf(error_message, "Error allocating encoded instruction data.\n");
 		return NULL;
 	}
@@ -174,6 +180,9 @@ Encoding_Entity *encode_i_type(char *error_message,
 		// symbol can be linked correctly.
 		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
 		if(!symbol) {
+			// cleanup.
+			free(encoded_instruction);
+
 			sprintf(error_message, "Error finding symbol `%s`.", imm.symbol);
 			return NULL;
 		}
@@ -183,6 +192,9 @@ Encoding_Entity *encode_i_type(char *error_message,
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
 		if(!encoded_instruction->reloc_entries) {
+			// cleanup.
+			free(encoded_instruction);
+
 			sprintf(error_message, "Error allocating relocation entries.");
 			return NULL;
 		}
@@ -200,6 +212,9 @@ Encoding_Entity *encode_i_type(char *error_message,
 		encoded_instruction->reloc_entries[0].symbol = symbol;
 		encoded_instruction->reloc_entries[0].offset = program_counter;
 	} else {
+		// cleanup.
+		free(encoded_instruction);
+
 		// If the immediate is of any other type, it is an error.
 		sprintf(error_message, "Bad operand type `%u` for immediate type instruction.",
 			imm.type);
@@ -211,6 +226,9 @@ Encoding_Entity *encode_i_type(char *error_message,
 	encoded_instruction->size = 4;
 	encoded_instruction->data = malloc(4);
 	if(!encoded_instruction->data) {
+		// cleanup.
+		free(encoded_instruction);
+
 		sprintf(error_message, "Error allocating encoded instruction data.");
 		return NULL;
 	}
@@ -267,6 +285,9 @@ Encoding_Entity *encode_j_type(char *error_message,
 		encoded_instruction->n_reloc_entries = 1;
 		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
 		if(!encoded_instruction->reloc_entries) {
+			// cleanup.
+			free(encoded_instruction);
+
 			sprintf(error_message, "Error allocating relocation entries.\n");
 			return NULL;
 		}
@@ -277,6 +298,9 @@ Encoding_Entity *encode_j_type(char *error_message,
 
 		immediate = symbol->offset;
 	} else {
+		// cleanup.
+		free(encoded_instruction);
+
 		char error_message[ERROR_MSG_MAX_LEN];
 		sprintf(error_message, "Bad operand type `%u` for jump type instruction.",
 			imm.type);
@@ -291,6 +315,9 @@ Encoding_Entity *encode_j_type(char *error_message,
 	encoded_instruction->size = 4;
 	encoded_instruction->data = malloc(4);
 	if(!encoded_instruction->data) {
+		// cleanup.
+		free(encoded_instruction);
+
 		sprintf(error_message, "Error allocating encoded instruction data.");
 		return NULL;
 	}

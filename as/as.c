@@ -187,6 +187,9 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
 						curr_entity->reloc_entries[r].symbol->name);
 					if(symbol_index == -1) {
+						// cleanup.
+						free(rel);
+
 						fprintf(stderr, "Unable to find symbol index for: `%s`.\n",
 							curr_entity->reloc_entries[r].symbol->name);
 						return ASSEMBLER_ERROR_MISSING_SYMBOL;
@@ -200,6 +203,9 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 					/** The encoding entity that encodes the relocation entry. */
 					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
 					if(!reloc_entity) {
+						// cleanup.
+						free(rel);
+
 						fprintf(stderr, "Unable to allocate space for reloc entry encoding entity.\n");
 						return ASSEMBLER_ERROR_BAD_ALLOC;
 					}

@@ -18,6 +18,7 @@
 #include <as.h>
 
 
+int main(int argc, char **argv);
 void print_help(void);
 void handle_opts_error(const char *error);
 
@@ -59,7 +60,7 @@ int main(int argc, char **argv) {
 	 * The output filename defaults to `out.elf` if not specified. This variable
 	 * is set with the -o/--output command line argument.
 	 */
-	char *output_filename = "./out.elf";
+	const char *output_filename = "./out.elf";
 
 	bool verbose = false;
 
