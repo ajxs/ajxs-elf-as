@@ -63,6 +63,8 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		expansion->instruction.opseq.n_operands = 3;
 		expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
 		if(!expansion->instruction.opseq.operands) {
+			free(expansion);
+
 			fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
 			return EXPAND_MACRO_FAILURE;
 		}
