@@ -701,6 +701,9 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 	const char *directive_name = get_directive_string(*directive);
 	if(!directive_name) {
+		// cleanup.
+		free(encoded_entity);
+
 		fprintf(stderr, "Unable to get directive type for `%i`.\n", directive->type);
 		return NULL;
 	}
@@ -805,14 +808,16 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 					// cleanup.
 					free(word_data);
 
-					fprintf(stderr, "Invalid operand type for `%s` directive.",
-						directive_name);
+					fprintf(stderr, "Invalid operand type for `%s` directive.", directive_name);
 					return NULL;
 				}
 			}
 
 			data = malloc(total_len);
 			if(!data) {
+				// cleanup.
+				free(word_data);
+
 				fprintf(stderr, "Error allocating directive data.");
 				return NULL;
 			}

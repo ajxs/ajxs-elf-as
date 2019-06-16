@@ -21,7 +21,7 @@ ARCH_SOURCES:=as/arch/${ARCH}/codegen.c \
 	as/arch/${ARCH}/register.c as/arch/${ARCH}/statement.c
 
 SOURCES:=${ARCH_SOURCES} ${LEXER_GEN} ${PARSER_GEN} \
-	as/as.c as/directive.c as/elf.c as/error.c as/instruction.c as/input.c \
+	as/as.c as/directive.c as/elf.c as/instruction.c as/input.c \
 	as/main.c as/operand.c as/preprocessor.c \
 	as/section.c as/statement.c as/symtab.c
 

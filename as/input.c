@@ -13,6 +13,10 @@
 #include <as.h>
 #include <statement.h>
 
+
+char *preprocess_line(char *line_buffer);
+
+
 /**
  * @brief Reads the source file input.
  *
@@ -35,7 +39,7 @@ Assembler_Process_Result read_input(FILE *input_file,
 	// Read all the lines in the file.
 	while((chars_read = getline(&line_buffer, &line_buffer_length, input_file)) != -1) {
 #if DEBUG_INPUT == 1
-	printf("Input line #%u: `%s`", line_num, line_buffer);
+	printf("Input line #%ul: `%s`", line_num, line_buffer);
 #endif
 
 		// Preprocess the line. Normalises the line to conform to a standard format.

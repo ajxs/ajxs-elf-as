@@ -29,11 +29,6 @@
 
 #define ERROR_MSG_MAX_LEN 512
 
-const char *assembler_error_msg;
-
-void set_error_message(const char *error);
-void print_error(void);
-
 
 /**
  * @brief The result of a macro expansion.
@@ -198,8 +193,6 @@ Register parse_register_symbol(char *register_symbol);
 Opcode parse_opcode_symbol(char *opcode_symbol);
 
 Statement *scan_string(const char *str);
-
-char *preprocess_line(char *line_buffer);
 
 ssize_t get_statement_size(Statement *statement);
 

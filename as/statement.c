@@ -7,29 +7,13 @@
  * @date 2019-03-09
  */
 
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <as.h>
 #include <instruction.h>
 #include <directive.h>
-#include <statement.h>
-
-
-/**
- * @file instruction.c
- * @author Anthony (ajxs [at] panoptic.online)
- * @brief Functions for dealing with instruction entities.
- * Contains functions for dealing with instruction entities.
- * @version 0.1
- * @date 2019-03-09
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <token.h>
-#include <as.h>
-#include <directive.h>
-#include <instruction.h>
 #include <statement.h>
 
 
@@ -42,7 +26,12 @@
  */
 void free_operand(Operand *op) {
 	if(!op) {
-		set_error_message("Invalid operand provided to free function.");
+		const char* error_message = "Invalid operand provided to free function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 
@@ -62,7 +51,12 @@ void free_operand(Operand *op) {
  */
 void free_operand_sequence(Operand_Sequence *opseq) {
 	if(!opseq) {
-		set_error_message("Invalid operand sequence provided to free function.");
+		const char* error_message = "Invalid operand sequence provided to free function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 
@@ -85,7 +79,12 @@ void free_operand_sequence(Operand_Sequence *opseq) {
  */
 void free_statement(Statement *statement) {
 	if(!statement) {
-		set_error_message("Invalid statement provided to free function.");
+		const char* error_message = "Invalid statement provided to free function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 
@@ -122,7 +121,12 @@ bool check_operand_count(size_t expected_operand_length,
 	Operand_Sequence *opseq) {
 
 	if(!opseq) {
-		set_error_message("Invalid operand sequence provided to check operand function.");
+		const char* error_message = "Invalid operand sequence provided to check operand function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return false;
 	}
 
@@ -207,7 +211,12 @@ void print_directive(Directive dir) {
  */
 void print_statement(Statement *statement) {
 	if(!statement) {
-		set_error_message("Invalid statement provided to print function.");
+		const char* error_message = "Invalid statement provided to print function.\n";
+		int write_count = fprintf(stderr, error_message);
+		if(write_count != (int)strlen(error_message)) {
+			perror("Error printing error message to stderr");
+		}
+
 		return;
 	}
 

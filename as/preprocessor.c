@@ -15,6 +15,8 @@
 #include <string.h>
 #include <as.h>
 
+char *preprocess_line(char *line_buffer);
+
 /**
  * @brief Preprocesses a line of input source.
  *
@@ -33,13 +35,17 @@ char *preprocess_line(char *line_buffer) {
 
 	char *scan = line;
 	char *last_char_pos = line;
-	bool abort_flag = false;
-	char *preprocessor_error = NULL;
+
+	const char *preprocessor_error = NULL;
+	int error_write_count = 0;
 
 	// Trim leading whitespace.
 	// Advance to first non-whitespace char and shift all
 	// chars from here back to the start of the line.
-	while(*scan != '\0' && isblank(*scan)) ++scan;
+	while(*scan != '\0' && isblank(*scan)) {
+		++scan;
+	}
+
 	scan = memmove(last_char_pos, scan, 1 + strlen(scan));
 
 	// Collapse all whitespace.
@@ -52,8 +58,8 @@ char *preprocess_line(char *line_buffer) {
 				// Do not alter the contents of string literals.
 				while(*++scan != '\"') {
 					if(*scan == '\0') {
-						abort_flag = true;
-						preprocessor_error = "Unterminated string literal.";
+						preprocessor_error = "Preprocessor Error: Unterminated string literal.";
+						goto PREPROCESSOR_FAILURE;
 					}
 				}
 			} else if(*scan == '#') {
@@ -64,15 +70,7 @@ char *preprocess_line(char *line_buffer) {
 			last_char_pos = scan;
 		}
 
-		if(abort_flag == true) {
-			break;
-		}
 		scan++;
-	}
-
-	if(preprocessor_error != NULL) {
-		printf("Preprocessor Error: `%s`", preprocessor_error);
-		return NULL;
 	}
 
 	// Remove trailing whitespace.
@@ -87,4 +85,12 @@ char *preprocess_line(char *line_buffer) {
 #endif
 
 	return line;
+
+PREPROCESSOR_FAILURE:
+	error_write_count = fprintf(stderr, preprocessor_error);
+	if(error_write_count != (int)strlen(preprocessor_error)) {
+		perror("Error printing error message to stderr");
+	}
+
+	return NULL;
 }
