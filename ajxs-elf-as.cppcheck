@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <builddir>ajxs-elf-as-cppcheck-build-dir</builddir>
+    <platform>unknown</platform>
+    <analyze-all-vs-configs>true</analyze-all-vs-configs>
+</project>

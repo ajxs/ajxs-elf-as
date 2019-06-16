@@ -626,7 +626,6 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			sa = instruction->opseq.operands[2].numeric_literal;
 			encoded_entity = encode_r_type(error_message, 0, rd, 0, rt, sa, 0x0);
 			break;
