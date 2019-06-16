@@ -116,6 +116,8 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			expansion->instruction.opseq.n_operands = 3;
 			expansion->instruction.opseq.operands = malloc(sizeof(Operand) * 3);
 			if(!expansion->instruction.opseq.operands) {
+				free(expansion);
+
 				fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
 				return EXPAND_MACRO_FAILURE;
 			}
@@ -147,8 +149,8 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 			// The original instruction is modified to use the `ADDIU` opcode.
 			macro->instruction.opcode = OPCODE_ADDIU;
 			macro->instruction.opseq.n_operands = 3;
-			macro->instruction.opseq.operands =
-				realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
+			macro->instruction.opseq.operands = realloc(macro->instruction.opseq.operands,
+				sizeof(Operand) * 3);
 			if(!macro->instruction.opseq.operands) {
 				fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
 				return EXPAND_MACRO_FAILURE;
