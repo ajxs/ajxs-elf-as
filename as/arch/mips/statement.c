@@ -123,6 +123,11 @@ ssize_t get_statement_size(Statement *statement) {
 	}
 
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
+		size_t total_len = 0;
+		size_t string_len;
+		size_t count = 0;
+		size_t fill_size = 0;
+
 		switch(statement->directive.type) {
 			case DIRECTIVE_ALIGN:
 			case DIRECTIVE_DATA:
@@ -132,9 +137,6 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_GLOBAL:
 				return 0;
 			case DIRECTIVE_ASCII:
-				size_t total_len = 0;
-				size_t string_len;
-
 				for(size_t i=0; i<statement->directive.opseq.n_operands; i++) {
 					string_len = strlen(statement->directive.opseq.operands[i].string_literal);
 					total_len += string_len;
@@ -159,9 +161,6 @@ ssize_t get_statement_size(Statement *statement) {
 			case DIRECTIVE_WORD:
 				return 4;
 			case DIRECTIVE_FILL:
-				size_t count = 0;
-				size_t fill_size = 0;
-
 				count = statement->directive.opseq.operands[0].numeric_literal;
 				fill_size = statement->directive.opseq.operands[1].numeric_literal;
 				if(fill_size > 8) {

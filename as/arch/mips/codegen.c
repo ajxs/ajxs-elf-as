@@ -342,35 +342,34 @@ Encoding_Entity *encode_j_type(char *error_message,
  * current program section.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Encoding_Entity *encode_instruction(Symbol_Table *symtab,
+Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
+	Symbol_Table *symtab,
 	Instruction *instruction,
 	size_t program_counter) {
 
 	if(!symtab) {
 		fprintf(stderr, "Invalid symbol table provided to encoding function.\n");
-		return NULL;
+		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
 	if(!instruction) {
 		fprintf(stderr, "Invalid instruction provided to encoding function.\n");
-		return NULL;
+		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
 	const char *opcode_name = get_opcode_string(instruction->opcode);
 	if(!opcode_name) {
 		fprintf(stderr, "Unable to get opcode name for `%i`.\n", instruction->opcode);
-		return NULL;
+		return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
 	/** The error messaged used in error handling in this function. */
 	char *error_message = malloc(ERROR_MSG_MAX_LEN);
 	if(!error_message) {
 		fprintf(stderr, "Error allocating error message string.\n");
-		return NULL;
+		return CODEGEN_ERROR_BAD_ALLOC;
 	}
 
-	/** The resulting encoding entity. */
-	Encoding_Entity *encoded_entity = NULL;
 	uint8_t rd = 0;
 	uint8_t rs = 0;
 	uint8_t rt = 0;
@@ -385,7 +384,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x20);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x20);
 			break;
 		case OPCODE_ADDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -394,7 +393,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0x8, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0x8, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDIU:
@@ -404,7 +403,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0x9, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0x9, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDU:
@@ -415,7 +414,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x21);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x21);
 			break;
 		case OPCODE_AND:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -425,7 +424,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x24);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x24);
 			break;
 		case OPCODE_ANDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -434,7 +433,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0xC, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0xC, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BAL:
@@ -442,7 +441,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			encoded_entity = encode_i_type(error_message, symtab, 1, 0, 0x11,
+			*encoded_instruction = encode_i_type(error_message, symtab, 1, 0, 0x11,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BEQ:
@@ -452,7 +451,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0x4, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0x4, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BGEZ:
@@ -462,7 +461,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0x14, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0x14, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BNE:
@@ -472,7 +471,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0x5, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0x5, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_J:
@@ -480,7 +479,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			encoded_entity = encode_j_type(error_message, symtab, 0x2,
+			*encoded_instruction = encode_j_type(error_message, symtab, 0x2,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JAL:
@@ -488,7 +487,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			encoded_entity = encode_j_type(error_message, symtab, 0x3,
+			*encoded_instruction = encode_j_type(error_message, symtab, 0x3,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JALR:
@@ -503,7 +502,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			}
 
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, 0, 0, 0x9);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_JR:
 			if(!check_operand_count(1, &instruction->opseq)) {
@@ -511,7 +510,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_r_type(error_message, 0, 0, rs, 0, 0, 0x9);
+			*encoded_instruction = encode_r_type(error_message, 0, 0, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_LB:
 			if(!check_operand_count(2, &instruction->opseq)) {
@@ -519,7 +518,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x20, rt,
+			*encoded_instruction = encode_offset_type(error_message, 0x20, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LBU:
@@ -528,7 +527,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x24, rt,
+			*encoded_instruction = encode_offset_type(error_message, 0x24, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LUI:
@@ -537,7 +536,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0xF, 0, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0xF, 0, rt,
 				instruction->opseq.operands[1], program_counter);
 			break;
 		case OPCODE_LW:
@@ -546,7 +545,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x23, rt,
+			*encoded_instruction = encode_offset_type(error_message, 0x23, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_MUH:
@@ -562,13 +561,13 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
 
 			if(instruction->opcode == OPCODE_MUH) {
-				encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x18);
+				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x18);
 			} else if(instruction->opcode == OPCODE_MUHU) {
-				encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x19);
+				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x19);
 			} else if(instruction->opcode == OPCODE_MUL) {
-				encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x18);
+				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x18);
 			} else if(instruction->opcode == OPCODE_MULU) {
-				encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x19);
+				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x19);
 			}
 			break;
 		case OPCODE_MULT:
@@ -582,7 +581,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			encoded_entity = encode_r_type(error_message, 0, 0, 0, 0, 0, 0);
+			*encoded_instruction = encode_r_type(error_message, 0, 0, 0, 0, 0, 0);
 			break;
 		case OPCODE_OR:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -592,7 +591,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x25);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x25);
 			break;
 		case OPCODE_ORI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -601,7 +600,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			encoded_entity = encode_i_type(error_message, symtab, 0xD, rs, rt,
+			*encoded_instruction = encode_i_type(error_message, symtab, 0xD, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_SB:
@@ -610,7 +609,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x28, rt, instruction->opseq.operands[1]);
+			*encoded_instruction = encode_offset_type(error_message, 0x28, rt,
+				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SH:
 			if(!check_operand_count(2, &instruction->opseq)) {
@@ -618,7 +618,8 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x29, rt, instruction->opseq.operands[1]);
+			*encoded_instruction = encode_offset_type(error_message, 0x29, rt,
+				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SLL:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -627,7 +628,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			sa = instruction->opseq.operands[2].numeric_literal;
-			encoded_entity = encode_r_type(error_message, 0, rd, 0, rt, sa, 0x0);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, 0, rt, sa, 0x0);
 			break;
 		case OPCODE_SUB:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -637,7 +638,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x22);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x22);
 			break;
 		case OPCODE_SUBU:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -647,7 +648,7 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			encoded_entity = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x23);
+			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x23);
 			break;
 		case OPCODE_SW:
 			if(!check_operand_count(2, &instruction->opseq)) {
@@ -655,19 +656,20 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			encoded_entity = encode_offset_type(error_message, 0x2B, rt, instruction->opseq.operands[1]);
+			*encoded_instruction = encode_offset_type(error_message, 0x2B, rt,
+				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SYSCALL:
 			// @TODO: Investigate use of `code` field.
-			encoded_entity = encode_r_type(error_message, 0, 0, 0, 0, 0, 0xC);
+			*encoded_instruction = encode_r_type(error_message, 0, 0, 0, 0, 0, 0xC);
 			break;
 		case OPCODE_UNKNOWN:
 		default:
 			fprintf(stderr, "Unrecognised Opcode `%i`.\n", instruction->opcode);
-			return NULL;
+			return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
-	if(!encoded_entity) {
+	if(!*encoded_instruction) {
 		// Add the error message returned from the encoding function to a more
 		// generatlised error message that prints the instruction.
 		fprintf(stderr, "Error encoding instruction `%s`: %s\n",
@@ -675,21 +677,21 @@ Encoding_Entity *encode_instruction(Symbol_Table *symtab,
 
 		free(error_message);
 
-		return NULL;
+		return CODEGEN_ERROR_BAD_ALLOC;
 	}
 
 #if DEBUG_CODEGEN == 1
 	printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `0x%x`.\n",
-		opcode_name, program_counter, *(uint32_t *)encoded_entity->data);
+		opcode_name, program_counter, 0);
 #endif
 
-	return encoded_entity;
+	return CODEGEN_SUCCESS;
 
 INSTRUCTION_OPERAND_COUNT_MISMATCH:
 	free(error_message);
 
 	fprintf(stderr, "Operand count mismatch for instruction `%s`.\n", opcode_name);
-	return NULL;
+	return CODEGEN_ERROR_BAD_ALLOC;
 }
 
 

@@ -305,6 +305,8 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 	/** Used for tracking the result of adding the entity to a section. */
 	Encoding_Entity *added_entity = NULL;
 
+	Codegen_Status_Result status;
+
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
 			switch(curr->directive.type) {
@@ -350,9 +352,9 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 
 			}
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
-			encoding = encode_instruction(symbol_table, &curr->instruction,
+			status = encode_instruction(&encoding, symbol_table, &curr->instruction,
 				section_current->program_counter);
-			if(!encoding) {
+			if(status != CODEGEN_SUCCESS) {
 				// Error message should already be set in the encode function.
 				return ASSEMBLER_ERROR_CODEGEN_FAILURE;
 			}

@@ -196,7 +196,20 @@ Statement *scan_string(const char *str);
 
 ssize_t get_statement_size(Statement *statement);
 
-Encoding_Entity *encode_instruction(Symbol_Table *symbol_table,
+
+typedef enum _codegen_status {
+	CODEGEN_SUCCESS,
+	CODEGEN_ERROR_BAD_ALLOC,
+	CODEGEN_ERROR_BAD_OPCODE,
+	CODEGEN_ERROR_INVALID_ARGS,
+	CODEGEN_ERROR_OPERAND_COUNT_MISMATCH,
+	CODEGEN_ERROR_MISSING_SECTION,
+	CODEGEN_ERROR_MISSING_SYMBOL
+} Codegen_Status_Result;
+
+
+Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
+	Symbol_Table *symbol_table,
 	Instruction *instruction,
 	size_t program_counter);
 
