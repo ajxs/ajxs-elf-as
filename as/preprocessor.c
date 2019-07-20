@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <as.h>
+#include <input.h>
 
-char *preprocess_line(char *line_buffer);
 
 /**
  * @brief Preprocesses a line of input source.
@@ -37,7 +37,6 @@ char *preprocess_line(char *line_buffer) {
 	char *last_char_pos = line;
 
 	const char *preprocessor_error = NULL;
-	int error_write_count = 0;
 
 	// Trim leading whitespace.
 	// Advance to first non-whitespace char and shift all
@@ -87,10 +86,7 @@ char *preprocess_line(char *line_buffer) {
 	return line;
 
 PREPROCESSOR_FAILURE:
-	error_write_count = fprintf(stderr, preprocessor_error);
-	if(error_write_count != (int)strlen(preprocessor_error)) {
-		perror("Error printing error message to stderr");
-	}
+	fprintf(stderr, "Error: %s\n", preprocessor_error);
 
 	return NULL;
 }

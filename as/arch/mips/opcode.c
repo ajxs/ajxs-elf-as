@@ -96,7 +96,7 @@ Opcode parse_opcode_symbol(char *opcode_symbol) {
 		return OPCODE_SYSCALL;
 	}
 
-	printf("Error: Unrecognised opcode: `%s`\n", opcode_symbol);
+	fprintf(stderr, "Error: Unrecognised opcode: `%s`.\n", opcode_symbol);
 
 	return OPCODE_UNKNOWN;
 }

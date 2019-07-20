@@ -3,6 +3,7 @@
 #include <string.h>
 #include <as.h>
 #include <directive.h>
+#include <input.h>
 #include <token.h>
 #include <parser.h>
 

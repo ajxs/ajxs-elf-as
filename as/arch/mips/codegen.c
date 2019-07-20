@@ -348,25 +348,25 @@ Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
 	size_t program_counter) {
 
 	if(!symtab) {
-		fprintf(stderr, "Invalid symbol table provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid symbol table provided to encoding function.\n");
 		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
 	if(!instruction) {
-		fprintf(stderr, "Invalid instruction provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid instruction provided to encoding function.\n");
 		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
 	const char *opcode_name = get_opcode_string(instruction->opcode);
 	if(!opcode_name) {
-		fprintf(stderr, "Unable to get opcode name for `%i`.\n", instruction->opcode);
+		fprintf(stderr, "Error: Unable to get opcode name for `%i`.\n", instruction->opcode);
 		return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
 	/** The error messaged used in error handling in this function. */
 	char *error_message = malloc(ERROR_MSG_MAX_LEN);
 	if(!error_message) {
-		fprintf(stderr, "Error allocating error message string.\n");
+		fprintf(stderr, "Error: Error allocating error message string.\n");
 		return CODEGEN_ERROR_BAD_ALLOC;
 	}
 
@@ -665,14 +665,14 @@ Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
 			break;
 		case OPCODE_UNKNOWN:
 		default:
-			fprintf(stderr, "Unrecognised Opcode `%i`.\n", instruction->opcode);
+			fprintf(stderr, "Error: Unrecognised Opcode `%i`.\n", instruction->opcode);
 			return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
 	if(!*encoded_instruction) {
 		// Add the error message returned from the encoding function to a more
 		// generatlised error message that prints the instruction.
-		fprintf(stderr, "Error encoding instruction `%s`: %s\n",
+		fprintf(stderr, "Error: Error encoding instruction `%s`: %s\n",
 			opcode_name, error_message);
 
 		free(error_message);
@@ -690,7 +690,7 @@ Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
 INSTRUCTION_OPERAND_COUNT_MISMATCH:
 	free(error_message);
 
-	fprintf(stderr, "Operand count mismatch for instruction `%s`.\n", opcode_name);
+	fprintf(stderr, "Error: Operand count mismatch for instruction `%s`.\n", opcode_name);
 	return CODEGEN_ERROR_BAD_ALLOC;
 }
 
@@ -701,18 +701,18 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 	(void)program_counter;
 	if(!symtab) {
-		fprintf(stderr, "Invalid symbol table provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid symbol table provided to encoding function.\n");
 		return NULL;
 	}
 
 	if(!directive) {
-		fprintf(stderr, "Invalid directive provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid directive provided to encoding function.\n");
 		return NULL;
 	}
 
 	Encoding_Entity *encoded_entity = malloc(sizeof(Encoding_Entity));
 	if(!encoded_entity) {
-		fprintf(stderr, "Error allocating encoding entity.\n");
+		fprintf(stderr, "Error: Error allocating encoding entity.\n");
 		return NULL;
 	}
 
@@ -732,7 +732,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 		// cleanup.
 		free(encoded_entity);
 
-		fprintf(stderr, "Unable to get directive type for `%i`.\n", directive->type);
+		fprintf(stderr, "Error: Unable to get directive type for `%i`.\n", directive->type);
 		return NULL;
 	}
 
@@ -753,7 +753,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 				total_len += string_len;
 				data = realloc(data, total_len);
 				if(!data) {
-					fprintf(stderr, "Error allocating directive data.\n");
+					fprintf(stderr, "Error: Error allocating directive data.\n");
 					return NULL;
 				}
 
@@ -776,7 +776,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 				data = realloc(data, total_len);
 				if(!data) {
-					fprintf(stderr, "Error allocating directive data.\n");
+					fprintf(stderr, "Error: Error allocating directive data.\n");
 					return NULL;
 				}
 
@@ -811,7 +811,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 
 			uint32_t *word_data = malloc(total_len);
 			if(!word_data) {
-				fprintf(stderr, "Error allocating directive data.\n");
+				fprintf(stderr, "Error: Error allocating directive data.\n");
 				return NULL;
 			}
 
@@ -824,7 +824,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 						// cleanup.
 						free(word_data);
 
-						fprintf(stderr, "Error finding symbol `%s`.\n",
+						fprintf(stderr, "Error: Error finding symbol `%s`.\n",
 							directive->opseq.operands[i].string_literal);
 						return NULL;
 					}
@@ -836,7 +836,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 					// cleanup.
 					free(word_data);
 
-					fprintf(stderr, "Invalid operand type for `%s` directive.", directive_name);
+					fprintf(stderr, "Error: Invalid operand type for `%s` directive.", directive_name);
 					return NULL;
 				}
 			}
@@ -846,7 +846,7 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 				// cleanup.
 				free(word_data);
 
-				fprintf(stderr, "Error allocating directive data.");
+				fprintf(stderr, "Error: Error allocating directive data.");
 				return NULL;
 			}
 
@@ -864,10 +864,10 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 		case DIRECTIVE_GLOBAL:
 		case DIRECTIVE_TEXT:
 		case DIRECTIVE_UNKNOWN:
-			fprintf(stderr, "Invalid non-encoded directive type.\n");
+			fprintf(stderr, "Error: Invalid non-encoded directive type.\n");
 			return NULL;
 		default:
-			fprintf(stderr, "Unknown directive type.\n");
+			fprintf(stderr, "Error: Unknown directive type.\n");
 			return NULL;
 	}
 
@@ -879,6 +879,6 @@ Encoding_Entity *encode_directive(Symbol_Table *symtab,
 	return encoded_entity;
 
 DIRECTIVE_OPERAND_COUNT_MISMATCH:
-	fprintf(stderr, "Operand count mismatch for directive `%s`.\n", directive_name);
+	fprintf(stderr, "Error: Operand count mismatch for directive `%s`.\n", directive_name);
 	return NULL;
 }

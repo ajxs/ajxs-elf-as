@@ -26,11 +26,7 @@
  */
 void free_operand(Operand *op) {
 	if(!op) {
-		const char* error_message = "Invalid operand provided to free function.\n";
-		int write_count = fprintf(stderr, error_message);
-		if(write_count != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		fprintf(stderr, "Error: Invalid operand provided to free function.\n");
 
 		return;
 	}
@@ -51,11 +47,7 @@ void free_operand(Operand *op) {
  */
 void free_operand_sequence(Operand_Sequence *opseq) {
 	if(!opseq) {
-		const char* error_message = "Invalid operand sequence provided to free function.\n";
-		int write_count = fprintf(stderr, error_message);
-		if(write_count != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		fprintf(stderr, "Error: Invalid operand sequence provided to free function.\n");
 
 		return;
 	}
@@ -79,11 +71,7 @@ void free_operand_sequence(Operand_Sequence *opseq) {
  */
 void free_statement(Statement *statement) {
 	if(!statement) {
-		const char* error_message = "Invalid statement provided to free function.\n";
-		int write_count = fprintf(stderr, error_message);
-		if(write_count != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		fprintf(stderr, "Error: Invalid statement provided to free function.\n");
 
 		return;
 	}
@@ -121,11 +109,7 @@ bool check_operand_count(size_t expected_operand_length,
 	Operand_Sequence *opseq) {
 
 	if(!opseq) {
-		const char* error_message = "Invalid operand sequence provided to check operand function.\n";
-		int write_count = fprintf(stderr, error_message);
-		if(write_count != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		fprintf(stderr, "Error: Invalid operand sequence provided to check operand function.\n");
 
 		return false;
 	}
@@ -211,11 +195,7 @@ void print_directive(Directive dir) {
  */
 void print_statement(Statement *statement) {
 	if(!statement) {
-		const char* error_message = "Invalid statement provided to print function.\n";
-		int write_count = fprintf(stderr, error_message);
-		if(write_count != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		fprintf(stderr, "Error: Invalid statement provided to print function.\n");
 
 		return;
 	}

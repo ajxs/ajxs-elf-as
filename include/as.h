@@ -192,8 +192,6 @@ typedef struct {
 Register parse_register_symbol(char *register_symbol);
 Opcode parse_opcode_symbol(char *opcode_symbol);
 
-Statement *scan_string(const char *str);
-
 ssize_t get_statement_size(Statement *statement);
 
 
@@ -241,8 +239,6 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE
 } Assembler_Process_Result;
 
-Assembler_Process_Result read_input(FILE *input_file,
-	Statement **program_statements);
 
 Assembler_Process_Result initialise_sections(Section **sections);
 

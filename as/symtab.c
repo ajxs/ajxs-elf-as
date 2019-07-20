@@ -24,8 +24,8 @@
  */
 void print_symbol_table(Symbol_Table *symbol_table) {
 	if(!symbol_table) {
-		const char* error_message = "Invalid symbol table provided to print function.\n";
-		int write_count = fprintf(stderr, error_message);
+		const char* error_message = "Invalid symbol table provided to print function.";
+		int write_count = fprintf(stderr, "%s\n", error_message);
 		if(write_count != (int)strlen(error_message)) {
 			perror("Error printing error message to stderr");
 		}
@@ -64,24 +64,24 @@ Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	const char* error_message = NULL;
 
 	if(!symtab) {
-		error_message = "Invalid symbol table provided to add symbol function.\n";
+		error_message = "Invalid symbol table provided to add symbol function.";
 		goto HANDLE_ADD_SYMBOL_ERROR;
 	}
 
 	if(!name) {
-		error_message = "Invalid symbol provided to add symbol function.\n";
+		error_message = "Invalid symbol provided to add symbol function.";
 		goto HANDLE_ADD_SYMBOL_ERROR;
 	}
 
 	if(!section) {
-		error_message = "Invalid section data provided to add symbol function.\n";
+		error_message = "Invalid section data provided to add symbol function.";
 		goto HANDLE_ADD_SYMBOL_ERROR;
 	}
 
 	symtab->n_entries++;
 	symtab->symbols = realloc(symtab->symbols, sizeof(Symbol) * symtab->n_entries);
 	if(!symtab->symbols) {
-		error_message = "Error resizing symbol table array.\n";
+		error_message = "Error resizing symbol table array.";
 		goto HANDLE_ADD_SYMBOL_ERROR;
 	}
 
@@ -97,9 +97,7 @@ Symbol *symtab_add_symbol(Symbol_Table *symtab,
 	return &symtab->symbols[symtab->n_entries - 1];
 
 HANDLE_ADD_SYMBOL_ERROR:
-	if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-		perror("Error printing error message to stderr");
-	}
+	fprintf(stderr, "Error: %s\n", error_message);
 
 	return NULL;
 }
@@ -119,12 +117,12 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	const char* error_message = NULL;
 
 	if(!symtab) {
-		error_message = "Invalid symbol table provided to find symbol function.\n";
+		error_message = "Invalid symbol table provided to find symbol function.";
 		goto HANDLE_FIND_SYMBOL_ERROR;
 	}
 
 	if(!name) {
-		error_message = "Invalid name provided to find symbol function.\n";
+		error_message = "Invalid name provided to find symbol function.";
 		goto HANDLE_FIND_SYMBOL_ERROR;
 	}
 
@@ -138,7 +136,7 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	return NULL;
 
 HANDLE_FIND_SYMBOL_ERROR:
-	if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
+	if(fprintf(stderr, "Error: %s\n", error_message) != 1+(int)strlen(error_message)) {
 		perror("Error printing error message to stderr");
 	}
 
@@ -160,12 +158,12 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 	const char* error_message = NULL;
 
 	if(!symtab) {
-		error_message = "Invalid symbol table provided to find symbol function.\n";
+		error_message = "Invalid symbol table provided to find symbol function.";
 		goto HANDLE_FIND_SYMBOL_INDEX_ERROR;
 	}
 
 	if(!name) {
-		error_message = "Invalid name provided to find symbol function.\n";
+		error_message = "Invalid name provided to find symbol function.";
 		goto HANDLE_FIND_SYMBOL_INDEX_ERROR;
 	}
 
@@ -179,9 +177,7 @@ ssize_t symtab_find_symbol_index(Symbol_Table *symtab,
 	return -1;
 
 HANDLE_FIND_SYMBOL_INDEX_ERROR:
-	if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-		perror("Error printing error message to stderr");
-	}
+	fprintf(stderr, "Error: %s\n", error_message);
 
 	return -1;
 }
@@ -195,10 +191,8 @@ HANDLE_FIND_SYMBOL_INDEX_ERROR:
  */
 void free_symbol_table(Symbol_Table *symtab) {
 	if(!symtab) {
-		const char *error_message = "Invalid symbol table provided to free function.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		const char *error_message = "Invalid symbol table provided to free function.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return;
 	}
@@ -229,19 +223,15 @@ Assembler_Process_Result populate_symtab(Section *sections,
 	const char* error_message = NULL;
 
 	if(!sections) {
-		error_message = "Invalid section data populating symbol table.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Invalid section data populating symbol table.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(!symbol_table) {
-		error_message = "Invalid symbol table data populating symbol table.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Invalid symbol table data populating symbol table.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
@@ -249,20 +239,16 @@ Assembler_Process_Result populate_symtab(Section *sections,
 
 	Section *strtab = find_section(sections, ".strtab");
 	if(!strtab) {
-		error_message = "Unable to locate .strtab section populating symbol table.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Unable to locate .strtab section populating symbol table.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	Section *symtab = find_section(sections, ".symtab");
 	if(!symtab) {
-		error_message = "Unable to locate .symtab section populating symbol table.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Unable to locate .symtab section populating symbol table.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
@@ -273,10 +259,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 	// Add the initial null byte to strtab as per ELF specification.
 	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
 	if(!null_byte_entity) {
-		error_message = "Error allocating null byte symbol entity.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Error allocating null byte symbol entity.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
@@ -287,10 +271,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 	null_byte_entity->size = 1;
 	null_byte_entity->data = malloc(1);
 	if(!null_byte_entity->data) {
-		error_message = "Error allocating null byte symbol entity data.\n";
-		if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-			perror("Error printing error message to stderr");
-		}
+		error_message = "Error allocating null byte symbol entity data.";
+		fprintf(stderr, "Error: %s\n", error_message);
 
 		// Cleanup.
 		free(null_byte_entity);
@@ -335,7 +317,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 			char missing_section_error_message[ERROR_MSG_MAX_LEN];
 			sprintf(missing_section_error_message, "Unable to find section index for: `%s`.",
 				symbol_table->symbols[i].section->name);
-			if(fprintf(stderr, missing_section_error_message) != (int)strlen(missing_section_error_message)) {
+			if(fprintf(stderr, "%s\n", missing_section_error_message) != 1 +
+				(int)strlen(missing_section_error_message)) {
 				perror("Error printing error message to stderr");
 			}
 
@@ -356,10 +339,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 		// in the symbol table section during the writing of the section data.
 		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_entry_entity) {
-			error_message = "Error allocating symbol entity.\n";
-			if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-				perror("Error printing error message to stderr");
-			}
+			error_message = "Error allocating symbol entity.";
+			fprintf(stderr, "Error: %s\n", error_message);
 
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
@@ -370,10 +351,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 		symbol_entry_entity->size = symbol_entry_size;
 		symbol_entry_entity->data = malloc(symbol_entry_size);
 		if(!symbol_entry_entity->data) {
-			error_message = "Error allocating symbol entity data.\n";
-			if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-				perror("Error printing error message to stderr");
-			}
+			error_message = "Error allocating symbol entity data.";
+			fprintf(stderr, "Error: %s\n", error_message);
 
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
@@ -398,10 +377,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 		// in the string table during the writing of the section data.
 		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_name_entity) {
-			error_message = "Error allocating symbol name entity.\n";
-			if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-				perror("Error printing error message to stderr");
-			}
+			error_message = "Error allocating symbol name entity.";
+			fprintf(stderr, "Error: %s\n", error_message);
 
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
@@ -413,10 +390,8 @@ Assembler_Process_Result populate_symtab(Section *sections,
 		symbol_name_entity->size = symbol_name_len;
 		symbol_name_entity->data = malloc(symbol_name_len);
 		if(!symbol_name_entity->data) {
-			error_message = "Error allocating symbol name entity data.\n";
-			if(fprintf(stderr, error_message) != (int)strlen(error_message)) {
-				perror("Error printing error message to stderr");
-			}
+			error_message = "Error allocating symbol name entity data.";
+			fprintf(stderr, "Error: %s\n", error_message);
 
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}

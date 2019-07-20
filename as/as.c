@@ -19,6 +19,7 @@
 #include <string.h>
 #include <as.h>
 #include <directive.h>
+#include <input.h>
 #include <section.h>
 #include <statement.h>
 #include <symtab.h>

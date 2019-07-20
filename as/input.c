@@ -11,10 +11,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <as.h>
+#include <input.h>
 #include <statement.h>
-
-
-char *preprocess_line(char *line_buffer);
 
 
 /**
