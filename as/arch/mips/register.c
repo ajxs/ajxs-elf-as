@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "as.h"
+#include "parsing.h"
 
 
 Register parse_register_symbol(char *register_symbol) {

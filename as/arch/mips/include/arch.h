@@ -7,10 +7,8 @@
  * @date 2019-03-09
  */
 
-#ifndef MIPS_H
-#define MIPS_H 1
-
-#include <inttypes.h>
+#ifndef ARCH_H
+#define ARCH_H 1
 
 
 typedef enum {

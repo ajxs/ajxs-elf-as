@@ -20,6 +20,7 @@
 #include <as.h>
 #include <directive.h>
 #include <input.h>
+#include <instruction.h>
 #include <section.h>
 #include <statement.h>
 #include <symtab.h>
@@ -186,13 +187,13 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 
 					/** The index of the relevant symbol into the symbol table. */
 					ssize_t symbol_index = symtab_find_symbol_index(symtab,
-						curr_entity->reloc_entries[r].symbol->name);
+						curr_entity->reloc_entries[r].symbol_name);
 					if(symbol_index == -1) {
 						// cleanup.
 						free(rel);
 
 						fprintf(stderr, "Unable to find symbol index for: `%s`.\n",
-							curr_entity->reloc_entries[r].symbol->name);
+							curr_entity->reloc_entries[r].symbol_name);
 						return ASSEMBLER_ERROR_MISSING_SYMBOL;
 					}
 

@@ -1,5 +1,6 @@
 #include <string.h>
 #include "as.h"
+#include "parsing.h"
 
 
 /**

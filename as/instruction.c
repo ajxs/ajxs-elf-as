@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <token.h>
 #include <as.h>
 #include <instruction.h>
 #include <statement.h>

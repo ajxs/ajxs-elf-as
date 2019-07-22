@@ -10,6 +10,7 @@
 #ifndef INPUT_H
 #define INPUT_H 1
 
+
 char *preprocess_line(char *line_buffer);
 
 Statement *scan_string(const char *str);

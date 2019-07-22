@@ -4,8 +4,8 @@
 #include <as.h>
 #include <directive.h>
 #include <input.h>
-#include <token.h>
 #include <parser.h>
+#include <parsing.h>
 
 #define DEBUG_LEXER 0
 

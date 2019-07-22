@@ -209,7 +209,7 @@ Encoding_Entity *encode_i_type(char *error_message,
 			encoded_instruction->reloc_entries[0].type = R_MIPS_LO16;
 		}
 
-		encoded_instruction->reloc_entries[0].symbol = symbol;
+		// encoded_instruction->reloc_entries[0].symbol = symbol;
 		encoded_instruction->reloc_entries[0].offset = program_counter;
 	} else {
 		// cleanup.
@@ -238,7 +238,6 @@ Encoding_Entity *encode_i_type(char *error_message,
 
 	return encoded_instruction;
 }
-
 
 
 /**
@@ -293,7 +292,7 @@ Encoding_Entity *encode_j_type(char *error_message,
 		}
 
 		encoded_instruction->reloc_entries[0].type = R_MIPS_26;
-		encoded_instruction->reloc_entries[0].symbol = symbol;
+		// encoded_instruction->reloc_entries[0].symbol = symbol;
 		encoded_instruction->reloc_entries[0].offset = program_counter;
 
 		immediate = symbol->offset;

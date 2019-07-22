@@ -7,8 +7,8 @@
 #include "as.h"
 #include "directive.h"
 #include "instruction.h"
+#include "parsing.h"
 #include "statement.h"
-#include "token.h"
 
 
 extern int yylex(void);
