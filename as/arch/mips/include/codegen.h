@@ -12,7 +12,6 @@
 #define CODEGEN_H 1
 
 #include <as.h>
-#include <operand.h>
 #include <symtab.h>
 #include <stdbool.h>
 #include <stdint.h>

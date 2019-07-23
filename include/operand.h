@@ -10,7 +10,10 @@
 #ifndef OPERAND_H
 #define OPERAND_H 1
 
+#include <arch.h>
+#include <stdbool.h>
 #include <stddef.h>
+
 
 typedef enum {
 	OPERAND_MASK_NONE,
@@ -54,5 +57,17 @@ typedef struct {
 	size_t n_operands;
 	Operand *operands;
 } Operand_Sequence;
+
+
+bool check_operand_count(size_t expected_operand_length,
+	Operand_Sequence *opseq);
+
+void free_operand(Operand *op);
+
+void free_operand_sequence(Operand_Sequence *opseq);
+
+void print_operand(Operand op);
+
+void print_operand_sequence(Operand_Sequence opseq);
 
 #endif

@@ -10,13 +10,13 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H 1
 
+#include <arch.h>
 #include <operand.h>
 #include <symtab.h>
 #include <stdint.h>
 
 
 typedef struct {
-	Instruction_Type type;
 	Opcode opcode;
 	Operand_Sequence opseq;
 } Instruction;
@@ -25,5 +25,7 @@ typedef struct {
 void free_instruction(Instruction *instruction);
 
 void print_instruction(Instruction inst);
+
+const char *get_opcode_string(Opcode op);
 
 #endif

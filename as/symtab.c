@@ -136,9 +136,7 @@ Symbol *symtab_find_symbol(Symbol_Table *symtab,
 	return NULL;
 
 HANDLE_FIND_SYMBOL_ERROR:
-	if(fprintf(stderr, "Error: %s\n", error_message) != 1+(int)strlen(error_message)) {
-		perror("Error printing error message to stderr");
-	}
+	fprintf(stderr, "Error: %s\n", error_message);
 
 	return NULL;
 }
@@ -317,10 +315,7 @@ Assembler_Process_Result populate_symtab(Section *sections,
 			char missing_section_error_message[ERROR_MSG_MAX_LEN];
 			sprintf(missing_section_error_message, "Unable to find section index for: `%s`.",
 				symbol_table->symbols[i].section->name);
-			if(fprintf(stderr, "%s\n", missing_section_error_message) != 1 +
-				(int)strlen(missing_section_error_message)) {
-				perror("Error printing error message to stderr");
-			}
+			fprintf(stderr, "%s\n", missing_section_error_message);
 
 			return ASSEMBLER_ERROR_MISSING_SECTION;
 		}

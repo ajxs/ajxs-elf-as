@@ -137,7 +137,6 @@ statement:
 instruction:
 	SYMBOL {
 		Instruction instruction;
-		instruction.type = INSTRUCTION_TYPE_UNKNOWN;
 		instruction.opcode = parse_opcode_symbol($1);
 		instruction.opseq.n_operands = 0;
 		$$ = instruction;
@@ -148,7 +147,6 @@ instruction:
 	}
 	| SYMBOL operand_seq {
 		Instruction instruction;
-		instruction.type = INSTRUCTION_TYPE_UNKNOWN;
 		instruction.opcode = parse_opcode_symbol($1);
 		instruction.opseq = $2;
 

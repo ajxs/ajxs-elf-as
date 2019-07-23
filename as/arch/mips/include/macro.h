@@ -15,7 +15,9 @@
 
 
 Expand_Macro_Result_Status expand_macro_la(Statement *macro);
+
 Expand_Macro_Result_Status expand_macro_move(Statement *macro);
+
 Expand_Macro_Result_Status expand_branch_delay(Statement *macro);
 
 #endif

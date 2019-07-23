@@ -11,7 +11,6 @@
 #define AS_H 1
 
 #include <elf.h>
-#include <arch.h>
 #include <statement.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -80,6 +79,9 @@ typedef enum _assemble_pass_status {
 	ASSEMBLER_ERROR_STATEMENT_SIZE,
 	ASSEMBLER_ERROR_SYMBOL_ENTITY_FAILURE
 } Assembler_Process_Result;
+
+
+
 
 
 Assembler_Process_Result initialise_sections(Section **sections);

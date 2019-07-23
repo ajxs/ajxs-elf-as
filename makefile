@@ -22,7 +22,7 @@ ARCH_SOURCES:=as/arch/${ARCH}/codegen.c \
 
 SOURCES:=${ARCH_SOURCES} ${LEXER_GEN} ${PARSER_GEN} \
 	as/as.c as/directive.c as/elf.c as/instruction.c as/input.c \
-	as/main.c as/operand.c as/preprocessor.c \
+	as/main.c as/preprocessor.c \
 	as/section.c as/statement.c as/symtab.c
 
 OBJECTS+=${SOURCES:.c=.o}

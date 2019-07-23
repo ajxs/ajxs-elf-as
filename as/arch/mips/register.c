@@ -1,10 +1,25 @@
+/**
+ * @file register.c
+ * @author Anthony (ajxs [at] panoptic.online)
+ * @brief Register functions.
+ * Contains functions for working with register entities.
+ * @version 0.1
+ * @date 2019-03-09
+ */
+
 #include <stdlib.h>
 #include <string.h>
-
 #include "as.h"
 #include "parsing.h"
 
 
+/**
+ * @brief Parses the string representation of a register.
+ *
+ * This function parses the string representation of a register operand.
+ * @param register_symbol The register string to parse.
+ * @returns The matching register.
+ */
 Register parse_register_symbol(char *register_symbol) {
 	if(!strncasecmp(register_symbol, "0", 1) || !strncasecmp(register_symbol, "$0", 2) ||
 		!strncasecmp(register_symbol, "$zero", 5)) {
@@ -78,6 +93,14 @@ Register parse_register_symbol(char *register_symbol) {
 }
 
 
+/**
+ * @brief Encodes a register.
+ *
+ * This function returns the integer encoding of a particular register.
+ * @param reg The register to encode.
+ * @warning This function returns 0 in the case of an unrecognised register.
+ * @returns The integer encoding of the register.
+ */
 uint8_t encode_operand_register(Register reg) {
 	if(reg == REGISTER_$ZERO) {
 		return 0;
@@ -145,5 +168,5 @@ uint8_t encode_operand_register(Register reg) {
 		return 31;
 	}
 
-	return REGISTER_NONE;
+	return 0;
 }

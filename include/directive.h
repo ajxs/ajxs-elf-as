@@ -14,6 +14,11 @@
 #include <symtab.h>
 
 
+/**
+ * @brief The type of a directive.
+ *
+ * Indicates the type of the directive. These are non-architecture specific.
+ */
 typedef enum {
 	DIRECTIVE_UNKNOWN,
 	DIRECTIVE_ALIGN,
@@ -39,6 +44,7 @@ typedef struct {
 	Directive_Type type;
 	Operand_Sequence opseq;
 } Directive;
+
 
 void print_directive(Directive dir);
 
