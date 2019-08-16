@@ -106,9 +106,9 @@ int main(int argc, char **argv) {
 
 
 	// Begin the main assembler process.
-	Assembler_Process_Result assembler_result = assemble(input_filename,
+	Assembler_Status assembler_result = assemble(input_filename,
 		output_filename, verbose);
-	if(assembler_result != ASSEMBLER_PROCESS_SUCCESS) {
+	if(assembler_result != ASSEMBLER_STATUS_SUCCESS) {
 		exit(EXIT_FAILURE);
 	}
 

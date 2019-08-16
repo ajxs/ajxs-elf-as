@@ -25,7 +25,7 @@
 #include <statement.h>
 #include <symtab.h>
 
-Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
+Assembler_Status populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections);
 
 
@@ -41,7 +41,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
  * @warning This function modifies the symbol table.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Process_Result assemble_first_pass(Section *sections,
+Assembler_Status assemble_first_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
@@ -124,7 +124,7 @@ Assembler_Process_Result assemble_first_pass(Section *sections,
 	print_symbol_table(symbol_table);
 #endif
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -140,7 +140,7 @@ Assembler_Process_Result assemble_first_pass(Section *sections,
  * @param sections A pointer to the section linked list.
  * @warning This function modifies the sections.
  */
-Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
+Assembler_Status populate_relocation_entries(Symbol_Table *symtab,
 	Section *sections) {
 
 	/** Used for tracking the result of adding the entity to a section. */
@@ -234,7 +234,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
 		curr_section = curr_section->next;
 	}
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -249,7 +249,7 @@ Assembler_Process_Result populate_relocation_entries(Symbol_Table *symtab,
  * @warning This function modifies the sections.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Process_Result assemble_second_pass(Section *sections,
+Assembler_Status assemble_second_pass(Section *sections,
 	Symbol_Table *symbol_table,
 	Statement *statements) {
 
@@ -307,7 +307,7 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 	/** Used for tracking the result of adding the entity to a section. */
 	Encoding_Entity *added_entity = NULL;
 
-	Codegen_Status_Result status;
+	Assembler_Status status;
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
@@ -356,7 +356,7 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 		} else if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
 			status = encode_instruction(&encoding, symbol_table, &curr->instruction,
 				section_current->program_counter);
-			if(status != CODEGEN_SUCCESS) {
+			if(status != ASSEMBLER_STATUS_SUCCESS) {
 				// Error message should already be set in the encode function.
 				return ASSEMBLER_ERROR_CODEGEN_FAILURE;
 			}
@@ -382,7 +382,7 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
 	printf("Debug Assembler: Finished second pass.\n");
 #endif
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -394,7 +394,7 @@ Assembler_Process_Result assemble_second_pass(Section *sections,
  * @param input_filename The file path for the input source file.
  * @param output_filename The file path for the output source file.
  */
-Assembler_Process_Result assemble(const char *input_filename,
+Assembler_Status assemble(const char *input_filename,
 	const char *output_filename,
 	bool verbose) {
 
@@ -412,7 +412,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	 * This variable is used to track the success of all main assembly
 	 * procedures.
 	 */
-	Assembler_Process_Result process_status = ASSEMBLER_PROCESS_SUCCESS;
+	Assembler_Status process_status = ASSEMBLER_STATUS_SUCCESS;
 
 
 	FILE *input_file = fopen(input_filename, "r");
@@ -429,7 +429,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	// Read in all the statements from the source file.
 	process_status = read_input(input_file, &program_statements);
-	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+	if(process_status != ASSEMBLER_STATUS_SUCCESS) {
 		goto FAIL_FREE_STATEMENTS;
 	}
 
@@ -476,7 +476,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	// Initialise the section list.
 	process_status = initialise_sections(&sections);
-	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+	if(process_status != ASSEMBLER_STATUS_SUCCESS) {
 		// Error message set in callee.
 		goto FAIL_FREE_SYMBOL_TABLE;
 	}
@@ -487,7 +487,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 
 	// Loop through all statements, expanding all macros.
 	process_status = expand_macros(program_statements);
-	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+	if(process_status != ASSEMBLER_STATUS_SUCCESS) {
 		// Error message set in callee.
 		goto FAIL_FREE_SYMBOL_TABLE;
 	}
@@ -495,7 +495,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	// Begin the first assembler pass. Populating the symbol table.
 	process_status = assemble_first_pass(sections,
 		&symbol_table, program_statements);
-	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+	if(process_status != ASSEMBLER_STATUS_SUCCESS) {
 		// Error message set in callee.
 		goto FAIL_FREE_SECTIONS;
 	}
@@ -503,7 +503,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	// Begin the second assembler pass, which handles code generation.
 	process_status = assemble_second_pass(sections,
 		&symbol_table, program_statements);
-	if(process_status != ASSEMBLER_PROCESS_SUCCESS) {
+	if(process_status != ASSEMBLER_STATUS_SUCCESS) {
 		// Error message set in callee.
 		goto FAIL_FREE_SECTIONS;
 	}
@@ -761,7 +761,7 @@ Assembler_Process_Result assemble(const char *input_filename,
 	printf("Debug Assembler: Finished.\n");
 #endif
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 
 FAIL_CLOSE_OUTPUT_FILE:
 	free(elf_header);

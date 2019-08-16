@@ -11,11 +11,12 @@
 #define INPUT_H 1
 
 
-char *preprocess_line(char *line_buffer);
+Assembler_Status preprocess_line(const char *line_buffer,
+	char **output);
 
 Statement *scan_string(const char *str);
 
-Assembler_Process_Result read_input(FILE *input_file,
+Assembler_Status read_input(FILE *input_file,
 	Statement **program_statements);
 
 #endif

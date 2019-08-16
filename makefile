@@ -7,7 +7,7 @@ CC_INCLUDE_PARAM=$(foreach d, ${CC_INCLUDES}, -I$d)
 
 LIBS:=-lfl
 
-BINARY=ajxs-${ARCH}-elf-as
+BINARY=${ARCH}-ajxs-elf-as
 
 LEXER_GEN:=as/lexer.c
 PARSER_GEN:=as/parser.c

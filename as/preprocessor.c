@@ -28,13 +28,17 @@
  * @warning The returned line is allocated in this function, and must be freed
  * by the caller.
  */
-char *preprocess_line(char *line_buffer) {
+Assembler_Status preprocess_line(const char *line_buffer,
+	char **output) {
+
+	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
+
 	// Copy the line into a new buffer that we can modify.
 	// All operations from here are destructive.
-	char *line = strdup(line_buffer);
+	*output = strdup(line_buffer);
 
-	char *scan = line;
-	char *last_char_pos = line;
+	char *scan = *output;
+	char *last_char_pos = *output;
 
 	const char *preprocessor_error = NULL;
 
@@ -58,6 +62,7 @@ char *preprocess_line(char *line_buffer) {
 				while(*++scan != '\"') {
 					if(*scan == '\0') {
 						preprocessor_error = "Preprocessor Error: Unterminated string literal.";
+						status = ASSEMBLER_STATUS_BAD_INPUT;
 						goto PREPROCESSOR_FAILURE;
 					}
 				}
@@ -76,17 +81,15 @@ char *preprocess_line(char *line_buffer) {
 	*last_char_pos = '\0';
 
 #if DEBUG_PREPROCESSOR == 1
-	if(strlen(line)) {
-		printf("Debug Preprocessor: Processed: `%s`\n", line);
+	if(strlen(*output)) {
+		printf("Debug Preprocessor: Processed: `%s`\n", *output);
 	} else {
 		printf("Debug Preprocessor: Line truncated by preprocessor.\n");
 	}
 #endif
 
-	return line;
+	return status;
 
 PREPROCESSOR_FAILURE:
-	fprintf(stderr, "Error: %s\n", preprocessor_error);
-
-	return NULL;
+	return status;
 }

@@ -215,7 +215,7 @@ void free_symbol_table(Symbol_Table *symtab) {
  * @warning This function modifies the sections.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Process_Result populate_symtab(Section *sections,
+Assembler_Status populate_symtab(Section *sections,
 	Symbol_Table *symbol_table) {
 
 	const char* error_message = NULL;
@@ -409,5 +409,5 @@ Assembler_Process_Result populate_symtab(Section *sections,
 #endif
 	}
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }

@@ -260,7 +260,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
  * @param statements The linked list of parsed statements.
  * @warning @p statements is modified by this function.
  */
-Assembler_Process_Result expand_macros(Statement *statements) {
+Assembler_Status expand_macros(Statement *statements) {
 	Statement *curr = statements;
 
 	Expand_Macro_Result_Status macro_process_status;
@@ -300,5 +300,5 @@ Assembler_Process_Result expand_macros(Statement *statements) {
 	}
 
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }

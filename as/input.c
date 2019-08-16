@@ -26,7 +26,7 @@
  * @param program_statements A pointer-to-pointer to the statement list.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Process_Result read_input(FILE *input_file,
+Assembler_Status read_input(FILE *input_file,
 	Statement **program_statements) {
 
 	char *line_buffer = NULL;
@@ -40,9 +40,14 @@ Assembler_Process_Result read_input(FILE *input_file,
 	printf("Input line #%zu: `%s`", line_num, line_buffer);
 #endif
 
+		Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
+
 		// Preprocess the line. Normalises the line to conform to a standard format.
-		// If NULL is returned, assume error state and abort.
-		char *line = preprocess_line(line_buffer);
+
+		/** The processed line. */
+		char *line = NULL;
+
+		status = preprocess_line(line_buffer, &line);
 		if(!line) {
 			// Error message should have been set in callee.
 			// Free the line buffer.
@@ -101,5 +106,5 @@ Assembler_Process_Result read_input(FILE *input_file,
 	// https://stackoverflow.com/questions/55731141/memory-leak-when-reading-file-line-by-line-using-getline
 	free(line_buffer);
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }

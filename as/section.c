@@ -286,7 +286,7 @@ void free_section(Section *section) {
  * @param sections A pointer-to-pointer to the section data.
  * @return A status result object showing the result of the process.
  */
-Assembler_Process_Result initialise_sections(Section **sections) {
+Assembler_Status initialise_sections(Section **sections) {
 	/** Used for holding the error messages printed by this function. */
 	const char* error_message = NULL;
 	/** Holds the number of chars written to stderr in the error handler. */
@@ -464,7 +464,7 @@ Assembler_Process_Result initialise_sections(Section **sections) {
 	section_data_rel->link = section_symtab_index;
 	section_text_rel->link = section_symtab_index;
 
-	return ASSEMBLER_PROCESS_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 
 SECTION_INIT_ALLOC_FAILURE:
 	// Print error message.

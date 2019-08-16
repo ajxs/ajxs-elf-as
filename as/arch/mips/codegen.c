@@ -341,7 +341,7 @@ Encoding_Entity *encode_j_type(char *error_message,
  * current program section.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
+Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 	Symbol_Table *symtab,
 	Instruction *instruction,
 	size_t program_counter) {
@@ -684,7 +684,7 @@ Codegen_Status_Result encode_instruction(Encoding_Entity **encoded_instruction,
 		opcode_name, program_counter, 0);
 #endif
 
-	return CODEGEN_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 
 INSTRUCTION_OPERAND_COUNT_MISMATCH:
 	free(error_message);
