@@ -35,46 +35,47 @@
  * @param func The func field to encode.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Encoding_Entity *encode_r_type(char *error_message,
-	uint8_t opcode,
-	uint8_t rd,
-	uint8_t rs,
-	uint8_t rt,
-	uint8_t sa,
-	uint8_t func) {
+Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
+	const uint8_t opcode,
+	const uint8_t rd,
+	const uint8_t rs,
+	const uint8_t rt,
+	const uint8_t sa,
+	const uint8_t func) {
 
-	uint32_t encoding = 0;
-	encoding |= opcode << 26;
-	encoding |= rs << 21;
-	encoding |= rt << 16;
-	encoding |= rd << 11;
-	// Truncated to 5 bits.
-	encoding |= (sa & 0x1F) << 6;
-	encoding |= func;
-
-	Encoding_Entity *encoded_instruction = malloc(sizeof(Encoding_Entity));
-	if(!encoded_instruction) {
-		sprintf(error_message, "Error allocating encoded instruction.\n");
-		return NULL;
+	*encoded_instruction = malloc(sizeof(Encoding_Entity));
+	if(!*encoded_instruction) {
+		fprintf(stderr, "Error allocating encoded instruction.\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	encoded_instruction->n_reloc_entries = 0;
-	encoded_instruction->reloc_entries = NULL;
-
-	encoded_instruction->size = 4;
-	encoded_instruction->data = malloc(4);
-	if(!encoded_instruction->data) {
-		// cleanup.
+	// The encoding entity is declared on the heap, since a pointer to this data
+	// will be stored in the `encoded_instruction` entity.
+	uint32_t* encoding = malloc(sizeof(uint32_t));
+	if(!encoding) {
+		// Cleanup instruction data.
 		free(encoded_instruction);
 
-		sprintf(error_message, "Error allocating encoded instruction data.\n");
-		return NULL;
+		fprintf(stderr, "Error allocating instruction encoding\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	encoded_instruction->data = memcpy(encoded_instruction->data, &encoding, 4);
-	encoded_instruction->next = NULL;
+	*encoding = opcode << 26;
+	*encoding |= rs << 21;
+	*encoding |= rt << 16;
+	*encoding |= rd << 11;
+	// Truncated to 5 bits.
+	*encoding |= (sa & 0x1F) << 6;
+	*encoding |= func;
 
-	return encoded_instruction;
+	(*encoded_instruction)->n_reloc_entries = 0;
+	(*encoded_instruction)->reloc_entries = NULL;
+
+	(*encoded_instruction)->size = 4;
+	(*encoded_instruction)->data = encoding;
+	(*encoded_instruction)->next = NULL;
+
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -383,7 +384,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x20);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x20);
 			break;
 		case OPCODE_ADDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -413,7 +414,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x21);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x21);
 			break;
 		case OPCODE_AND:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -423,7 +424,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x24);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x24);
 			break;
 		case OPCODE_ANDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -501,7 +502,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 				rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			}
 
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, 0, 0, 0x9);
+			encode_r_type(encoded_instruction, 0, rd, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_JR:
 			if(!check_operand_count(1, &instruction->opseq)) {
@@ -509,7 +510,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, 0, rs, 0, 0, 0x9);
+			encode_r_type(encoded_instruction, 0, 0, rs, 0, 0, 0x9);
 			break;
 		case OPCODE_LB:
 			if(!check_operand_count(2, &instruction->opseq)) {
@@ -560,13 +561,13 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
 
 			if(instruction->opcode == OPCODE_MUH) {
-				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x18);
+				encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x3, 0x18);
 			} else if(instruction->opcode == OPCODE_MUHU) {
-				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x3, 0x19);
+				encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x3, 0x19);
 			} else if(instruction->opcode == OPCODE_MUL) {
-				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x18);
+				encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x2, 0x18);
 			} else if(instruction->opcode == OPCODE_MULU) {
-				*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0x2, 0x19);
+				encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x2, 0x19);
 			}
 			break;
 		case OPCODE_MULT:
@@ -580,7 +581,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			*encoded_instruction = encode_r_type(error_message, 0, 0, 0, 0, 0, 0);
+			encode_r_type(encoded_instruction, 0, 0, 0, 0, 0, 0);
 			break;
 		case OPCODE_OR:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -590,7 +591,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x25);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x25);
 			break;
 		case OPCODE_ORI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -627,7 +628,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			sa = instruction->opseq.operands[2].numeric_literal;
-			*encoded_instruction = encode_r_type(error_message, 0, rd, 0, rt, sa, 0x0);
+			encode_r_type(encoded_instruction, 0, rd, 0, rt, sa, 0x0);
 			break;
 		case OPCODE_SUB:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -637,7 +638,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x22);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x22);
 			break;
 		case OPCODE_SUBU:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -647,7 +648,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			*encoded_instruction = encode_r_type(error_message, 0, rd, rs, rt, 0, 0x23);
+			encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x23);
 			break;
 		case OPCODE_SW:
 			if(!check_operand_count(2, &instruction->opseq)) {
@@ -660,7 +661,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			break;
 		case OPCODE_SYSCALL:
 			// @TODO: Investigate use of `code` field.
-			*encoded_instruction = encode_r_type(error_message, 0, 0, 0, 0, 0, 0xC);
+			encode_r_type(encoded_instruction, 0, 0, 0, 0, 0, 0xC);
 			break;
 		case OPCODE_UNKNOWN:
 		default:

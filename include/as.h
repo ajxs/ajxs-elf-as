@@ -34,19 +34,6 @@
 
 
 /**
- * @brief The result of a macro expansion.
- *
- * Indicates the result of the expansion of a macro. The expansion functions
- * do not return an actual value, so this is used to track the success of
- * the expansion operation.
- */
-typedef enum _expand_macro_status_result {
-	EXPAND_MACRO_FAILURE,
-	EXPAND_MACRO_SUCCESS,
-} Expand_Macro_Result_Status;
-
-
-/**
  * @brief The result of an assembler process.
  *
  * Indicates the result of an assembler process. The assembler process functions
@@ -73,7 +60,8 @@ typedef enum e_assembler_status {
 	CODEGEN_ERROR_INVALID_ARGS,
 	CODEGEN_ERROR_OPERAND_COUNT_MISMATCH,
 	CODEGEN_ERROR_MISSING_SECTION,
-	CODEGEN_ERROR_MISSING_SYMBOL
+	CODEGEN_ERROR_MISSING_SYMBOL,
+	EXPAND_MACRO_FAILURE
 } Assembler_Status;
 
 

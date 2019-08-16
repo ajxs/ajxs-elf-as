@@ -19,13 +19,13 @@
 #include <string.h>
 
 
-Encoding_Entity *encode_r_type(char *error_message,
-	uint8_t opcode,
-	uint8_t rd,
-	uint8_t rs,
-	uint8_t rt,
-	uint8_t sa,
-	uint8_t func);
+Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
+	const uint8_t opcode,
+	const uint8_t rd,
+	const uint8_t rs,
+	const uint8_t rt,
+	const uint8_t sa,
+	const uint8_t func);
 
 Encoding_Entity *encode_offset_type(char *error_message,
 	uint8_t opcode,

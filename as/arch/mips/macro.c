@@ -29,7 +29,7 @@
  * @warning @macro is modified in this function. Additional statements may be
  * appended to the end of this statement.
  */
-Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
+Assembler_Status expand_macro_la(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `LA` pseudo-instruction...\n");
 #endif
@@ -169,7 +169,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
 		return EXPAND_MACRO_FAILURE;
 	}
 
-	return EXPAND_MACRO_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -181,7 +181,7 @@ Expand_Macro_Result_Status expand_macro_la(Statement *macro) {
  * @param macro The branching instruction statement.
  * @warning @p macro is modified in this function.
  */
-Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
+Assembler_Status expand_branch_delay(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding branch delay macro...\n");
 #endif
@@ -207,7 +207,7 @@ Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
 	// Update the original instruction.
 	macro->next = expansion;
 
-	return EXPAND_MACRO_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -220,7 +220,7 @@ Expand_Macro_Result_Status expand_branch_delay(Statement *macro) {
  * @param macro The `move` instruction statement.
  * @warning @p macro is modified in this function.
  */
-Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
+Assembler_Status expand_macro_move(Statement *macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
@@ -245,7 +245,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 	macro->instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
 	macro->instruction.opseq.operands[2].reg = REGISTER_$ZERO;
 
-	return EXPAND_MACRO_SUCCESS;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -263,7 +263,7 @@ Expand_Macro_Result_Status expand_macro_move(Statement *macro) {
 Assembler_Status expand_macros(Statement *statements) {
 	Statement *curr = statements;
 
-	Expand_Macro_Result_Status macro_process_status;
+	Assembler_Status macro_process_status;
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
@@ -290,7 +290,7 @@ Assembler_Status expand_macros(Statement *statements) {
 			}
 		}
 
-		if(macro_process_status != EXPAND_MACRO_SUCCESS) {
+		if(macro_process_status != ASSEMBLER_STATUS_SUCCESS) {
 			// If an error was encountered, return here.
 			// The error will have been set in the expansion function.
 			return ASSEMBLER_ERROR_MACRO_EXPANSION;
