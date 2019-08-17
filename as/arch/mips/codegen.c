@@ -22,6 +22,116 @@
 #include <symtab.h>
 
 
+
+
+/**
+ * @brief Encodes an I type instruction.
+ *
+ * Encodes an I-type instruction entity, creating an `Encoding_Entity` instance representing
+ * the generated machine code entities to be written into the executable.
+ * @param symtab The symbol table. This is scanned to find any symbols referenced
+ * in instruction operands.
+ * @param opcode The operand encoding.
+ * @param rs The rs field to encode.
+ * @param rt The rt field to encode.
+ * @param imm The imm operand to encode.
+ * @param program_counter The current program_counter.
+ * @return The encoded instruction entity. Returns `NULL` in case of error.
+ */
+Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
+	Symbol_Table* const symtab,
+	const uint8_t opcode,
+	const uint8_t rs,
+	const uint8_t rt,
+	const Operand imm,
+	const size_t program_counter) {
+
+	*encoded_instruction = malloc(sizeof(Encoding_Entity));
+	if(!*encoded_instruction) {
+		fprintf(stderr, "Error: Error allocating encoded instruction\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	(*encoded_instruction)->n_reloc_entries = 0;
+	(*encoded_instruction)->reloc_entries = NULL;
+
+	uint32_t* encoding = malloc(sizeof(uint32_t));
+	if(!*encoded_instruction) {
+		free(encoded_instruction);
+
+		// @TODO: Global error handler.
+		fprintf(stderr, "Error: Error allocating instruction encoding\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	*encoding = opcode << 26;
+	*encoding |= rs << 21;
+	*encoding |= rt << 16;
+
+	uint32_t immediate = 0;
+	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
+		// If the operand is a numeric literal, the raw value is encoded.
+		immediate = imm.numeric_literal;
+	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
+		// If the operand is a symbolic reference, we encode the immediate value
+		// as the symbol's offset, and then create a relocation entry so that the
+		// symbol can be linked correctly.
+		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
+		if(!symbol) {
+			// cleanup.
+			free(encoding);
+			free(encoded_instruction);
+
+			fprintf(stderr, "Error: Error finding symbol `%s`", imm.symbol);
+			return ASSEMBLER_ERROR_MISSING_SYMBOL;
+		}
+
+		immediate = symbol->offset;
+
+		(*encoded_instruction)->n_reloc_entries = 1;
+		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));
+		if(!(*encoded_instruction)->reloc_entries) {
+			// cleanup.
+			free(encoding);
+			free(encoded_instruction);
+
+			fprintf(stderr, "Error: Error allocating relocation entries");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
+		}
+
+		(*encoded_instruction)->reloc_entries[0].type = R_MIPS_PC16;
+		if(imm.flags.mask == OPERAND_MASK_HIGH) {
+			// If this is the higher component of a symbol.
+			// Most likely the result of a macro expansion. Refer to the macro
+			// expansion logic for the relevant architecture.
+			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_HI16;
+		} else if(imm.flags.mask == OPERAND_MASK_LOW) {
+			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_LO16;
+		}
+
+		(*encoded_instruction)->reloc_entries[0].symbol_name = imm.symbol;
+		(*encoded_instruction)->reloc_entries[0].offset = program_counter;
+	} else {
+		// cleanup.
+		free(encoding);
+		free(encoded_instruction);
+
+		// If the immediate is of any other type, it is an error.
+		fprintf(stderr, "Error: Bad operand type `%u` for immediate type instruction",
+			imm.type);
+		return CODEGEN_ERROR_BAD_OPERAND_TYPE;
+	}
+
+	*encoding |= (immediate & 0xFFFF);
+
+	(*encoded_instruction)->size = 4;
+	(*encoded_instruction)->data = encoding;
+	(*encoded_instruction)->next = NULL;
+
+	return ASSEMBLER_STATUS_SUCCESS;
+}
+
+
 /**
  * @brief Encodes an r-type type instruction.
  *
@@ -126,111 +236,6 @@ Encoding_Entity *encode_offset_type(char *error_message,
 		free(encoded_instruction);
 
 		sprintf(error_message, "Error allocating encoded instruction data.\n");
-		return NULL;
-	}
-
-	encoded_instruction->data = memcpy(encoded_instruction->data, &encoding, 4);
-	encoded_instruction->next = NULL;
-
-	return encoded_instruction;
-}
-
-
-/**
- * @brief Encodes an I type instruction.
- *
- * Encodes an I-type instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * @param symtab The symbol table. This is scanned to find any symbols referenced
- * in instruction operands.
- * @param opcode The operand encoding.
- * @param rs The rs field to encode.
- * @param rt The rt field to encode.
- * @param imm The imm operand to encode.
- * @param program_counter The current program_counter.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
- */
-Encoding_Entity *encode_i_type(char *error_message,
-	Symbol_Table *symtab,
-	uint8_t opcode,
-	uint8_t rs,
-	uint8_t rt,
-	Operand imm,
-	size_t program_counter) {
-
-	uint32_t encoding = opcode << 26;
-	encoding |= rs << 21;
-	encoding |= rt << 16;
-
-	Encoding_Entity *encoded_instruction = malloc(sizeof(Encoding_Entity));
-	if(!encoded_instruction) {
-		sprintf(error_message, "Error allocating encoded instruction.");
-		return NULL;
-	}
-
-	encoded_instruction->n_reloc_entries = 0;
-	encoded_instruction->reloc_entries = NULL;
-
-	uint32_t immediate = 0;
-	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
-		// If the operand is a numeric literal, the raw value is encoded.
-		immediate = imm.numeric_literal;
-	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
-		// If the operand is a symbolic reference, we encode the immediate value
-		// as the symbol's offset, and then create a relocation entry so that the
-		// symbol can be linked correctly.
-		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
-		if(!symbol) {
-			// cleanup.
-			free(encoded_instruction);
-
-			sprintf(error_message, "Error finding symbol `%s`.", imm.symbol);
-			return NULL;
-		}
-
-		immediate = symbol->offset;
-
-		encoded_instruction->n_reloc_entries = 1;
-		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
-		if(!encoded_instruction->reloc_entries) {
-			// cleanup.
-			free(encoded_instruction);
-
-			sprintf(error_message, "Error allocating relocation entries.");
-			return NULL;
-		}
-
-		encoded_instruction->reloc_entries[0].type = R_MIPS_PC16;
-		if(imm.flags.mask == OPERAND_MASK_HIGH) {
-			// If this is the higher component of a symbol.
-			// Most likely the result of a macro expansion. Refer to the macro
-			// expansion logic for the relevant architecture.
-			encoded_instruction->reloc_entries[0].type = R_MIPS_HI16;
-		} else if(imm.flags.mask == OPERAND_MASK_LOW) {
-			encoded_instruction->reloc_entries[0].type = R_MIPS_LO16;
-		}
-
-		// encoded_instruction->reloc_entries[0].symbol = symbol;
-		encoded_instruction->reloc_entries[0].offset = program_counter;
-	} else {
-		// cleanup.
-		free(encoded_instruction);
-
-		// If the immediate is of any other type, it is an error.
-		sprintf(error_message, "Bad operand type `%u` for immediate type instruction.",
-			imm.type);
-		return NULL;
-	}
-
-	encoding |= (immediate & 0xFFFF);
-
-	encoded_instruction->size = 4;
-	encoded_instruction->data = malloc(4);
-	if(!encoded_instruction->data) {
-		// cleanup.
-		free(encoded_instruction);
-
-		sprintf(error_message, "Error allocating encoded instruction data.");
 		return NULL;
 	}
 
@@ -393,7 +398,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0x8, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0x8, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDIU:
@@ -403,7 +408,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0x9, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0x9, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_ADDU:
@@ -433,7 +438,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0xC, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0xC, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BAL:
@@ -441,7 +446,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			*encoded_instruction = encode_i_type(error_message, symtab, 1, 0, 0x11,
+			encode_i_type(encoded_instruction, symtab, 1, 0, 0x11,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BEQ:
@@ -451,7 +456,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0x4, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0x4, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BGEZ:
@@ -461,7 +466,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0x14, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0x14, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_BNE:
@@ -471,7 +476,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0x5, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0x5, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_J:
@@ -536,7 +541,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0xF, 0, rt,
+			encode_i_type(encoded_instruction, symtab, 0xF, 0, rt,
 				instruction->opseq.operands[1], program_counter);
 			break;
 		case OPCODE_LW:
@@ -600,7 +605,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
-			*encoded_instruction = encode_i_type(error_message, symtab, 0xD, rs, rt,
+			encode_i_type(encoded_instruction, symtab, 0xD, rs, rt,
 				instruction->opseq.operands[2], program_counter);
 			break;
 		case OPCODE_SB:
