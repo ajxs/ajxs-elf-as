@@ -361,6 +361,8 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
+	uint8_t opcode = 0;
+	uint8_t func = 0;
 	uint8_t rd = 0;
 	uint8_t rs = 0;
 	uint8_t rt = 0;
@@ -371,14 +373,49 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 
 	switch(instruction->opcode) {
 		case OPCODE_ADD:
+		case OPCODE_ADDU:
+		case OPCODE_AND:
+		case OPCODE_MUH:
+		case OPCODE_MUHU:
+		case OPCODE_MUL:
+		case OPCODE_MULU:
+		case OPCODE_OR:
+		case OPCODE_SUB:
+		case OPCODE_SUBU:
 			if(!check_operand_count(3, &instruction->opseq)) {
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+			}
+
+			if(instruction->opcode == OPCODE_ADD) {
+				func = 0x20;
+			} else if(instruction->opcode == OPCODE_ADDU) {
+				func = 0x21;
+			} else if(instruction->opcode == OPCODE_AND) {
+				func = 0x24;
+			} else if(instruction->opcode == OPCODE_MUH) {
+				sa = 0x3;
+				func = 0x18;
+			} else if(instruction->opcode == OPCODE_MUHU) {
+				sa = 0x3;
+				func = 0x19;
+			} else if(instruction->opcode == OPCODE_MUL) {
+				sa = 0x2;
+				func = 0x18;
+			} else if(instruction->opcode == OPCODE_MULU) {
+				sa = 0x2;
+				func = 0x19;
+			} else if(instruction->opcode == OPCODE_OR) {
+				func = 0x25;
+			} else if(instruction->opcode == OPCODE_SUB) {
+				func = 0x22;
+			} else if(instruction->opcode == OPCODE_SUBU) {
+				func = 0x23;
 			}
 
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x20);
+			status = encode_r_type(encoded_instruction, opcode, rd, rs, rt, 0, func);
 			break;
 		case OPCODE_ADDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -399,26 +436,6 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			rt = encode_operand_register(instruction->opseq.operands[1].reg);
 			status = encode_i_type(encoded_instruction, symtab, 0x9, rs, rt,
 				instruction->opseq.operands[2], program_counter);
-			break;
-		case OPCODE_ADDU:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x21);
-			break;
-		case OPCODE_AND:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x24);
 			break;
 		case OPCODE_ANDI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -542,28 +559,6 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			status = encode_offset_type(encoded_instruction, 0x23, rt,
 				instruction->opseq.operands[1]);
 			break;
-		case OPCODE_MUH:
-		case OPCODE_MUHU:
-		case OPCODE_MUL:
-		case OPCODE_MULU:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-
-			if(instruction->opcode == OPCODE_MUH) {
-				status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x3, 0x18);
-			} else if(instruction->opcode == OPCODE_MUHU) {
-				status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x3, 0x19);
-			} else if(instruction->opcode == OPCODE_MUL) {
-				status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x2, 0x18);
-			} else if(instruction->opcode == OPCODE_MULU) {
-				status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0x2, 0x19);
-			}
-			break;
 		case OPCODE_MULT:
 		case OPCODE_MULTU:
 			// Deprecated opcodes.
@@ -576,16 +571,6 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			}
 
 			status = encode_r_type(encoded_instruction, 0, 0, 0, 0, 0, 0);
-			break;
-		case OPCODE_OR:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x25);
 			break;
 		case OPCODE_ORI:
 			if(!check_operand_count(3, &instruction->opseq)) {
@@ -623,26 +608,6 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			sa = instruction->opseq.operands[2].numeric_literal;
 			status = encode_r_type(encoded_instruction, 0, rd, 0, rt, sa, 0x0);
-			break;
-		case OPCODE_SUB:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x22);
-			break;
-		case OPCODE_SUBU:
-			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
-			}
-
-			rd = encode_operand_register(instruction->opseq.operands[0].reg);
-			rs = encode_operand_register(instruction->opseq.operands[1].reg);
-			rt = encode_operand_register(instruction->opseq.operands[2].reg);
-			status = encode_r_type(encoded_instruction, 0, rd, rs, rt, 0, 0x23);
 			break;
 		case OPCODE_SW:
 			if(!check_operand_count(2, &instruction->opseq)) {
