@@ -44,6 +44,7 @@ typedef enum e_assembler_status {
 	ASSEMBLER_STATUS_SUCCESS,
 	ASSEMBLER_STATUS_BAD_INPUT,
 	ASSEMBLER_ERROR_BAD_ALLOC,
+	ASSEMBLER_ERROR_BAD_OPERAND_TYPE,
 	ASSEMBLER_ERROR_BAD_FUNCTION_ARGS,
 	ASSEMBLER_ERROR_BAD_SECTION_DATA,
 	ASSEMBLER_ERROR_CODEGEN_FAILURE,
@@ -89,9 +90,9 @@ Elf32_Ehdr *create_elf_header(void);
 
 Elf32_Shdr *encode_section_header(Section *section);
 
-Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
-	Symbol_Table *symbol_table,
-	Instruction *instruction,
-	size_t program_counter);
+Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
+	Symbol_Table* const symbol_table,
+	Instruction* const instruction,
+	const size_t program_counter);
 
 #endif

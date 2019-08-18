@@ -22,14 +22,12 @@
 #include <symtab.h>
 
 
-
-
 /**
  * @brief Encodes an I type instruction.
  *
  * Encodes an I-type instruction entity, creating an `Encoding_Entity` instance representing
  * the generated machine code entities to be written into the executable.
- * @param symtab The symbol table. This is scanned to find any symbols referenced
+ * @param symbol_table The symbol table. This is scanned to find any symbols referenced
  * in instruction operands.
  * @param opcode The operand encoding.
  * @param rs The rs field to encode.
@@ -39,7 +37,7 @@
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
 Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symtab,
+	Symbol_Table* const symbol_table,
 	const uint8_t opcode,
 	const uint8_t rs,
 	const uint8_t rt,
@@ -76,7 +74,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		// If the operand is a symbolic reference, we encode the immediate value
 		// as the symbol's offset, and then create a relocation entry so that the
 		// symbol can be linked correctly.
-		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
+		Symbol *symbol = symtab_find_symbol(symbol_table, imm.symbol);
 		if(!symbol) {
 			// cleanup.
 			free(encoding);
@@ -99,7 +97,8 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
-		(*encoded_instruction)->reloc_entries[0].type = R_MIPS_PC16;
+		(*encoded_instruction)->reloc_entries[0].symbol_name = imm.symbol;
+		(*encoded_instruction)->reloc_entries[0].offset = program_counter;
 		if(imm.flags.mask == OPERAND_MASK_HIGH) {
 			// If this is the higher component of a symbol.
 			// Most likely the result of a macro expansion. Refer to the macro
@@ -107,10 +106,9 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_HI16;
 		} else if(imm.flags.mask == OPERAND_MASK_LOW) {
 			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_LO16;
+		} else {
+			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_PC16;
 		}
-
-		(*encoded_instruction)->reloc_entries[0].symbol_name = imm.symbol;
-		(*encoded_instruction)->reloc_entries[0].offset = program_counter;
 	} else {
 		// cleanup.
 		free(encoding);
@@ -122,7 +120,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		return CODEGEN_ERROR_BAD_OPERAND_TYPE;
 	}
 
-	*encoding |= (immediate & 0xFFFF);
+	*encoding |= immediate & 0xFFFF;
 
 	(*encoded_instruction)->size = 4;
 	(*encoded_instruction)->data = encoding;
@@ -199,50 +197,51 @@ Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
  * @param reg The reg operand to encode.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Encoding_Entity *encode_offset_type(char *error_message,
-	uint8_t opcode,
-	uint8_t rt,
-	Operand offset_reg) {
+Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
+	const uint8_t opcode,
+	const uint8_t rt,
+	const Operand offset_reg) {
 
 	// Unlike GAS, this assembler currently does not support using symbols as an offset value.
 	if(offset_reg.type != OPERAND_TYPE_REGISTER) {
-		sprintf(error_message, "Bad operand type `%u` for offset-type instruction.",
+		fprintf(stderr, "Error: Bad operand type `%u` for offset-type instruction",
 			offset_reg.type);
-		return NULL;
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	*encoded_instruction = malloc(sizeof(Encoding_Entity));
+	if(!*encoded_instruction) {
+		fprintf(stderr, "Error: Error allocating encoded instruction\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	// Truncate to 16bits.
 	uint16_t offset = offset_reg.offset & 0xFFFF;
 	uint8_t base = encode_operand_register(offset_reg.reg);
 
-	uint32_t encoding = opcode << 26;
-	encoding |= base << 21;
-	encoding |= rt << 16;
-	encoding |= offset;
-
-	Encoding_Entity *encoded_instruction = malloc(sizeof(Encoding_Entity));
-	if(!encoded_instruction) {
-		sprintf(error_message, "Error allocating encoded instruction.\n");
-		return NULL;
-	}
-
-	encoded_instruction->n_reloc_entries = 0;
-	encoded_instruction->reloc_entries = NULL;
-
-	encoded_instruction->size = 4;
-	encoded_instruction->data = malloc(4);
-	if(!encoded_instruction->data) {
+	uint32_t* encoding = malloc(sizeof(uint32_t));
+	if(!encoding) {
 		// cleanup.
 		free(encoded_instruction);
 
-		sprintf(error_message, "Error allocating encoded instruction data.\n");
-		return NULL;
+		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	encoded_instruction->data = memcpy(encoded_instruction->data, &encoding, 4);
-	encoded_instruction->next = NULL;
+	*encoding = opcode << 26;
+	*encoding |= base << 21;
+	*encoding |= rt << 16;
+	*encoding |= offset;
 
-	return encoded_instruction;
+	(*encoded_instruction)->n_reloc_entries = 0;
+	(*encoded_instruction)->reloc_entries = NULL;
+
+	(*encoded_instruction)->size = 4;
+
+	(*encoded_instruction)->data = encoding;
+	(*encoded_instruction)->next = NULL;
+
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -260,77 +259,77 @@ Encoding_Entity *encode_offset_type(char *error_message,
  * @param program_counter The current program_counter.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Encoding_Entity *encode_j_type(char *error_message,
-	Symbol_Table *symtab,
-	uint8_t opcode,
-	Operand imm,
-	size_t program_counter) {
-	uint32_t encoding = opcode << 26;
+Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
+	Symbol_Table* const symbol_table,
+	const uint8_t opcode,
+	const Operand imm,
+	const size_t program_counter) {
 
-	if(!symtab) {
-		sprintf(error_message, "Invalid symbol table provided to encoding function.\n");
-		return NULL;
+	if(!symbol_table) {
+		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
+		return ASSEMBLER_ERROR_MISSING_SYMBOL;
 	}
 
-	Encoding_Entity *encoded_instruction = malloc(sizeof(Encoding_Entity));
-	if(!encoded_instruction) {
-		sprintf(error_message, "Error allocating encoded instruction.\n");
-		return NULL;
+	*encoded_instruction = malloc(sizeof(Encoding_Entity));
+	if(!*encoded_instruction) {
+		fprintf(stderr, "Error: Error allocating encoded instruction\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	encoded_instruction->n_reloc_entries = 0;
-	encoded_instruction->reloc_entries = NULL;
+	(*encoded_instruction)->n_reloc_entries = 0;
+	(*encoded_instruction)->reloc_entries = NULL;
 
 	uint32_t immediate = 0;
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		immediate = imm.numeric_literal;
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
-		Symbol *symbol = symtab_find_symbol(symtab, imm.symbol);
+		Symbol *symbol = symtab_find_symbol(symbol_table, imm.symbol);
 
-		encoded_instruction->n_reloc_entries = 1;
-		encoded_instruction->reloc_entries = malloc(sizeof(Reloc_Entry));
-		if(!encoded_instruction->reloc_entries) {
+		(*encoded_instruction)->n_reloc_entries = 1;
+		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));
+		if(!(*encoded_instruction)->reloc_entries) {
 			// cleanup.
 			free(encoded_instruction);
 
-			sprintf(error_message, "Error allocating relocation entries.\n");
-			return NULL;
+			fprintf(stderr, "Error: Error allocating relocation entries\n");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
-		encoded_instruction->reloc_entries[0].type = R_MIPS_26;
-		// encoded_instruction->reloc_entries[0].symbol = symbol;
-		encoded_instruction->reloc_entries[0].offset = program_counter;
+		(*encoded_instruction)->reloc_entries[0].type = R_MIPS_26;
+		(*encoded_instruction)->reloc_entries[0].symbol_name = symbol->name;
+		(*encoded_instruction)->reloc_entries[0].offset = program_counter;
 
 		immediate = symbol->offset;
 	} else {
 		// cleanup.
 		free(encoded_instruction);
 
-		char error_message[ERROR_MSG_MAX_LEN];
-		sprintf(error_message, "Bad operand type `%u` for jump type instruction.",
-			imm.type);
-		return NULL;
+		fprintf(stderr, "Error: Bad operand type for jump type instruction");
+		return ASSEMBLER_ERROR_BAD_OPERAND_TYPE;
 	}
 
 	immediate = (immediate & 0x0FFFFFFF) >> 2;
 
-	// Truncate to 26bits.
-	encoding |= (immediate & 0x7FFFFFF);
 
-	encoded_instruction->size = 4;
-	encoded_instruction->data = malloc(4);
-	if(!encoded_instruction->data) {
+	uint32_t* encoding = malloc(sizeof(uint32_t));
+	if(!encoding) {
 		// cleanup.
 		free(encoded_instruction);
 
-		sprintf(error_message, "Error allocating encoded instruction data.");
-		return NULL;
+		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	encoded_instruction->data = memcpy(encoded_instruction->data, &encoding, 4);
-	encoded_instruction->next = NULL;
+	*encoding = opcode << 26;
 
-	return encoded_instruction;
+	// Truncate to 26bits.
+	*encoding |= (immediate & 0x7FFFFFF);
+
+	(*encoded_instruction)->size = 4;
+	(*encoded_instruction)->data = encoding;
+	(*encoded_instruction)->next = NULL;
+
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
@@ -347,38 +346,28 @@ Encoding_Entity *encode_j_type(char *error_message,
  * current program section.
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
-Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
-	Symbol_Table *symtab,
-	Instruction *instruction,
-	size_t program_counter) {
+Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
+	Symbol_Table* const symtab,
+	Instruction* const instruction,
+	const size_t program_counter) {
 
 	if(!symtab) {
-		fprintf(stderr, "Error: Invalid symbol table provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
 		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
 	if(!instruction) {
-		fprintf(stderr, "Error: Invalid instruction provided to encoding function.\n");
+		fprintf(stderr, "Error: Invalid instruction provided to encoding function\n");
 		return CODEGEN_ERROR_INVALID_ARGS;
-	}
-
-	const char *opcode_name = get_opcode_string(instruction->opcode);
-	if(!opcode_name) {
-		fprintf(stderr, "Error: Unable to get opcode name for `%i`.\n", instruction->opcode);
-		return CODEGEN_ERROR_BAD_OPCODE;
-	}
-
-	/** The error messaged used in error handling in this function. */
-	char *error_message = malloc(ERROR_MSG_MAX_LEN);
-	if(!error_message) {
-		fprintf(stderr, "Error: Error allocating error message string.\n");
-		return CODEGEN_ERROR_BAD_ALLOC;
 	}
 
 	uint8_t rd = 0;
 	uint8_t rs = 0;
 	uint8_t rt = 0;
 	uint8_t sa = 0;
+
+	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
+
 
 	switch(instruction->opcode) {
 		case OPCODE_ADD:
@@ -484,7 +473,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			*encoded_instruction = encode_j_type(error_message, symtab, 0x2,
+			encode_j_type(encoded_instruction, symtab, 0x2,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JAL:
@@ -492,7 +481,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
 			}
 
-			*encoded_instruction = encode_j_type(error_message, symtab, 0x3,
+			encode_j_type(encoded_instruction, symtab, 0x3,
 				instruction->opseq.operands[0], program_counter);
 			break;
 		case OPCODE_JALR:
@@ -523,7 +512,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x20, rt,
+			encode_offset_type(encoded_instruction, 0x20, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LBU:
@@ -532,7 +521,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x24, rt,
+			encode_offset_type(encoded_instruction, 0x24, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_LUI:
@@ -550,7 +539,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x23, rt,
+			encode_offset_type(encoded_instruction, 0x23, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_MUH:
@@ -579,7 +568,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 		case OPCODE_MULTU:
 			// Deprecated opcodes.
 			// `encoded_entity` is still NULL, so the error handler will catch this.
-			error_message = "Instruction deprecated in `MIPS32r6`.";
+			fprintf(stderr, "Instruction deprecated in `MIPS32r6`\n");
 			break;
 		case OPCODE_NOP:
 			if(!check_operand_count(0, &instruction->opseq)) {
@@ -614,7 +603,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x28, rt,
+			encode_offset_type(encoded_instruction, 0x28, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SH:
@@ -623,7 +612,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x29, rt,
+			encode_offset_type(encoded_instruction, 0x29, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SLL:
@@ -661,7 +650,7 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
-			*encoded_instruction = encode_offset_type(error_message, 0x2B, rt,
+			encode_offset_type(encoded_instruction, 0x2B, rt,
 				instruction->opseq.operands[1]);
 			break;
 		case OPCODE_SYSCALL:
@@ -670,33 +659,27 @@ Assembler_Status encode_instruction(Encoding_Entity **encoded_instruction,
 			break;
 		case OPCODE_UNKNOWN:
 		default:
-			fprintf(stderr, "Error: Unrecognised Opcode `%i`.\n", instruction->opcode);
+			fprintf(stderr, "Error: Unrecognised Opcode\n");
 			return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
-	if(!*encoded_instruction) {
-		// Add the error message returned from the encoding function to a more
-		// generatlised error message that prints the instruction.
-		fprintf(stderr, "Error: Error encoding instruction `%s`: %s\n",
-			opcode_name, error_message);
-
-		free(error_message);
-
-		return CODEGEN_ERROR_BAD_ALLOC;
+#if DEBUG_CODEGEN == 1
+	const char *opcode_name = get_opcode_string(instruction->opcode);
+	if(!opcode_name) {
+		fprintf(stderr, "Error: Unable to get opcode name for `%i`.\n",
+			instruction->opcode);
+		return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
-#if DEBUG_CODEGEN == 1
-	printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `0x%x`.\n",
+	printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `0x%x`\n",
 		opcode_name, program_counter, 0);
 #endif
 
 	return ASSEMBLER_STATUS_SUCCESS;
 
 INSTRUCTION_OPERAND_COUNT_MISMATCH:
-	free(error_message);
-
-	fprintf(stderr, "Error: Operand count mismatch for instruction `%s`.\n", opcode_name);
-	return CODEGEN_ERROR_BAD_ALLOC;
+	fprintf(stderr, "Error: Operand count mismatch for instruction `%s`\n", opcode_name);
+	return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 }
 
 

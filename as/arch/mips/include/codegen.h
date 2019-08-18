@@ -27,16 +27,16 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 	const Operand imm,
 	const size_t program_counter);
 
-Encoding_Entity *encode_j_type(char *error_message,
-	Symbol_Table *symtab,
-	uint8_t opcode,
-	Operand imm,
-	size_t program_counter);
+Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
+	Symbol_Table* const symtab,
+	const uint8_t opcode,
+	const Operand imm,
+	const size_t program_counter);
 
-Encoding_Entity *encode_offset_type(char *error_message,
-	uint8_t opcode,
-	uint8_t rt,
-	Operand offset_reg);
+Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
+	const uint8_t opcode,
+	const uint8_t rt,
+	const Operand offset_reg);
 
 Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 	const uint8_t opcode,
