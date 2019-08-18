@@ -46,22 +46,22 @@ typedef struct _section {
 } Section;
 
 
-Section *create_section(char *name,
-	uint32_t type,
-	uint32_t flags);
+Section *create_section(char* name,
+	const uint32_t type,
+	const uint32_t flags);
 
-Section *add_section(Section **section_list,
-	Section *section);
+Section* add_section(Section** section_list,
+	Section* const section);
 
-Section *find_section(Section *section_list,
-	const char *name);
+Section* find_section(Section* const section_list,
+	const char* name);
 
-ssize_t find_section_index(Section *section_list,
-	const char *name);
+ssize_t find_section_index(Section* const section_list,
+	const char* name);
 
-Encoding_Entity *section_add_encoding_entity(Section *section,
-	Encoding_Entity *entity);
+Encoding_Entity *section_add_encoding_entity(Section* const section,
+	Encoding_Entity* const entity);
 
-void free_section(Section *section);
+void free_section(Section* section);
 
 #endif

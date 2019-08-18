@@ -28,8 +28,8 @@
  * @warning The returned line is allocated in this function, and must be freed
  * by the caller.
  */
-Assembler_Status preprocess_line(const char *line_buffer,
-	char **output) {
+Assembler_Status preprocess_line(const char* line_buffer,
+	char** output) {
 
 	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
 

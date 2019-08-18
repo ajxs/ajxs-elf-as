@@ -59,15 +59,15 @@ typedef struct {
 } Operand_Sequence;
 
 
-bool check_operand_count(size_t expected_operand_length,
-	Operand_Sequence *opseq);
+bool check_operand_count(const size_t expected_operand_length,
+	Operand_Sequence* opseq);
 
-void free_operand(Operand *op);
+void free_operand(Operand* op);
 
-void free_operand_sequence(Operand_Sequence *opseq);
+void free_operand_sequence(Operand_Sequence* opseq);
 
-void print_operand(Operand op);
+void print_operand(Operand* op);
 
-void print_operand_sequence(Operand_Sequence opseq);
+void print_operand_sequence(Operand_Sequence* opseq);
 
 #endif

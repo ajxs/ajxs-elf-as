@@ -38,10 +38,10 @@ typedef struct statement {
 } Statement;
 
 
-ssize_t get_statement_size(Statement *statement);
+ssize_t get_statement_size(Statement* statement);
 
-void free_statement(Statement *statement);
+void free_statement(Statement* statement);
 
-void print_statement(Statement *statement);
+void print_statement(Statement* statement);
 
 #endif

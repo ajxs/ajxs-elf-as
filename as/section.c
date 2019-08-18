@@ -16,7 +16,7 @@
 #include <section.h>
 
 
-void free_encoding_entity(Encoding_Entity *entity);
+void free_encoding_entity(Encoding_Entity* entity);
 
 
 /**
@@ -28,9 +28,9 @@ void free_encoding_entity(Encoding_Entity *entity);
  * @param flags The flags for the newly created section.
  * @return A pointer to the newly created section, or NULL if an error occurred.
  */
-Section *create_section(char *name,
-	uint32_t type,
-	uint32_t flags) {
+Section *create_section(char* name,
+	const uint32_t type,
+	const uint32_t flags) {
 
 	Section *section = malloc(sizeof(Section));
 	if(!section) {
@@ -62,16 +62,16 @@ Section *create_section(char *name,
  * @param section The section to add.
  * @return The added section, or NULL if an error occurred.
  */
-Section *add_section(Section **section_list,
-	Section *section) {
+Section* add_section(Section** section_list,
+	Section* const section) {
 
 	if(!section_list) {
-		fprintf(stderr, "Error: Invalid section list provided to add section function.\n");
+		fprintf(stderr, "Error: Invalid section list provided to add section function\n");
 		return NULL;
 	}
 
 	if(!section) {
-		fprintf(stderr, "Error: Invalid section provided to add section function.\n");
+		fprintf(stderr, "Error: Invalid section provided to add section function\n");
 		return NULL;
 	}
 
@@ -99,8 +99,8 @@ Section *add_section(Section **section_list,
  * @return A pointer to the section, or `NULL` if no matching section can be
  * found.
  */
-Section *find_section(Section *section_list,
-	const char *name) {
+Section *find_section(Section* const section_list,
+	const char* name) {
 
 	if(!section_list) {
 		fprintf(stderr, "Error: Invalid section list provided to find section function.\n");
@@ -134,8 +134,8 @@ Section *find_section(Section *section_list,
  * @param name The name of the section to search for.
  * @return The index of the found section in the list, or -1 if not found.
  */
-ssize_t find_section_index(Section *section_list,
-	const char *name) {
+ssize_t find_section_index(Section* const section_list,
+	const char* name) {
 
 	if(!section_list) {
 		return -1;
@@ -168,8 +168,8 @@ ssize_t find_section_index(Section *section_list,
  * @param entity The encoded entity to add to the section.
  * @return Returns the added encoding entity or NULL in the case of error.
  */
-Encoding_Entity *section_add_encoding_entity(Section *section,
-	Encoding_Entity *entity) {
+Encoding_Entity *section_add_encoding_entity(Section* const section,
+	Encoding_Entity* const entity) {
 
 	if(!section) {
 		fprintf(stderr, "Error: Invalid section provided to add entity function.\n");
@@ -217,7 +217,7 @@ Encoding_Entity *section_add_encoding_entity(Section *section,
  * @param entity A pointer to the entity to be freed.
  * @warning This function will recursively free any linked entities.
  */
-void free_encoding_entity(Encoding_Entity *entity) {
+void free_encoding_entity(Encoding_Entity* entity) {
 	if(!entity) {
 		fprintf(stderr, "Error: Attempting to free NULL encoded entity.\n");
 

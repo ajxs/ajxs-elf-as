@@ -32,9 +32,8 @@ union YYSTYPE {
 	Statement *statement;
 };
 
+Register parse_register_symbol(const char* register_symbol);
 
-Register parse_register_symbol(char *register_symbol);
-
-Opcode parse_opcode_symbol(char *opcode_symbol);
+Opcode parse_opcode_symbol(const char* opcode_symbol);
 
 #endif

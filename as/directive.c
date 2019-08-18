@@ -37,38 +37,38 @@ void free_directive(Directive *directive) {
  * @param dir The directive to get the string for.
  * @returns a pointer to the string containing the directive name.
  */
-const char *get_directive_string(Directive dir) {
-	if(dir.type == DIRECTIVE_ALIGN) {
+const char *get_directive_string(Directive* const directive) {
+	if(directive->type == DIRECTIVE_ALIGN) {
 		return ".ALIGN";
-	} else if(dir.type == DIRECTIVE_ASCII) {
+	} else if(directive->type == DIRECTIVE_ASCII) {
 		return ".ASCII";
-	} else if(dir.type == DIRECTIVE_ASCIZ) {
+	} else if(directive->type == DIRECTIVE_ASCIZ) {
 		return ".ASCIZ";
-	} else if(dir.type == DIRECTIVE_BSS) {
+	} else if(directive->type == DIRECTIVE_BSS) {
 		return ".BSS";
-	} else if(dir.type == DIRECTIVE_BYTE) {
+	} else if(directive->type == DIRECTIVE_BYTE) {
 		return ".BYTE";
-	} else if(dir.type == DIRECTIVE_DATA) {
+	} else if(directive->type == DIRECTIVE_DATA) {
 		return ".DATA";
-	} else if(dir.type == DIRECTIVE_FILL) {
+	} else if(directive->type == DIRECTIVE_FILL) {
 		return ".FILL";
-	} else if(dir.type == DIRECTIVE_GLOBAL) {
+	} else if(directive->type == DIRECTIVE_GLOBAL) {
 		return ".GLOBAL";
-	} else if(dir.type == DIRECTIVE_LONG) {
+	} else if(directive->type == DIRECTIVE_LONG) {
 		return ".LONG";
-	} else if(dir.type == DIRECTIVE_SHORT) {
+	} else if(directive->type == DIRECTIVE_SHORT) {
 		return ".SHORT";
-	} else if(dir.type == DIRECTIVE_SIZE) {
+	} else if(directive->type == DIRECTIVE_SIZE) {
 		return ".SIZE";
-	} else if(dir.type == DIRECTIVE_SKIP) {
+	} else if(directive->type == DIRECTIVE_SKIP) {
 		return ".SKIP";
-	} else if(dir.type == DIRECTIVE_SPACE) {
+	} else if(directive->type == DIRECTIVE_SPACE) {
 		return ".SPACE";
-	} else if(dir.type == DIRECTIVE_STRING) {
+	} else if(directive->type == DIRECTIVE_STRING) {
 		return ".STRING";
-	} else if(dir.type == DIRECTIVE_TEXT) {
+	} else if(directive->type == DIRECTIVE_TEXT) {
 		return ".TEXT";
-	} else if(dir.type == DIRECTIVE_WORD) {
+	} else if(directive->type == DIRECTIVE_WORD) {
 		return ".WORD";
 	} else {
 		return "UNKNOWN";
@@ -83,9 +83,9 @@ const char *get_directive_string(Directive dir) {
  * @param directive_symbol The directive string to parse.
  * @return A directive type.
  */
-Directive_Type parse_directive_symbol(char *directive_symbol) {
+Directive_Type parse_directive_symbol(char* directive_symbol) {
 	if(!directive_symbol) {
-		fprintf(stderr, "Invalid directive symbol provided to parse function.\n");
+		fprintf(stderr, "Invalid directive symbol provided to parse function\n");
 		return DIRECTIVE_UNKNOWN;
 	}
 

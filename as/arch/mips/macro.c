@@ -29,15 +29,15 @@
  * @warning @macro is modified in this function. Additional statements may be
  * appended to the end of this statement.
  */
-Assembler_Status expand_macro_la(Statement *macro) {
+Assembler_Status expand_macro_la(Statement* macro) {
 #if DEBUG_MACRO == 1
-	printf("Debug Macro: Expanding `LA` pseudo-instruction...\n");
+	printf("Debug Macro: Expanding `LA` pseudo-instruction\n");
 #endif
 
 	if(!check_operand_count(2, &macro->instruction.opseq)) {
 		// Check operand length is equal to 2, if not abort.
-		fprintf(stderr, "Operand count mismatch for `LA` pseudo-instruction.\n");
-		return EXPAND_MACRO_FAILURE;
+		fprintf(stderr, "Operand count mismatch for `LA` pseudo-instruction\n");
+		return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 	}
 
 	if(macro->instruction.opseq.operands[1].type == OPERAND_TYPE_SYMBOL) {
@@ -51,8 +51,8 @@ Assembler_Status expand_macro_la(Statement *macro) {
 		// This instruction will be appended to the original instruction.
 		Statement *expansion = malloc(sizeof(Statement));
 		if(!expansion) {
-			fprintf(stderr, "Error allocating statement for macro expansion.\n");
-			return EXPAND_MACRO_FAILURE;
+			fprintf(stderr, "Error: Error allocating statement for macro expansion\n");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		expansion->n_labels = 0;
@@ -65,8 +65,8 @@ Assembler_Status expand_macro_la(Statement *macro) {
 		if(!expansion->instruction.opseq.operands) {
 			free(expansion);
 
-			fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
-			return EXPAND_MACRO_FAILURE;
+			fprintf(stderr, "Error: Error allocating operand sequence for macro expansion\n");
+			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
 		expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
@@ -104,8 +104,8 @@ Assembler_Status expand_macro_la(Statement *macro) {
 			// Create the expansion instruction to store the `ORI` instruction.
 			Statement *expansion = malloc(sizeof(Statement));
 			if(!expansion) {
-				fprintf(stderr, "Error allocating statement for macro expansion.\n");
-				return EXPAND_MACRO_FAILURE;
+				fprintf(stderr, "Error allocating statement for macro expansion\n");
+				return ASSEMBLER_ERROR_BAD_ALLOC;
 			}
 
 			expansion->n_labels = 0;
@@ -120,8 +120,8 @@ Assembler_Status expand_macro_la(Statement *macro) {
 			if(!expansion->instruction.opseq.operands) {
 				free(expansion);
 
-				fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
-				return EXPAND_MACRO_FAILURE;
+				fprintf(stderr, "Error: Error allocating operand sequence for macro expansion\n");
+				return ASSEMBLER_ERROR_BAD_ALLOC;
 			}
 
 			expansion->instruction.opseq.operands[0] = macro->instruction.opseq.operands[0];
@@ -154,8 +154,8 @@ Assembler_Status expand_macro_la(Statement *macro) {
 			macro->instruction.opseq.operands = realloc(macro->instruction.opseq.operands,
 				sizeof(Operand) * 3);
 			if(!macro->instruction.opseq.operands) {
-				fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
-				return EXPAND_MACRO_FAILURE;
+				fprintf(stderr, "Error: Error allocating operand sequence for macro expansion\n");
+				return ASSEMBLER_ERROR_BAD_ALLOC;
 			}
 
 			macro->instruction.opseq.operands[2] = macro->instruction.opseq.operands[1];
@@ -166,7 +166,7 @@ Assembler_Status expand_macro_la(Statement *macro) {
 	} else {
 		// If the original expanded instruction uses any other kind of immediate
 		// operand type throw an error and abort.
-		return EXPAND_MACRO_FAILURE;
+		return ASSEMBLER_ERROR_BAD_OPERAND_TYPE;
 	}
 
 	return ASSEMBLER_STATUS_SUCCESS;
@@ -181,7 +181,7 @@ Assembler_Status expand_macro_la(Statement *macro) {
  * @param macro The branching instruction statement.
  * @warning @p macro is modified in this function.
  */
-Assembler_Status expand_branch_delay(Statement *macro) {
+Assembler_Status expand_branch_delay(Statement* macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding branch delay macro...\n");
 #endif
@@ -189,8 +189,8 @@ Assembler_Status expand_branch_delay(Statement *macro) {
 	// Create the expansion instruction which will store the inserted `NOP`.
 	Statement *expansion = malloc(sizeof(Statement));
 	if(!expansion) {
-		fprintf(stderr, "Error allocating statement for macro expansion.\n");
-		return EXPAND_MACRO_FAILURE;
+		fprintf(stderr, "Error allocating statement for macro expansion\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	expansion->n_labels = 0;
@@ -220,14 +220,14 @@ Assembler_Status expand_branch_delay(Statement *macro) {
  * @param macro The `move` instruction statement.
  * @warning @p macro is modified in this function.
  */
-Assembler_Status expand_macro_move(Statement *macro) {
+Assembler_Status expand_macro_move(Statement* macro) {
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
 
 	if(!check_operand_count(2, &macro->instruction.opseq)) {
-		fprintf(stderr, "Operand count mismatch for `MOVE` pseudo-instruction.\n");
-		return EXPAND_MACRO_FAILURE;
+		fprintf(stderr, "Operand count mismatch for `MOVE` pseudo-instruction\n");
+		return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 	}
 
 	// The `MOVE` pseudo-instruction is analogous to an ADD instruction between
@@ -235,11 +235,11 @@ Assembler_Status expand_macro_move(Statement *macro) {
 	// add a final operand referencing the $zero register.
 	macro->instruction.opcode = OPCODE_ADD;
 	macro->instruction.opseq.n_operands = 3;
-	macro->instruction.opseq.operands =
-		realloc(macro->instruction.opseq.operands, sizeof(Operand) * 3);
+	macro->instruction.opseq.operands = realloc(macro->instruction.opseq.operands,
+		sizeof(Operand) * 3);
 	if(!macro->instruction.opseq.operands) {
-		fprintf(stderr, "Error allocating operand sequence for macro expansion.\n");
-		return EXPAND_MACRO_FAILURE;
+		fprintf(stderr, "Error allocating operand sequence for macro expansion\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	macro->instruction.opseq.operands[2].type = OPERAND_TYPE_REGISTER;
@@ -260,7 +260,7 @@ Assembler_Status expand_macro_move(Statement *macro) {
  * @param statements The linked list of parsed statements.
  * @warning @p statements is modified by this function.
  */
-Assembler_Status expand_macros(Statement *statements) {
+Assembler_Status expand_macros(Statement* statements) {
 	Statement *curr = statements;
 
 	Assembler_Status macro_process_status;

@@ -129,29 +129,29 @@ bool check_operand_count(size_t expected_operand_length,
  * This function prints information about an instruction operand.
  * @param op The operand to print information about.
  */
-void print_operand(Operand op) {
-	if(op.type == OPERAND_TYPE_NUMERIC_LITERAL) {
-		printf("      Operand: Numeric Literal: `%i`", op.numeric_literal);
-	} else if(op.type == OPERAND_TYPE_STRING_LITERAL) {
-		printf("      Operand: String Literal: `%s`", op.string_literal);
-	} else if(op.type == OPERAND_TYPE_SYMBOL) {
-		printf("      Operand: Symbol Reference: `%s`", op.symbol);
-	} else if(op.type == OPERAND_TYPE_REGISTER) {
-		printf("      Operand: Register: `%i`", op.reg);
+void print_operand(Operand* const op) {
+	if(op->type == OPERAND_TYPE_NUMERIC_LITERAL) {
+		printf("      Operand: Numeric Literal: `%i`", op->numeric_literal);
+	} else if(op->type == OPERAND_TYPE_STRING_LITERAL) {
+		printf("      Operand: String Literal: `%s`", op->string_literal);
+	} else if(op->type == OPERAND_TYPE_SYMBOL) {
+		printf("      Operand: Symbol Reference: `%s`", op->symbol);
+	} else if(op->type == OPERAND_TYPE_REGISTER) {
+		printf("      Operand: Register: `%i`", op->reg);
 	} else {
 		printf("      Unknown Operand Type");
 	}
 
-	if(op.offset != 0) {
-		printf(" Offset: `%i`", op.offset);
+	if(op->offset != 0) {
+		printf(" Offset: `%i`", op->offset);
 	}
 
-	if(op.flags.mask != OPERAND_MASK_NONE) {
-		printf(" Mask: `%i`", op.flags.mask);
+	if(op->flags.mask != OPERAND_MASK_NONE) {
+		printf(" Mask: `%i`", op->flags.mask);
 	}
 
-	if(op.flags.shift != 0) {
-		printf(" Shift: `%i`", op.flags.shift);
+	if(op->flags.shift != 0) {
+		printf(" Shift: `%i`", op->flags.shift);
 	}
 
 	printf("\n");
@@ -164,10 +164,10 @@ void print_operand(Operand op) {
  * This function prints an operand sequence entity, printing each operand.
  * @param opseq The operand sequence to print.
  */
-void print_operand_sequence(Operand_Sequence opseq) {
-	printf("    Operand sequence: len: `%zu`\n", opseq.n_operands);
-	for(size_t i=0; i<opseq.n_operands; i++) {
-		print_operand(opseq.operands[i]);
+void print_operand_sequence(Operand_Sequence* const opseq) {
+	printf("    Operand sequence: len: `%zu`\n", opseq->n_operands);
+	for(size_t i = 0; i < opseq->n_operands; i++) {
+		print_operand(&opseq->operands[i]);
 	}
 }
 
@@ -178,11 +178,11 @@ void print_operand_sequence(Operand_Sequence opseq) {
  * This function prints information about a directive entity.
  * @param dir The directive to print.
  */
-void print_directive(Directive dir) {
-	const char *directive_name = get_directive_string(dir);
+void print_directive(Directive* const directive) {
+	const char *directive_name = get_directive_string(directive);
 	printf("  Directive: Type: `%s`\n", directive_name);
-	if(dir.opseq.n_operands > 0) {
-		print_operand_sequence(dir.opseq);
+	if(directive->opseq.n_operands > 0) {
+		print_operand_sequence(&directive->opseq);
 	}
 }
 
@@ -193,9 +193,9 @@ void print_directive(Directive dir) {
  * This function prints information about a statement entity.
  * @param statement The statement to print.
  */
-void print_statement(Statement *statement) {
+void print_statement(Statement* const statement) {
 	if(!statement) {
-		fprintf(stderr, "Error: Invalid statement provided to print function.\n");
+		fprintf(stderr, "Error: Invalid statement provided to print function\n");
 
 		return;
 	}
@@ -209,7 +209,7 @@ void print_statement(Statement *statement) {
 	}
 
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
-		print_directive(statement->directive);
+		print_directive(&statement->directive);
 	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
 		print_instruction(statement->instruction);
 	}

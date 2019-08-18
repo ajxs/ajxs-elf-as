@@ -26,8 +26,8 @@
  * @param program_statements A pointer-to-pointer to the statement list.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Status read_input(FILE *input_file,
-	Statement **program_statements) {
+Assembler_Status read_input(FILE* input_file,
+	Statement** program_statements) {
 
 	char *line_buffer = NULL;
 	size_t line_buffer_length = 0;

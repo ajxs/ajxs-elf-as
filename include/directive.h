@@ -39,23 +39,17 @@ typedef enum {
 	DIRECTIVE_WORD
 } Directive_Type;
 
-
 typedef struct {
 	Directive_Type type;
 	Operand_Sequence opseq;
 } Directive;
 
-
-void print_directive(Directive dir);
-
 void free_directive(Directive *directive);
 
-const char *get_directive_string(Directive dir);
+const char *get_directive_string(Directive* const directive);
 
-Directive_Type parse_directive_symbol(char *directive_symbol);
+Directive_Type parse_directive_symbol(char* const directive_symbol);
 
-Encoding_Entity *encode_directive(Symbol_Table *symtab,
-	Directive *directive,
-	size_t program_counter);
+void print_directive(Directive* const directive);
 
 #endif

@@ -22,10 +22,10 @@ typedef struct {
 } Instruction;
 
 
-void free_instruction(Instruction *instruction);
+void free_instruction(Instruction* instruction);
 
 void print_instruction(Instruction inst);
 
-const char *get_opcode_string(Opcode op);
+const char* get_opcode_string(Opcode op);
 
 #endif

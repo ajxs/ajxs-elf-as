@@ -23,7 +23,7 @@
  * @param op The operand to get the string for.
  * @returns a pointer to the string containing the operand name.
  */
-const char *get_opcode_string(Opcode op) {
+const char* get_opcode_string(Opcode op) {
 	if(op == OPCODE_ADDIU) {
 		return "ADDIU";
 	} else if(op == OPCODE_ADDI) {
@@ -112,7 +112,7 @@ const char *get_opcode_string(Opcode op) {
  * @returns The number of bytes required to encode the entity, or -1 if an error
  * occurred.
  */
-ssize_t get_statement_size(Statement *statement) {
+ssize_t get_statement_size(Statement* statement) {
 	if(!statement) {
 		fprintf(stderr, "Error: Invalid statement provided to get statement size function.\n");
 		return -1;

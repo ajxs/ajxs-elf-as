@@ -63,37 +63,42 @@ typedef enum e_assembler_status {
 	CODEGEN_ERROR_OPERAND_COUNT_MISMATCH,
 	CODEGEN_ERROR_MISSING_SECTION,
 	CODEGEN_ERROR_MISSING_SYMBOL,
-	CODEGEN_ERROR_DEPRECATED_OPCODE,
-	EXPAND_MACRO_FAILURE
+	CODEGEN_ERROR_DEPRECATED_OPCODE
 } Assembler_Status;
 
+Assembler_Status assemble(const char* input_filename,
+	const char* output_filename,
+	const bool verbose);
 
-Assembler_Status initialise_sections(Section **sections);
+Assembler_Status assemble_first_pass(Section* sections,
+	Symbol_Table* symbol_table,
+	Statement* statements);
 
-Assembler_Status populate_symtab(Section *sections,
-	Symbol_Table *symbol_table);
+Assembler_Status assemble_second_pass(Section* sections,
+	Symbol_Table* symbol_table,
+	Statement* statements);
 
-Assembler_Status assemble(const char *input_filename,
-	const char *output_filename,
-	bool verbose);
+Elf32_Ehdr* create_elf_header(void);
 
-Assembler_Status assemble_first_pass(Section *sections,
-	Symbol_Table *symbol_table,
-	Statement *statements);
+Elf32_Shdr* encode_section_header(Section* section);
 
-Assembler_Status assemble_second_pass(Section *sections,
-	Symbol_Table *symbol_table,
-	Statement *statements);
-
-Assembler_Status expand_macros(Statement *statements);
-
-Elf32_Ehdr *create_elf_header(void);
-
-Elf32_Shdr *encode_section_header(Section *section);
+Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
+	Symbol_Table* const symtab,
+	Directive* const directive,
+	const size_t program_counter);
 
 Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 	Symbol_Table* const symbol_table,
 	Instruction* const instruction,
 	const size_t program_counter);
+
+Assembler_Status expand_macros(Statement* statements);
+
+char* get_encoding_as_string(Encoding_Entity* encoded_instruction);
+
+Assembler_Status initialise_sections(Section** sections);
+
+Assembler_Status populate_symtab(Section* sections,
+	Symbol_Table* symbol_table);
 
 #endif

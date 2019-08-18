@@ -40,6 +40,6 @@ void print_instruction(Instruction instruction) {
 	const char *opcode_name = get_opcode_string(instruction.opcode);
 	printf("  Instruction: Opcode: `%s`\n", opcode_name);
 	if(instruction.opseq.n_operands > 0) {
-		print_operand_sequence(instruction.opseq);
+		print_operand_sequence(&instruction.opseq);
 	}
 }

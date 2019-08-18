@@ -22,6 +22,186 @@
 #include <symtab.h>
 
 
+Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
+	Symbol_Table* const symtab,
+	Directive* const directive,
+	const size_t program_counter) {
+
+	// To avoid non-use warning. This is included as part of the function prototype
+	// as it may be required for some directive.
+	(void)program_counter;
+
+	if(!symtab) {
+		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
+		return CODEGEN_ERROR_INVALID_ARGS;
+	}
+
+	if(!directive) {
+		fprintf(stderr, "Error: Invalid directive provided to encoding function\n");
+		return CODEGEN_ERROR_INVALID_ARGS;
+	}
+
+	*encoded_directive = malloc(sizeof(Encoding_Entity));
+	if(!encoded_directive) {
+		fprintf(stderr, "Error: Error allocating encoding entity\n");
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
+
+	(*encoded_directive)->n_reloc_entries = 0;
+	(*encoded_directive)->reloc_entries = NULL;
+	(*encoded_directive)->next = NULL;
+
+	size_t total_len = 0;
+	size_t count = 0;
+	size_t fill_size = 0;
+	size_t string_len;
+	uint8_t *data = NULL;
+	size_t curr_pos = 0;
+
+	const char *directive_name = get_directive_string(directive);
+	if(!directive_name) {
+		// cleanup.
+		free(encoded_directive);
+
+		fprintf(stderr, "Error: Unable to get directive type for `%i`\n",
+			directive->type);
+		return CODEGEN_ERROR_BAD_OPCODE;
+	}
+
+	switch(directive->type) {
+		case DIRECTIVE_ASCII:
+			if(directive->opseq.n_operands < 1) {
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
+			}
+
+			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
+				// Iterate through each string operand.
+				string_len = strlen(directive->opseq.operands[i].string_literal);
+				curr_pos = total_len;
+				total_len += string_len;
+				data = realloc(data, total_len);
+				if(!data) {
+					fprintf(stderr, "Error: Error allocating directive data\n");
+					return ASSEMBLER_ERROR_BAD_ALLOC;
+				}
+
+				memcpy(data + curr_pos, &directive->opseq.operands[i].string_literal,
+					string_len);
+			}
+
+			(*encoded_directive)->size = total_len;
+			(*encoded_directive)->data = data;
+			break;
+		case DIRECTIVE_STRING:
+		case DIRECTIVE_ASCIZ:
+			if(directive->opseq.n_operands < 1) {
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
+			}
+
+			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
+				string_len = strlen(directive->opseq.operands[i].string_literal);
+				curr_pos = total_len;
+				total_len += (1 + string_len);    // Take NUL terminator into account.
+
+				data = realloc(data, total_len);
+				if(!data) {
+					fprintf(stderr, "Error: Error allocating directive data\n");
+					return CODEGEN_ERROR_BAD_ALLOC;
+				}
+
+				memcpy(data + curr_pos, directive->opseq.operands[i].string_literal, string_len);
+
+				// Add NULL terminator.
+				data[total_len - 1] = '\0';
+			}
+
+			(*encoded_directive)->size = total_len;
+			(*encoded_directive)->data = data;
+			break;
+		case DIRECTIVE_BYTE:
+			break;
+		case DIRECTIVE_FILL:
+			break;
+		case DIRECTIVE_LONG:
+			break;
+		case DIRECTIVE_SHORT:
+			break;
+		case DIRECTIVE_SIZE:
+			break;
+		case DIRECTIVE_SKIP:
+			break;
+		case DIRECTIVE_SPACE:
+		case DIRECTIVE_WORD:
+			if(directive->opseq.n_operands < 1) {
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
+			}
+
+			total_len = sizeof(uint32_t) * directive->opseq.n_operands;
+
+			uint32_t *word_data = malloc(total_len);
+			if(!word_data) {
+				fprintf(stderr, "Error: Error allocating directive data.\n");
+				return ASSEMBLER_ERROR_BAD_ALLOC;
+			}
+
+			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
+				// Create an array of each of the word operands.
+				if(directive->opseq.operands[i].type == OPERAND_TYPE_SYMBOL) {
+					Symbol *symbol = symtab_find_symbol(symtab,
+						directive->opseq.operands[i].string_literal);
+					if(!symbol) {
+						// cleanup.
+						free(word_data);
+
+						fprintf(stderr, "Error: Error finding symbol `%s`\n",
+							directive->opseq.operands[i].string_literal);
+						return CODEGEN_ERROR_MISSING_SYMBOL;
+					}
+
+					word_data[i] = symbol->offset;
+				} else if(directive->opseq.operands[i].type == OPERAND_TYPE_NUMERIC_LITERAL) {
+					word_data[i] = directive->opseq.operands[i].numeric_literal;
+				} else {
+					// cleanup.
+					free(word_data);
+					return CODEGEN_ERROR_BAD_OPERAND_TYPE;
+				}
+			}
+
+			data = malloc(total_len);
+			if(!data) {
+				// cleanup.
+				free(word_data);
+
+				fprintf(stderr, "Error: Error allocating directive data");
+				return ASSEMBLER_ERROR_BAD_ALLOC;
+			}
+
+			memcpy(data, word_data, total_len);
+			(*encoded_directive)->size = total_len;
+			(*encoded_directive)->data = data;
+			(*encoded_directive)->next = NULL;
+
+			free(word_data);
+			break;
+		// Non-encoded directives.
+		case DIRECTIVE_ALIGN:
+		case DIRECTIVE_BSS:
+		case DIRECTIVE_DATA:
+		case DIRECTIVE_GLOBAL:
+		case DIRECTIVE_TEXT:
+		case DIRECTIVE_UNKNOWN:
+			fprintf(stderr, "Error: Invalid non-encoded directive type\n");
+			return CODEGEN_ERROR_BAD_OPCODE;
+		default:
+			fprintf(stderr, "Error: Unknown directive type\n");
+			return CODEGEN_ERROR_BAD_OPCODE;
+	}
+
+	return ASSEMBLER_STATUS_SUCCESS;
+}
+
+
 /**
  * @brief Encodes an I type instruction.
  *
@@ -370,7 +550,6 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 
 	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
 
-
 	switch(instruction->opcode) {
 		case OPCODE_ADD:
 		case OPCODE_ADDU:
@@ -383,7 +562,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		case OPCODE_SUB:
 		case OPCODE_SUBU:
 			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			if(instruction->opcode == OPCODE_ADD) {
@@ -425,7 +604,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		case OPCODE_BNE:
 		case OPCODE_ORI:
 			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			if(instruction->opcode == OPCODE_ADDI) {
@@ -471,7 +650,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			}
 
 			if(!check_operand_count(2, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
@@ -480,7 +659,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			break;
 		case OPCODE_BAL:
 			if(!check_operand_count(1, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			status = encode_i_type(encoded_instruction, symtab, 1, 0, 0x11,
@@ -489,7 +668,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		case OPCODE_J:
 		case OPCODE_JAL:
 			if(!check_operand_count(1, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			if(instruction->opcode == OPCODE_J) {
@@ -503,7 +682,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			break;
 		case OPCODE_JALR:
 			if(!check_operand_count(1, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			if(instruction->opseq.n_operands == 1) {
@@ -517,7 +696,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			break;
 		case OPCODE_JR:
 			if(!check_operand_count(1, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			rs = encode_operand_register(instruction->opseq.operands[0].reg);
@@ -525,7 +704,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			break;
 		case OPCODE_LUI:
 			if(!check_operand_count(2, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			rt = encode_operand_register(instruction->opseq.operands[0].reg);
@@ -539,21 +718,20 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			break;
 		case OPCODE_NOP:
 			if(!check_operand_count(0, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			status = encode_r_type(encoded_instruction, 0, 0, 0, 0, 0, 0);
 			break;
 		case OPCODE_SLL:
 			if(!check_operand_count(3, &instruction->opseq)) {
-				goto INSTRUCTION_OPERAND_COUNT_MISMATCH;
+				return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 			}
 
 			rd = encode_operand_register(instruction->opseq.operands[0].reg);
 			sa = instruction->opseq.operands[2].numeric_literal;
 			status = encode_r_type(encoded_instruction, 0, rd, 0, rt, sa, 0x0);
 			break;
-
 		case OPCODE_SYSCALL:
 			// @TODO: Investigate use of `code` field.
 			status = encode_r_type(encoded_instruction, 0, 0, 0, 0, 0, 0xC);
@@ -564,211 +742,13 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
-#if DEBUG_CODEGEN == 1
-	const char *opcode_name = get_opcode_string(instruction->opcode);
-	if(!opcode_name) {
-		fprintf(stderr, "Error: Unable to get opcode name for `%i`.\n",
-			instruction->opcode);
-		return CODEGEN_ERROR_BAD_OPCODE;
-	}
-
-	printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `0x%x`\n",
-		opcode_name, program_counter, 0);
-#endif
-
 	return status;
-
-INSTRUCTION_OPERAND_COUNT_MISMATCH:
-	fprintf(stderr, "Error: Operand count mismatch for instruction `%s`\n",
-		opcode_name);
-	return CODEGEN_ERROR_OPERAND_COUNT_MISMATCH;
 }
 
 
-Encoding_Entity *encode_directive(Symbol_Table *symtab,
-	Directive *directive,
-	size_t program_counter) {
+char* get_encoding_as_string(Encoding_Entity* encoded_instruction) {
+	char *representation = malloc(ERROR_MSG_MAX_LEN);
+	sprintf(representation, "0x%x", (uint32_t)encoded_instruction->data);
 
-	(void)program_counter;
-	if(!symtab) {
-		fprintf(stderr, "Error: Invalid symbol table provided to encoding function.\n");
-		return NULL;
-	}
-
-	if(!directive) {
-		fprintf(stderr, "Error: Invalid directive provided to encoding function.\n");
-		return NULL;
-	}
-
-	Encoding_Entity *encoded_entity = malloc(sizeof(Encoding_Entity));
-	if(!encoded_entity) {
-		fprintf(stderr, "Error: Error allocating encoding entity.\n");
-		return NULL;
-	}
-
-	encoded_entity->n_reloc_entries = 0;
-	encoded_entity->reloc_entries = NULL;
-	encoded_entity->next = NULL;
-
-	size_t total_len = 0;
-	size_t count = 0;
-	size_t fill_size = 0;
-	size_t string_len;
-	uint8_t *data = NULL;
-	size_t curr_pos = 0;
-
-	const char *directive_name = get_directive_string(*directive);
-	if(!directive_name) {
-		// cleanup.
-		free(encoded_entity);
-
-		fprintf(stderr, "Error: Unable to get directive type for `%i`.\n", directive->type);
-		return NULL;
-	}
-
-#if DEBUG_CODEGEN == 1
-	printf("Debug Codegen: Encoding directive type `%u`...", directive->type);
-#endif
-
-	switch(directive->type) {
-		case DIRECTIVE_ASCII:
-			if(directive->opseq.n_operands < 1) {
-				goto DIRECTIVE_OPERAND_COUNT_MISMATCH;
-			}
-
-			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
-				// Iterate through each string operand.
-				string_len = strlen(directive->opseq.operands[i].string_literal);
-				curr_pos = total_len;
-				total_len += string_len;
-				data = realloc(data, total_len);
-				if(!data) {
-					fprintf(stderr, "Error: Error allocating directive data.\n");
-					return NULL;
-				}
-
-				memcpy(data + curr_pos, &directive->opseq.operands[i].string_literal, string_len);
-			}
-
-			encoded_entity->size = total_len;
-			encoded_entity->data = data;
-			break;
-		case DIRECTIVE_STRING:
-		case DIRECTIVE_ASCIZ:
-			if(directive->opseq.n_operands < 1) {
-				goto DIRECTIVE_OPERAND_COUNT_MISMATCH;
-			}
-
-			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
-				string_len = strlen(directive->opseq.operands[i].string_literal);
-				curr_pos = total_len;
-				total_len += (1 + string_len);    // Take NUL terminator into account.
-
-				data = realloc(data, total_len);
-				if(!data) {
-					fprintf(stderr, "Error: Error allocating directive data.\n");
-					return NULL;
-				}
-
-				memcpy(data + curr_pos, directive->opseq.operands[i].string_literal, string_len);
-
-				// Add NULL terminator.
-				data[total_len - 1] = '\0';
-			}
-
-			encoded_entity->size = total_len;
-			encoded_entity->data = data;
-			break;
-		case DIRECTIVE_BYTE:
-			break;
-		case DIRECTIVE_FILL:
-			break;
-		case DIRECTIVE_LONG:
-			break;
-		case DIRECTIVE_SHORT:
-			break;
-		case DIRECTIVE_SIZE:
-			break;
-		case DIRECTIVE_SKIP:
-			break;
-		case DIRECTIVE_SPACE:
-		case DIRECTIVE_WORD:
-			if(directive->opseq.n_operands < 1) {
-				goto DIRECTIVE_OPERAND_COUNT_MISMATCH;
-			}
-
-			total_len = sizeof(uint32_t) * directive->opseq.n_operands;
-
-			uint32_t *word_data = malloc(total_len);
-			if(!word_data) {
-				fprintf(stderr, "Error: Error allocating directive data.\n");
-				return NULL;
-			}
-
-			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
-				// Create an array of each of the word operands.
-				if(directive->opseq.operands[i].type == OPERAND_TYPE_SYMBOL) {
-					Symbol *symbol = symtab_find_symbol(symtab,
-						directive->opseq.operands[i].string_literal);
-					if(!symbol) {
-						// cleanup.
-						free(word_data);
-
-						fprintf(stderr, "Error: Error finding symbol `%s`.\n",
-							directive->opseq.operands[i].string_literal);
-						return NULL;
-					}
-
-					word_data[i] = symbol->offset;
-				} else if(directive->opseq.operands[i].type == OPERAND_TYPE_NUMERIC_LITERAL) {
-					word_data[i] = directive->opseq.operands[i].numeric_literal;
-				} else {
-					// cleanup.
-					free(word_data);
-
-					fprintf(stderr, "Error: Invalid operand type for `%s` directive.", directive_name);
-					return NULL;
-				}
-			}
-
-			data = malloc(total_len);
-			if(!data) {
-				// cleanup.
-				free(word_data);
-
-				fprintf(stderr, "Error: Error allocating directive data.");
-				return NULL;
-			}
-
-			memcpy(data, word_data, total_len);
-			encoded_entity->size = total_len;
-			encoded_entity->data = data;
-			encoded_entity->next = NULL;
-
-			free(word_data);
-			break;
-		// Non-encoded directives.
-		case DIRECTIVE_ALIGN:
-		case DIRECTIVE_BSS:
-		case DIRECTIVE_DATA:
-		case DIRECTIVE_GLOBAL:
-		case DIRECTIVE_TEXT:
-		case DIRECTIVE_UNKNOWN:
-			fprintf(stderr, "Error: Invalid non-encoded directive type.\n");
-			return NULL;
-		default:
-			fprintf(stderr, "Error: Unknown directive type.\n");
-			return NULL;
-	}
-
-
-#if DEBUG_CODEGEN == 1
-	printf("Produced output with len: `%lu`.\n", encoded_entity->size);
-#endif
-
-	return encoded_entity;
-
-DIRECTIVE_OPERAND_COUNT_MISMATCH:
-	fprintf(stderr, "Error: Operand count mismatch for directive `%s`.\n", directive_name);
-	return NULL;
+	return representation;
 }
