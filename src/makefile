@@ -7,28 +7,28 @@ CC_FLAGS := -std=gnu11    \
 	-Wmissing-prototypes    \
 	-Wstrict-prototypes
 
-CC_INCLUDES      := include as/arch/${ARCH}/include
-CC_INCLUDE_PARAM := $(foreach d, ${CC_INCLUDES}, -I$d)
+CC_INCLUDES      = as/include as/arch/${ARCH}/include
+CC_INCLUDE_PARAM = $(foreach d, ${CC_INCLUDES}, -I$d)
 
 LIBS := -lfl
 
-BINARY := ${ARCH}-ajxs-elf-as
+BINARY = ${ARCH}-ajxs-elf-as
 
 LEXER_GEN := as/lexer.c
 PARSER_GEN := as/parser.c
-PARSER_HEADER_GEN := include/parser.h
+PARSER_HEADER_GEN := as/include/parser.h
 
 LEXER_SRC := as/lexer.l
 PARSER_SRC := as/parser.y
 
-ARCH_SOURCES := as/arch/${ARCH}/codegen.c    \
+ARCH_SOURCES = as/arch/${ARCH}/codegen.c    \
 	as/arch/${ARCH}/elf.c                      \
 	as/arch/${ARCH}/macro.c                    \
 	as/arch/${ARCH}/opcode.c                   \
 	as/arch/${ARCH}/register.c                 \
 	as/arch/${ARCH}/statement.c
 
-SOURCES := ${ARCH_SOURCES}    \
+SOURCES = ${ARCH_SOURCES}    \
 	${LEXER_GEN}                \
 	${PARSER_GEN}               \
 	as/as.c                     \
