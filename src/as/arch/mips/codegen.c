@@ -235,14 +235,15 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 
 	uint32_t* encoding = malloc(sizeof(uint32_t));
 	if(!*encoded_instruction) {
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		// @TODO: Global error handler.
 		fprintf(stderr, "Error: Error allocating instruction encoding\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	*encoding = opcode << 26;
+	*encoding = 0;
+	*encoding |= opcode << 26;
 	*encoding |= rs << 21;
 	*encoding |= rt << 16;
 
@@ -258,7 +259,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		if(!symbol) {
 			// cleanup.
 			free(encoding);
-			free(encoded_instruction);
+			free(*encoded_instruction);
 
 			fprintf(stderr, "Error: Error finding symbol `%s`", imm.symbol);
 			return ASSEMBLER_ERROR_MISSING_SYMBOL;
@@ -271,7 +272,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		if(!(*encoded_instruction)->reloc_entries) {
 			// cleanup.
 			free(encoding);
-			free(encoded_instruction);
+			free(*encoded_instruction);
 
 			fprintf(stderr, "Error: Error allocating relocation entries");
 			return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -290,9 +291,12 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_PC16;
 		}
 	} else {
+
+	printf("6666\n");
+
 		// cleanup.
 		free(encoding);
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		// If the immediate is of any other type, it is an error.
 		fprintf(stderr, "Error: Bad operand type `%u` for immediate type instruction",
@@ -342,7 +346,7 @@ Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 	uint32_t* encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
 		// Cleanup instruction data.
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		fprintf(stderr, "Error allocating instruction encoding\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -402,7 +406,7 @@ Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
 	uint32_t* encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
 		// cleanup.
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -469,7 +473,7 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));
 		if(!(*encoded_instruction)->reloc_entries) {
 			// cleanup.
-			free(encoded_instruction);
+			free(*encoded_instruction);
 
 			fprintf(stderr, "Error: Error allocating relocation entries\n");
 			return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -482,7 +486,7 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 		immediate = symbol->offset;
 	} else {
 		// cleanup.
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		fprintf(stderr, "Error: Bad operand type for jump type instruction");
 		return ASSEMBLER_ERROR_BAD_OPERAND_TYPE;
@@ -494,7 +498,7 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 	uint32_t* encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
 		// cleanup.
-		free(encoded_instruction);
+		free(*encoded_instruction);
 
 		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -623,8 +627,8 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 				opcode = 0xD;
 			}
 
-			rs = encode_operand_register(instruction->opseq.operands[0].reg);
-			rt = encode_operand_register(instruction->opseq.operands[1].reg);
+			rs = encode_operand_register(instruction->opseq.operands[1].reg);
+			rt = encode_operand_register(instruction->opseq.operands[0].reg);
 
 			status = encode_i_type(encoded_instruction, symtab, opcode, rs, rt,
 				instruction->opseq.operands[2], program_counter);

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+export ARCH=mips
+
+SRC_DIR="src"
+
+make -C ${SRC_DIR} clean
+make -C ${SRC_DIR} test &&
+./test-mips-ajxs-elf-as

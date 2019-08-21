@@ -1,6 +1,7 @@
 # Produced binaries
 *.o
 *.elf
+*.out
 
 # Produced executable
 *-ajxs-elf-as

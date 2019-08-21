@@ -17,6 +17,27 @@
 
 
 /**
+ * @brief Frees the symbol table.
+ * Frees the symbol table, freeing all of the symbols contained therein.
+ * @param symtab The symbol table to free.
+ * @warning Deletes all entries, and the table itself.
+ */
+void free_symbol_table(Symbol_Table* symtab) {
+	if(!symtab) {
+		fprintf(stderr, "Error: Invalid symbol table provided to free function\n");
+
+		return;
+	}
+
+	for(size_t i = 0; i < symtab->n_entries; i++) {
+		free(symtab->symbols[i].name);
+	}
+
+	free(symtab->symbols);
+}
+
+
+/**
  * @brief Prints a symbol table.
  *
  * This function prints all of the entries inside a symbol table.
@@ -152,27 +173,6 @@ ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
 	}
 
 	return -1;
-}
-
-
-/**
- * @brief Frees the symbol table.
- * Frees the symbol table, freeing all of the symbols contained therein.
- * @param symtab The symbol table to free.
- * @warning Deletes all entries, and the table itself.
- */
-void free_symbol_table(Symbol_Table* symtab) {
-	if(!symtab) {
-		fprintf(stderr, "Error: Invalid symbol table provided to free function\n");
-
-		return;
-	}
-
-	for(size_t i = 0; i < symtab->n_entries; i++) {
-		free(symtab->symbols[i].name);
-	}
-
-	free(symtab->symbols);
 }
 
 
