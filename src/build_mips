@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-export ARCH=mips
-
-AS_DIR="as"
-
-make clean -C ${AS_DIR}
-make -C ${AS_DIR}

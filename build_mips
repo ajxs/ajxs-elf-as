@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+export ARCH=mips
+
+SRC_DIR="src"
+
+make clean -C ${SRC_DIR}
+make -C ${SRC_DIR}
