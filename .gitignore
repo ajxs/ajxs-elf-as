@@ -1,9 +1,3 @@
-# Flex/Bison output
-as/lexer.c
-as/parser.c
-as/parser.h
-include/parser.h
-
 # Produced binaries
 *.o
 *.elf

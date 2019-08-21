@@ -1,6 +1,6 @@
-#line 2 "as/lexer.c"
+#line 2 "lexer.c"
 
-#line 4 "as/lexer.c"
+#line 4 "lexer.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -472,8 +472,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "as/lexer.l"
-#line 2 "as/lexer.l"
+#line 1 "lexer.l"
+#line 2 "lexer.l"
 #include <stdio.h>
 #include <string.h>
 #include <as.h>
@@ -484,8 +484,8 @@ char *yytext;
 
 #define DEBUG_LEXER 0
 
-#line 488 "as/lexer.c"
-#line 489 "as/lexer.c"
+#line 488 "lexer.c"
+#line 489 "lexer.c"
 
 #define INITIAL 0
 
@@ -702,10 +702,10 @@ YY_DECL
 		}
 
 	{
-#line 27 "as/lexer.l"
+#line 27 "lexer.l"
 
 
-#line 709 "as/lexer.c"
+#line 709 "lexer.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -764,19 +764,19 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 29 "as/lexer.l"
+#line 29 "lexer.l"
 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 31 "as/lexer.l"
+#line 31 "lexer.l"
 {
 	return ARGUMENT_DELIMITER;
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 36 "as/lexer.l"
+#line 36 "lexer.l"
 {
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: '('\n");
@@ -786,7 +786,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 44 "as/lexer.l"
+#line 44 "lexer.l"
 {
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: ')'\n", yytext);
@@ -796,7 +796,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 52 "as/lexer.l"
+#line 52 "lexer.l"
 {
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: COMMENT: `%s`\n", yytext);
@@ -807,7 +807,7 @@ YY_RULE_SETUP
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 60 "as/lexer.l"
+#line 60 "lexer.l"
 {
 	size_t string_len = strcspn(yytext+1, "\"");
 	yylval.text = strndup(yytext+1, string_len);
@@ -820,7 +820,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 71 "as/lexer.l"
+#line 71 "lexer.l"
 {
 	yylval.mask = OPERAND_MASK_HIGH;
 
@@ -832,7 +832,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 81 "as/lexer.l"
+#line 81 "lexer.l"
 {
 	yylval.mask = OPERAND_MASK_LOW;
 #if DEBUG_LEXER == 1
@@ -843,7 +843,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 89 "as/lexer.l"
+#line 89 "lexer.l"
 {
 	yylval.reg = parse_register_symbol(yytext);
 
@@ -856,7 +856,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 100 "as/lexer.l"
+#line 100 "lexer.l"
 {
 	size_t string_len = strcspn(yytext, ":");
 	yylval.text = strndup(yytext, string_len);
@@ -869,7 +869,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 111 "as/lexer.l"
+#line 111 "lexer.l"
 {
 	yylval.dirtype = parse_directive_symbol(yytext);
 
@@ -881,7 +881,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 121 "as/lexer.l"
+#line 121 "lexer.l"
 {
 	yylval.text = strdup(yytext);
 
@@ -893,7 +893,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 131 "as/lexer.l"
+#line 131 "lexer.l"
 {
 	yylval.imm = strtol(yytext, NULL, 0);
 	
@@ -906,7 +906,7 @@ YY_RULE_SETUP
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 141 "as/lexer.l"
+#line 141 "lexer.l"
 {
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: STATEMENT_DELIMITER\n");
@@ -916,7 +916,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 149 "as/lexer.l"
+#line 149 "lexer.l"
 {
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: Unrecognised: `%s`\n", yytext);
@@ -925,10 +925,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 155 "as/lexer.l"
+#line 155 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 932 "as/lexer.c"
+#line 932 "lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1933,7 +1933,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 155 "as/lexer.l"
+#line 155 "lexer.l"
 
 
 int yywrap(void) {

@@ -62,7 +62,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "as/parser.y" /* yacc.c:339  */
+#line 1 "parser.y" /* yacc.c:339  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +80,7 @@ extern int yylex(void);
 void yyerror(Statement **statements, const char *s);
 
 
-#line 84 "as/parser.c" /* yacc.c:339  */
+#line 84 "parser.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -100,8 +100,8 @@ void yyerror(Statement **statements, const char *s);
 
 /* In a future release of Bison, this section will be replaced
    by #include "parser.h".  */
-#ifndef YY_YY_AS_INCLUDE_PARSER_H_INCLUDED
-# define YY_YY_AS_INCLUDE_PARSER_H_INCLUDED
+#ifndef YY_YY_INCLUDE_PARSER_H_INCLUDED
+# define YY_YY_INCLUDE_PARSER_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -140,11 +140,11 @@ extern YYSTYPE yylval;
 
 int yyparse (Statement **statements);
 
-#endif /* !YY_YY_AS_INCLUDE_PARSER_H_INCLUDED  */
+#endif /* !YY_YY_INCLUDE_PARSER_H_INCLUDED  */
 
 /* Copy the second part of user declarations.  */
 
-#line 148 "as/parser.c" /* yacc.c:358  */
+#line 148 "parser.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -977,67 +977,67 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, Statement **statem
   switch (yytype)
     {
           case 3: /* LABEL  */
-#line 43 "as/parser.y" /* yacc.c:1257  */
+#line 43 "parser.y" /* yacc.c:1257  */
       {
 	free(((*yyvaluep).text));
 }
-#line 985 "as/parser.c" /* yacc.c:1257  */
+#line 985 "parser.c" /* yacc.c:1257  */
         break;
 
     case 5: /* SYMBOL  */
-#line 47 "as/parser.y" /* yacc.c:1257  */
+#line 47 "parser.y" /* yacc.c:1257  */
       {
 	free(((*yyvaluep).text));
 }
-#line 993 "as/parser.c" /* yacc.c:1257  */
+#line 993 "parser.c" /* yacc.c:1257  */
         break;
 
     case 7: /* STRING_LITERAL  */
-#line 51 "as/parser.y" /* yacc.c:1257  */
+#line 51 "parser.y" /* yacc.c:1257  */
       {
 	free(((*yyvaluep).text));
 }
-#line 1001 "as/parser.c" /* yacc.c:1257  */
+#line 1001 "parser.c" /* yacc.c:1257  */
         break;
 
     case 16: /* operand  */
-#line 55 "as/parser.y" /* yacc.c:1257  */
+#line 55 "parser.y" /* yacc.c:1257  */
       {
 	free_operand(&((*yyvaluep).operand));
 }
-#line 1009 "as/parser.c" /* yacc.c:1257  */
+#line 1009 "parser.c" /* yacc.c:1257  */
         break;
 
     case 17: /* directive  */
-#line 67 "as/parser.y" /* yacc.c:1257  */
+#line 67 "parser.y" /* yacc.c:1257  */
       {
 	free_directive(&((*yyvaluep).directive));
 }
-#line 1017 "as/parser.c" /* yacc.c:1257  */
+#line 1017 "parser.c" /* yacc.c:1257  */
         break;
 
     case 18: /* instruction  */
-#line 63 "as/parser.y" /* yacc.c:1257  */
+#line 63 "parser.y" /* yacc.c:1257  */
       {
 	free_instruction(&((*yyvaluep).instruction));
 }
-#line 1025 "as/parser.c" /* yacc.c:1257  */
+#line 1025 "parser.c" /* yacc.c:1257  */
         break;
 
     case 19: /* statement  */
-#line 71 "as/parser.y" /* yacc.c:1257  */
+#line 71 "parser.y" /* yacc.c:1257  */
       {
 	free_statement(((*yyvaluep).statement));
 }
-#line 1033 "as/parser.c" /* yacc.c:1257  */
+#line 1033 "parser.c" /* yacc.c:1257  */
         break;
 
     case 20: /* operand_seq  */
-#line 59 "as/parser.y" /* yacc.c:1257  */
+#line 59 "parser.y" /* yacc.c:1257  */
       {
 	free_operand_sequence(&((*yyvaluep).opseq));
 }
-#line 1041 "as/parser.c" /* yacc.c:1257  */
+#line 1041 "parser.c" /* yacc.c:1257  */
         break;
 
 
@@ -1299,7 +1299,7 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 79 "as/parser.y" /* yacc.c:1646  */
+#line 79 "parser.y" /* yacc.c:1646  */
     {
 		if(!*statements) {
 			*statements = (yyvsp[0].statement);
@@ -1313,11 +1313,11 @@ yyreduce:
 			curr->next = (yyvsp[0].statement);
 		}
 	}
-#line 1317 "as/parser.c" /* yacc.c:1646  */
+#line 1317 "parser.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 97 "as/parser.y" /* yacc.c:1646  */
+#line 97 "parser.y" /* yacc.c:1646  */
     {
 		// Add label to existing array.
 		(yyvsp[0].statement)->n_labels++;
@@ -1326,11 +1326,11 @@ yyreduce:
 
 		(yyval.statement) = (yyvsp[0].statement);
 	}
-#line 1330 "as/parser.c" /* yacc.c:1646  */
+#line 1330 "parser.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 105 "as/parser.y" /* yacc.c:1646  */
+#line 105 "parser.y" /* yacc.c:1646  */
     {
 		Statement *statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_EMPTY;
@@ -1341,11 +1341,11 @@ yyreduce:
 
 		(yyval.statement) = statement;
 	}
-#line 1345 "as/parser.c" /* yacc.c:1646  */
+#line 1345 "parser.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 115 "as/parser.y" /* yacc.c:1646  */
+#line 115 "parser.y" /* yacc.c:1646  */
     {
 		Statement *statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_INSTRUCTION;
@@ -1356,11 +1356,11 @@ yyreduce:
 
 		(yyval.statement) = statement;
 	}
-#line 1360 "as/parser.c" /* yacc.c:1646  */
+#line 1360 "parser.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 125 "as/parser.y" /* yacc.c:1646  */
+#line 125 "parser.y" /* yacc.c:1646  */
     {
 		Statement *statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_DIRECTIVE;
@@ -1371,11 +1371,11 @@ yyreduce:
 
 		(yyval.statement) = statement;
 	}
-#line 1375 "as/parser.c" /* yacc.c:1646  */
+#line 1375 "parser.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 138 "as/parser.y" /* yacc.c:1646  */
+#line 138 "parser.y" /* yacc.c:1646  */
     {
 		Instruction instruction;
 		instruction.opcode = parse_opcode_symbol((yyvsp[0].text));
@@ -1386,11 +1386,11 @@ yyreduce:
 		// This was duplicated in the lexer.
 		free((yyvsp[0].text));
 	}
-#line 1390 "as/parser.c" /* yacc.c:1646  */
+#line 1390 "parser.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 148 "as/parser.y" /* yacc.c:1646  */
+#line 148 "parser.y" /* yacc.c:1646  */
     {
 		Instruction instruction;
 		instruction.opcode = parse_opcode_symbol((yyvsp[-1].text));
@@ -1402,22 +1402,22 @@ yyreduce:
 		// This was duplicated in the lexer.
 		free((yyvsp[-1].text));
 	}
-#line 1406 "as/parser.c" /* yacc.c:1646  */
+#line 1406 "parser.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 163 "as/parser.y" /* yacc.c:1646  */
+#line 163 "parser.y" /* yacc.c:1646  */
     {
 		Directive dir;
 		dir.type = (yyvsp[0].dirtype);
 
 		(yyval.directive) = dir;
 	}
-#line 1417 "as/parser.c" /* yacc.c:1646  */
+#line 1417 "parser.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 169 "as/parser.y" /* yacc.c:1646  */
+#line 169 "parser.y" /* yacc.c:1646  */
     {
 		Directive directive;
 		directive.type = (yyvsp[-1].dirtype);
@@ -1425,11 +1425,11 @@ yyreduce:
 
 		(yyval.directive) = directive;
 	}
-#line 1429 "as/parser.c" /* yacc.c:1646  */
+#line 1429 "parser.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 180 "as/parser.y" /* yacc.c:1646  */
+#line 180 "parser.y" /* yacc.c:1646  */
     {
 		Operand_Sequence opseq;
 		opseq.n_operands = 1;
@@ -1438,11 +1438,11 @@ yyreduce:
 
 		(yyval.opseq) = opseq;
 	}
-#line 1442 "as/parser.c" /* yacc.c:1646  */
+#line 1442 "parser.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 188 "as/parser.y" /* yacc.c:1646  */
+#line 188 "parser.y" /* yacc.c:1646  */
     {
 		// Shift the operand onto start of the existing array.
 		(yyvsp[0].opseq).n_operands++;
@@ -1456,11 +1456,11 @@ yyreduce:
 
 		(yyval.opseq) = (yyvsp[0].opseq);
 	}
-#line 1460 "as/parser.c" /* yacc.c:1646  */
+#line 1460 "parser.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 205 "as/parser.y" /* yacc.c:1646  */
+#line 205 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_REGISTER;
@@ -1469,11 +1469,11 @@ yyreduce:
 		operand.reg = (yyvsp[0].reg);
 		(yyval.operand) = operand;
 	}
-#line 1473 "as/parser.c" /* yacc.c:1646  */
+#line 1473 "parser.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 213 "as/parser.y" /* yacc.c:1646  */
+#line 213 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_REGISTER;
@@ -1482,11 +1482,11 @@ yyreduce:
 		operand.reg = (yyvsp[-2].reg);
 		(yyval.operand) = operand;
 	}
-#line 1486 "as/parser.c" /* yacc.c:1646  */
+#line 1486 "parser.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 221 "as/parser.y" /* yacc.c:1646  */
+#line 221 "parser.y" /* yacc.c:1646  */
     { 
 		Operand operand;
 		operand.type = OPERAND_TYPE_REGISTER;
@@ -1495,11 +1495,11 @@ yyreduce:
 		operand.reg = (yyvsp[-1].reg);
 		(yyval.operand) = operand;
 	}
-#line 1499 "as/parser.c" /* yacc.c:1646  */
+#line 1499 "parser.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 229 "as/parser.y" /* yacc.c:1646  */
+#line 229 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_NUMERIC_LITERAL;
@@ -1507,11 +1507,11 @@ yyreduce:
 		operand.numeric_literal = (yyvsp[0].imm);
 		(yyval.operand) = operand;
 	}
-#line 1511 "as/parser.c" /* yacc.c:1646  */
+#line 1511 "parser.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 236 "as/parser.y" /* yacc.c:1646  */
+#line 236 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_STRING_LITERAL;
@@ -1519,11 +1519,11 @@ yyreduce:
 		operand.string_literal = (yyvsp[0].text);
 		(yyval.operand) = operand;
 	}
-#line 1523 "as/parser.c" /* yacc.c:1646  */
+#line 1523 "parser.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 243 "as/parser.y" /* yacc.c:1646  */
+#line 243 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_SYMBOL;
@@ -1531,11 +1531,11 @@ yyreduce:
 		operand.symbol = (yyvsp[0].text);
 		(yyval.operand) = operand;
 	}
-#line 1535 "as/parser.c" /* yacc.c:1646  */
+#line 1535 "parser.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 250 "as/parser.y" /* yacc.c:1646  */
+#line 250 "parser.y" /* yacc.c:1646  */
     {
 		Operand operand;
 		operand.type = OPERAND_TYPE_SYMBOL;
@@ -1544,11 +1544,11 @@ yyreduce:
 		operand.symbol = (yyvsp[-1].text);
 		(yyval.operand) = operand;
 	}
-#line 1548 "as/parser.c" /* yacc.c:1646  */
+#line 1548 "parser.c" /* yacc.c:1646  */
     break;
 
 
-#line 1552 "as/parser.c" /* yacc.c:1646  */
+#line 1552 "parser.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1776,7 +1776,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 261 "as/parser.y" /* yacc.c:1906  */
+#line 261 "parser.y" /* yacc.c:1906  */
 
 
 void yyerror(Statement **statements, const char *s) {
