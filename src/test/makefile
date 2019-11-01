@@ -20,6 +20,7 @@ BINARY := ../../test-${ARCH}-ajxs-elf-as
 
 AS_ARCH_SOURCES := ${AS_DIR}/arch/${ARCH}/codegen.c    \
 	${AS_DIR}/arch/${ARCH}/elf.c                         \
+	${AS_DIR}/arch/${ARCH}/instruction.c                 \
 	${AS_DIR}/arch/${ARCH}/macro.c                       \
 	${AS_DIR}/arch/${ARCH}/opcode.c                      \
 	${AS_DIR}/arch/${ARCH}/register.c                    \
