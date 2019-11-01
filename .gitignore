@@ -2,7 +2,9 @@
 *.o
 *.elf
 *.out
-
+# vim files
+*.swo
+*.swp
 # Produced executable
 *-ajxs-elf-as
 

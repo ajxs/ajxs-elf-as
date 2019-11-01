@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <as.h>
 #include <input.h>
@@ -29,56 +30,65 @@
  * by the caller.
  */
 Assembler_Status preprocess_line(const char* line_buffer,
-	char** output) {
-
-	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
-
+	char** output)
+{
+	// All operations performed on the string are destructive.
 	// Copy the line into a new buffer that we can modify.
-	// All operations from here are destructive.
 	*output = strdup(line_buffer);
+	if(!output) {
+		return ASSEMBLER_ERROR_BAD_ALLOC;
+	}
 
-	char *scan = *output;
-	char *last_char_pos = *output;
-
-	const char *preprocessor_error = NULL;
+	/** A pointer to the current char being scanned. */
+	char* scan = *output;
+	/** A pointer to the last scanned character. */
+	char* last_scanned_char = *output;
 
 	// Trim leading whitespace.
-	// Advance to first non-whitespace char and shift all
-	// chars from here back to the start of the line.
+	// Advancing the scan pointer here will cause the remaining string
+	// contents to be moved into the starting position below.
 	while(*scan != '\0' && isblank(*scan)) {
 		++scan;
 	}
 
-	scan = memmove(last_char_pos, scan, 1 + strlen(scan));
+	scan = memmove(last_scanned_char, scan, 1 + strlen(scan));
 
-	// Collapse all whitespace.
+	// All whitespace is collapsed into a single space character.
 	while(*scan != '\0') {
 		if(isblank(*scan)) {
-			scan = memmove(last_char_pos + 1, scan, 1 + strlen(scan));
+			// Move the remaining string contents to the next position from the last
+			// scanned character and replace the whitespace char with a space.
+			scan = memmove(last_scanned_char + 1, scan, 1 + strlen(scan));
 			*scan = ' ';
 		} else {
 			if(*scan == '\"') {
-				// Do not alter the contents of string literals.
+				// The contents of string literals are not processed in any way.
+				// This loop skips over the contents of the string literal by iterating the
+				// contents until a matching closing quote is found.
 				while(*++scan != '\"') {
 					if(*scan == '\0') {
-						preprocessor_error = "Preprocessor Error: Unterminated string literal.";
-						status = ASSEMBLER_STATUS_BAD_INPUT;
-						goto PREPROCESSOR_FAILURE;
+						fprintf(stderr, "Preprocessor Error: Unterminated string literal\n");
+
+						// Clean up output buffer.
+						free(output);
+						output = NULL;
+
+						return ASSEMBLER_STATUS_BAD_INPUT;
 					}
 				}
 			} else if(*scan == '#') {
-				// Terminate the string at any comment char.
+				// Terminate the string at any trailing comment char.
 				*scan = '\0';
 			}
 
-			last_char_pos = scan;
+			last_scanned_char = scan;
 		}
 
 		scan++;
 	}
 
-	// Remove trailing whitespace.
-	*last_char_pos = '\0';
+	// Remove any trailing whitespace.
+	*last_scanned_char = '\0';
 
 #if DEBUG_PREPROCESSOR == 1
 	if(strlen(*output)) {
@@ -88,8 +98,5 @@ Assembler_Status preprocess_line(const char* line_buffer,
 	}
 #endif
 
-	return status;
-
-PREPROCESSOR_FAILURE:
-	return status;
+	return ASSEMBLER_STATUS_SUCCESS;
 }

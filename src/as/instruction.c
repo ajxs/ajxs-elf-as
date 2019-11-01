@@ -15,14 +15,13 @@
 
 
 /**
- * @brief Frees an instruction.
- *
- * Frees an instruction and the operands that it contains.
- * @param instruction The instruction to free.
+ * free_instruction
  */
-void free_instruction(Instruction *instruction) {
+void free_instruction(Instruction* instruction)
+{
 	if(!instruction) {
 		fprintf(stderr, "Invalid instruction provided to free function.\n");
+
 		return;
 	}
 
@@ -31,14 +30,13 @@ void free_instruction(Instruction *instruction) {
 
 
 /**
- * @brief Prints an instruction.
- *
- * This function prints information about an instruction entity.
- * @param instruction The instruction to print.
+ * print_instruction
  */
-void print_instruction(Instruction instruction) {
-	const char *opcode_name = get_opcode_string(instruction.opcode);
+void print_instruction(Instruction instruction)
+{
+	const char* opcode_name = get_opcode_string(instruction.opcode);
 	printf("  Instruction: Opcode: `%s`\n", opcode_name);
+
 	if(instruction.opseq.n_operands > 0) {
 		print_operand_sequence(&instruction.opseq);
 	}

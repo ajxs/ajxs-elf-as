@@ -23,6 +23,7 @@ PARSER_SRC := parser.y
 
 ARCH_SOURCES = arch/${ARCH}/codegen.c    \
 	arch/${ARCH}/elf.c                     \
+	arch/${ARCH}/instruction.c             \
 	arch/${ARCH}/macro.c                   \
 	arch/${ARCH}/opcode.c                  \
 	arch/${ARCH}/register.c                \

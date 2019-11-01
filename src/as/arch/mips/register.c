@@ -14,13 +14,10 @@
 
 
 /**
- * @brief Parses the string representation of a register.
- *
- * This function parses the string representation of a register operand.
- * @param register_symbol The register string to parse.
- * @returns The matching register.
+ * parse_register_symbol
  */
-Register parse_register_symbol(const char* register_symbol) {
+Register parse_register_symbol(const char* register_symbol)
+{
 	if(!strncasecmp(register_symbol, "0", 1) || !strncasecmp(register_symbol, "$0", 2) ||
 		!strncasecmp(register_symbol, "$zero", 5)) {
 

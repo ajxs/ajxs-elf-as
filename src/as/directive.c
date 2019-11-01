@@ -20,7 +20,8 @@
  * Frees a directive and the operands that it contains.
  * @param directive The directive to free.
  */
-void free_directive(Directive *directive) {
+void free_directive(Directive* directive)
+{
 	if(!directive) {
 		fprintf(stderr, "Invalid directive provided to free function.\n");
 		return;
@@ -37,7 +38,8 @@ void free_directive(Directive *directive) {
  * @param dir The directive to get the string for.
  * @returns a pointer to the string containing the directive name.
  */
-const char *get_directive_string(Directive* const directive) {
+const char* get_directive_string(Directive* const directive)
+{
 	if(directive->type == DIRECTIVE_ALIGN) {
 		return ".ALIGN";
 	} else if(directive->type == DIRECTIVE_ASCII) {
@@ -83,7 +85,8 @@ const char *get_directive_string(Directive* const directive) {
  * @param directive_symbol The directive string to parse.
  * @return A directive type.
  */
-Directive_Type parse_directive_symbol(char* directive_symbol) {
+Directive_Type parse_directive_symbol(char* directive_symbol)
+{
 	if(!directive_symbol) {
 		fprintf(stderr, "Invalid directive symbol provided to parse function\n");
 		return DIRECTIVE_UNKNOWN;

@@ -13,15 +13,10 @@
 
 
 /**
- * @brief Parses a string containing an opcode.
- *
- * This function parses a string to find what opcode it corresponds to. In the
- * event that no recognised opcode can be found an `UNKNOWN_OPCODE` result is
- * returned.
- * @param opcode_symbol The C-string containing the opcode value.
- * @return The parsed opcode value.
+ * parse_opcode_symbol
  */
-Opcode parse_opcode_symbol(const char* opcode_symbol) {
+Opcode parse_opcode_symbol(const char* opcode_symbol)
+{
 	if(!strncasecmp(opcode_symbol, "addiu", 5)) {
 		return OPCODE_ADDIU;
 	} else if(!strncasecmp(opcode_symbol, "addi", 4)) {

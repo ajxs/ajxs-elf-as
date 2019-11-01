@@ -66,27 +66,91 @@ typedef enum e_assembler_status {
 	CODEGEN_ERROR_DEPRECATED_OPCODE
 } Assembler_Status;
 
+/**
+ * @brief The main assembler entry point.
+ *
+ * This function begins the assembly process for an input source file.
+ * All processing and assembly is initiated here.
+ * @param input_filename The file path for the input source file.
+ * @param output_filename The file path for the output source file.
+ * @return A status code indicating the success status of the operation
+*/
 Assembler_Status assemble(const char* input_filename,
 	const char* output_filename,
 	const bool verbose);
 
+/**
+ * @brief Runs the first pass of the assembler.
+ *
+ * This function runs the first assembly pass. This pass calculates the size of
+ * each instruction, and populates the symbol table with all of the labels.
+ * Creates a linked list of the sections.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @param statements A pointer to the parsed statement linked list.
+ * @warning This function modifies the symbol table.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
 Assembler_Status assemble_first_pass(Section* sections,
 	Symbol_Table* symbol_table,
 	Statement* statements);
 
+/**
+ * @brief Runs the second pass of the assembler.
+ *
+ * This function runs the second assembly pass. This pass generates the code for
+ * each parsed instruction and populates the section data.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @param statements A pointer to the parsed statement linked list.
+ * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
 Assembler_Status assemble_second_pass(Section* sections,
 	Symbol_Table* symbol_table,
 	Statement* statements);
 
-Elf32_Ehdr* create_elf_header(void);
+/**
+ * @brief Creates the ELF file header.
+ *
+ * This function creates an ELF executable file header specific for this
+ * particular architecture.
+ * @param elf_header A pointer-to-pointer to the header to be created.
+ * @return A status code indicating the result of the operation.
+ */
+Assembler_Status create_elf_header(Elf32_Ehdr** elf_header);
 
-Elf32_Shdr* encode_section_header(Section* section);
+/**
+ * @brief Encodes an ELF section header.
+ *
+ * This function encodes an ELF section header from an application
+ * section entity.
+ * @param section A pointer to the application section entity.
+ * @param section_header A pointer-to-pointer to the section header to be
+ * created.
+ * @return The status of process.
+ */
+Assembler_Status encode_section_header(Section* section,
+	Elf32_Shdr** section_header);
 
 Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 	Symbol_Table* const symtab,
 	Directive* const directive,
 	const size_t program_counter);
 
+/**
+ * @brief Encodes an Instruction entity.
+ *
+ * Encodes an instruction entity, creating an `Encoding_Entity` instance representing
+ * the generated machine code entities to be written into the executable.
+ * @param symtab The symbol table. This is scanned to find any symbols referenced
+ * in instruction operands.
+ * @param instruction The parsed instruction entity to encode.
+ * @param program_counter The current program counter. This represents the current
+ * place of the instruction within the current encoding context, which is the
+ * current program section.
+ * @return The encoded instruction entity. Returns `NULL` in case of error.
+ */
 Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 	Symbol_Table* const symbol_table,
 	Instruction* const instruction,
@@ -95,6 +159,8 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 Assembler_Status expand_macros(Statement* statements);
 
 char* get_encoding_as_string(Encoding_Entity* encoded_instruction);
+
+bool get_status(const Assembler_Status status);
 
 Assembler_Status initialise_sections(Section** sections);
 

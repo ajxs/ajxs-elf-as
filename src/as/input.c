@@ -27,12 +27,20 @@
  * @return A status entity indicating whether or not the pass was successful.
  */
 Assembler_Status read_input(FILE* input_file,
-	Statement** program_statements) {
-
-	char *line_buffer = NULL;
+	Statement** program_statements)
+{
+	/** The buffer holding the raw, unprocessed input line. */
+	char* line_buffer = NULL;
+	/** The length of the input line buffer, used by 'getline'. */
 	size_t line_buffer_length = 0;
+	/** The number of chars read from the input file. */
 	ssize_t chars_read = 0;
+	/** The number of the line being processed. */
 	size_t line_num = 1;
+	/** Buffer holding the preprocessed lines. */
+	char* line = NULL;
+	/** The program status. */
+	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
 
 	// Read all the lines in the file.
 	while((chars_read = getline(&line_buffer, &line_buffer_length, input_file)) != -1) {
@@ -40,34 +48,30 @@ Assembler_Status read_input(FILE* input_file,
 	printf("Input line #%zu: `%s`", line_num, line_buffer);
 #endif
 
-		Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
-
 		// Preprocess the line. Normalises the line to conform to a standard format.
-
-		/** The processed line. */
-		char *line = NULL;
-
 		status = preprocess_line(line_buffer, &line);
-		if(!line) {
-			// Error message should have been set in callee.
+		if(!get_status(status)) {
 			// Free the line buffer.
+			// The processed line buffer will have been freed by the callee.
 			free(line_buffer);
+
 			return ASSEMBLER_ERROR_PREPROCESSING_FAILURE;
 		}
 
 		// If the resulting line has no length, do not parse any further.
 		if(strlen(line) == 0) {
 			free(line);
+
 			continue;
 		}
 
 		// This is where each line from the source file is lexed and parsed.
 		// This returns a linked-list entity, since architecture-depending, a single
 		// line may contain multiple `statement`s.
-		Statement *parsed_statements = scan_string(line);
+		Statement* parsed_statements = scan_string(line);
 
 		// Iterate through each processed statement and set its line number.
-		Statement *curr = parsed_statements;
+		Statement* curr = parsed_statements;
 		curr->line_num = line_num;
 		while(curr->next) {
 			curr = curr->next;
@@ -89,12 +93,14 @@ Assembler_Status read_input(FILE* input_file,
 
 		// Free the preprocessed line.
 		free(line);
+		line = NULL;
+
 		line_num++;
 	}
 
 #if DEBUG_PARSED_STATEMENTS == 1
 	// Iterate over all parsed statements, printing each one.
-	Statement *curr = *program_statements;
+	Statement* curr = *program_statements;
 
 	while(curr) {
 		print_statement(curr);

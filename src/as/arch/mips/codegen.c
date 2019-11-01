@@ -22,14 +22,25 @@
 #include <symtab.h>
 
 
+/**
+ * encode_directive
+ */
 Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 	Symbol_Table* const symtab,
 	Directive* const directive,
-	const size_t program_counter) {
-
-	// To avoid non-use warning. This is included as part of the function prototype
-	// as it may be required for some directive.
+	const size_t program_counter)
+{
+	// Currently unused in directive encoding.
+	// Included to prevent non-use warning.
 	(void)program_counter;
+
+	size_t total_len = 0;
+	size_t count = 0;
+	size_t fill_size = 0;
+	size_t string_len;
+	uint8_t* data = NULL;
+	size_t curr_pos = 0;
+	uint32_t* word_data = NULL;
 
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
@@ -50,23 +61,6 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 	(*encoded_directive)->n_reloc_entries = 0;
 	(*encoded_directive)->reloc_entries = NULL;
 	(*encoded_directive)->next = NULL;
-
-	size_t total_len = 0;
-	size_t count = 0;
-	size_t fill_size = 0;
-	size_t string_len;
-	uint8_t *data = NULL;
-	size_t curr_pos = 0;
-
-	const char *directive_name = get_directive_string(directive);
-	if(!directive_name) {
-		// cleanup.
-		free(encoded_directive);
-
-		fprintf(stderr, "Error: Unable to get directive type for `%i`\n",
-			directive->type);
-		return CODEGEN_ERROR_BAD_OPCODE;
-	}
 
 	switch(directive->type) {
 		case DIRECTIVE_ASCII:
@@ -138,7 +132,7 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 
 			total_len = sizeof(uint32_t) * directive->opseq.n_operands;
 
-			uint32_t *word_data = malloc(total_len);
+			word_data = malloc(total_len);
 			if(!word_data) {
 				fprintf(stderr, "Error: Error allocating directive data.\n");
 				return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -203,18 +197,7 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 
 
 /**
- * @brief Encodes an I type instruction.
- *
- * Encodes an I-type instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * @param symbol_table The symbol table. This is scanned to find any symbols referenced
- * in instruction operands.
- * @param opcode The operand encoding.
- * @param rs The rs field to encode.
- * @param rt The rt field to encode.
- * @param imm The imm operand to encode.
- * @param program_counter The current program_counter.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * encode_i_type
  */
 Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 	Symbol_Table* const symbol_table,
@@ -222,23 +205,27 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 	const uint8_t rs,
 	const uint8_t rt,
 	const Operand imm,
-	const size_t program_counter) {
+	const size_t program_counter)
+{
+	/** The 'immediate' field encoding. */
+	uint32_t immediate = 0;
+	/** The instruction encoding. */
+	uint32_t* encoding = NULL;
 
 	*encoded_instruction = malloc(sizeof(Encoding_Entity));
 	if(!*encoded_instruction) {
 		fprintf(stderr, "Error: Error allocating encoded instruction\n");
+
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	(*encoded_instruction)->n_reloc_entries = 0;
 	(*encoded_instruction)->reloc_entries = NULL;
 
-	uint32_t* encoding = malloc(sizeof(uint32_t));
+	encoding = malloc(sizeof(uint32_t));
 	if(!*encoded_instruction) {
-		free(*encoded_instruction);
-
-		// @TODO: Global error handler.
 		fprintf(stderr, "Error: Error allocating instruction encoding\n");
+
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
@@ -247,7 +234,6 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 	*encoding |= rs << 21;
 	*encoding |= rt << 16;
 
-	uint32_t immediate = 0;
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		// If the operand is a numeric literal, the raw value is encoded.
 		immediate = imm.numeric_literal;
@@ -255,13 +241,14 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		// If the operand is a symbolic reference, we encode the immediate value
 		// as the symbol's offset, and then create a relocation entry so that the
 		// symbol can be linked correctly.
-		Symbol *symbol = symtab_find_symbol(symbol_table, imm.symbol);
+		Symbol* symbol = symtab_find_symbol(symbol_table, imm.symbol);
 		if(!symbol) {
+			fprintf(stderr, "Error: Error finding symbol `%s`", imm.symbol);
+
 			// cleanup.
 			free(encoding);
 			free(*encoded_instruction);
 
-			fprintf(stderr, "Error: Error finding symbol `%s`", imm.symbol);
 			return ASSEMBLER_ERROR_MISSING_SYMBOL;
 		}
 
@@ -270,11 +257,12 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 		(*encoded_instruction)->n_reloc_entries = 1;
 		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));
 		if(!(*encoded_instruction)->reloc_entries) {
+			fprintf(stderr, "Error: Error allocating relocation entries");
+
 			// cleanup.
 			free(encoding);
 			free(*encoded_instruction);
 
-			fprintf(stderr, "Error: Error allocating relocation entries");
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -291,16 +279,14 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 			(*encoded_instruction)->reloc_entries[0].type = R_MIPS_PC16;
 		}
 	} else {
-
-	printf("6666\n");
+		// If the immediate is of any other type, it is an error.
+		fprintf(stderr, "Error: Bad operand type `%u` for immediate type instruction",
+			imm.type);
 
 		// cleanup.
 		free(encoding);
 		free(*encoded_instruction);
 
-		// If the immediate is of any other type, it is an error.
-		fprintf(stderr, "Error: Bad operand type `%u` for immediate type instruction",
-			imm.type);
 		return CODEGEN_ERROR_BAD_OPERAND_TYPE;
 	}
 
@@ -315,17 +301,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
 
 
 /**
- * @brief Encodes an r-type type instruction.
- *
- * Encodes an r-type instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * @param opcode The operand encoding.
- * @param rd The rd field to encode.
- * @param rt The rt field to encode.
- * @param rs The rs field to encode.
- * @param sa The sa field to encode.
- * @param func The func field to encode.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * encode_r_type
  */
 Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 	const uint8_t opcode,
@@ -333,7 +309,10 @@ Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 	const uint8_t rs,
 	const uint8_t rt,
 	const uint8_t sa,
-	const uint8_t func) {
+	const uint8_t func)
+{
+	/** The instruction encoding. */
+	uint32_t* encoding = NULL;
 
 	*encoded_instruction = malloc(sizeof(Encoding_Entity));
 	if(!*encoded_instruction) {
@@ -343,7 +322,7 @@ Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 
 	// The encoding entity is declared on the heap, since a pointer to this data
 	// will be stored in the `encoded_instruction` entity.
-	uint32_t* encoding = malloc(sizeof(uint32_t));
+	encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
 		// Cleanup instruction data.
 		free(*encoded_instruction);
@@ -372,19 +351,19 @@ Assembler_Status encode_r_type(Encoding_Entity** encoded_instruction,
 
 
 /**
- * @brief Encodes an offset type instruction.
- *
- * Encodes an offset type instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * @param opcode The operand encoding.
- * @param rt The rt field to encode.
- * @param reg The reg operand to encode.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * encode_offset_type
  */
 Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
 	const uint8_t opcode,
 	const uint8_t rt,
-	const Operand offset_reg) {
+	const Operand offset_reg)
+{
+	/** The 'offset' field encoding. */
+	uint16_t offset = 0;
+	/** The 'base' field encoding. */
+	uint8_t base = 0;
+	/** The instruction encoding. */
+	uint32_t* encoding = NULL;
 
 	// Unlike GAS, this assembler currently does not support using symbols as an offset value.
 	if(offset_reg.type != OPERAND_TYPE_REGISTER) {
@@ -400,10 +379,10 @@ Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
 	}
 
 	// Truncate to 16bits.
-	uint16_t offset = offset_reg.offset & 0xFFFF;
-	uint8_t base = encode_operand_register(offset_reg.reg);
+	offset = offset_reg.offset & 0xFFFF;
+	base = encode_operand_register(offset_reg.reg);
 
-	uint32_t* encoding = malloc(sizeof(uint32_t));
+	encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
 		// cleanup.
 		free(*encoded_instruction);
@@ -430,24 +409,18 @@ Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
 
 
 /**
- * @brief Encodes a J type instruction.
- *
- * Encodes a J-type instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * See: https://stackoverflow.com/questions/7877407/jump-instruction-in-mips-assembly#7877528
- * https://stackoverflow.com/questions/6950230/how-to-calculate-jump-target-address-and-branch-target-address
- * @param symtab The symbol table. This is scanned to find any symbols referenced
- * in instruction operands.
- * @param opcode The operand encoding.
- * @param imm The imm operand to encode.
- * @param program_counter The current program_counter.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * encode_j_type
  */
 Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 	Symbol_Table* const symbol_table,
 	const uint8_t opcode,
 	const Operand imm,
-	const size_t program_counter) {
+	const size_t program_counter)
+{
+	/** The immediate value to encode. */
+	uint32_t immediate = 0;
+	/** The instruction encoding. */
+	uint32_t* encoding = NULL;
 
 	if(!symbol_table) {
 		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
@@ -457,13 +430,13 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 	*encoded_instruction = malloc(sizeof(Encoding_Entity));
 	if(!*encoded_instruction) {
 		fprintf(stderr, "Error: Error allocating encoded instruction\n");
+
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
 	(*encoded_instruction)->n_reloc_entries = 0;
 	(*encoded_instruction)->reloc_entries = NULL;
 
-	uint32_t immediate = 0;
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		immediate = imm.numeric_literal;
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
@@ -472,10 +445,11 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 		(*encoded_instruction)->n_reloc_entries = 1;
 		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));
 		if(!(*encoded_instruction)->reloc_entries) {
+			fprintf(stderr, "Error: Error allocating relocation entries\n");
+
 			// cleanup.
 			free(*encoded_instruction);
 
-			fprintf(stderr, "Error: Error allocating relocation entries\n");
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -485,22 +459,23 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 
 		immediate = symbol->offset;
 	} else {
+		fprintf(stderr, "Error: Bad operand type for jump type instruction");
+
 		// cleanup.
 		free(*encoded_instruction);
 
-		fprintf(stderr, "Error: Bad operand type for jump type instruction");
 		return ASSEMBLER_ERROR_BAD_OPERAND_TYPE;
 	}
 
 	immediate = (immediate & 0x0FFFFFFF) >> 2;
 
-
-	uint32_t* encoding = malloc(sizeof(uint32_t));
+	encoding = malloc(sizeof(uint32_t));
 	if(!encoding) {
+		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
+
 		// cleanup.
 		free(*encoded_instruction);
 
-		fprintf(stderr, "Error: Error allocating encoded instruction data\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
@@ -516,25 +491,14 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 	return ASSEMBLER_STATUS_SUCCESS;
 }
 
-
 /**
- * @brief Encodes an Instruction entity.
- *
- * Encodes an instruction entity, creating an `Encoding_Entity` instance representing
- * the generated machine code entities to be written into the executable.
- * @param symtab The symbol table. This is scanned to find any symbols referenced
- * in instruction operands.
- * @param instruction The parsed instruction entity to encode.
- * @param program_counter The current program counter. This represents the current
- * place of the instruction within the current encoding context, which is the
- * current program section.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * encode_instruction
  */
 Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 	Symbol_Table* const symtab,
 	Instruction* const instruction,
-	const size_t program_counter) {
-
+	const size_t program_counter)
+{
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to encoding function\n");
 		return CODEGEN_ERROR_INVALID_ARGS;
@@ -545,13 +509,19 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		return CODEGEN_ERROR_INVALID_ARGS;
 	}
 
+	/** The 'opcode' field encoding. */
 	uint8_t opcode = 0;
+	/** The 'func' field encoding. */
 	uint8_t func = 0;
+	/** The 'rd' field encoding. */
 	uint8_t rd = 0;
+	/** The 'rs' field encoding. */
 	uint8_t rs = 0;
+	/** The 'rt' field encoding. */
 	uint8_t rt = 0;
+	/** The 'sa' field encoding. */
 	uint8_t sa = 0;
-
+	/** The status of the encoding process. */
 	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
 
 	switch(instruction->opcode) {
@@ -599,6 +569,10 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			rs = encode_operand_register(instruction->opseq.operands[1].reg);
 			rt = encode_operand_register(instruction->opseq.operands[2].reg);
 			status = encode_r_type(encoded_instruction, opcode, rd, rs, rt, 0, func);
+			if(!get_status(status)) {
+				return status;
+			}
+
 			break;
 		case OPCODE_ADDI:
 		case OPCODE_ADDIU:
@@ -719,6 +693,7 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 		case OPCODE_MULTU:
 			fprintf(stderr, "Instruction deprecated in `MIPS32r6`\n");
 			status = CODEGEN_ERROR_DEPRECATED_OPCODE;
+
 			break;
 		case OPCODE_NOP:
 			if(!check_operand_count(0, &instruction->opseq)) {
@@ -746,12 +721,18 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 			return CODEGEN_ERROR_BAD_OPCODE;
 	}
 
+	// The status code will have been set by the encoding function.
+	// Any generated errors will be propagated upwards from here.
 	return status;
 }
 
-
+/**
+ * get_encoding_as_string
+ */
 char* get_encoding_as_string(Encoding_Entity* encoded_instruction) {
-	char *representation = malloc(ERROR_MSG_MAX_LEN);
+	/** Buffer to hold the representation of the encoding. */
+	char* representation = malloc(ERROR_MSG_MAX_LEN);
+
 	sprintf(representation, "0x%x", (uint32_t)encoded_instruction->data);
 
 	return representation;
