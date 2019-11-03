@@ -15,15 +15,13 @@
 
 
 /**
- * @brief Frees a directive.
- *
- * Frees a directive and the operands that it contains.
- * @param directive The directive to free.
+ * free_directive
  */
 void free_directive(Directive* directive)
 {
 	if(!directive) {
 		fprintf(stderr, "Invalid directive provided to free function.\n");
+
 		return;
 	}
 
@@ -32,11 +30,7 @@ void free_directive(Directive* directive)
 
 
 /**
- * @brief Gets the string representation of a directive type.
- *
- * This function returns the string representation of a directive type.
- * @param dir The directive to get the string for.
- * @returns a pointer to the string containing the directive name.
+ * get_directive_string
  */
 const char* get_directive_string(Directive* const directive)
 {
@@ -79,11 +73,7 @@ const char* get_directive_string(Directive* const directive)
 
 
 /**
- * @brief Parses a directive symbol.
- *
- * Parses a directive string, returning a value.
- * @param directive_symbol The directive string to parse.
- * @return A directive type.
+ * parse_directive_symbol
  */
 Directive_Type parse_directive_symbol(char* directive_symbol)
 {

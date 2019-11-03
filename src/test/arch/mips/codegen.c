@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <as.h>
 #include <arch.h>
+#include <codegen.h>
+#include <operand.h>
 #include <section.h>
 #include <stdlib.h>
 #include <symtab.h>

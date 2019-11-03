@@ -18,6 +18,7 @@
 #include <codegen.h>
 #include <directive.h>
 #include <instruction.h>
+#include <operand.h>
 #include <statement.h>
 #include <symtab.h>
 

@@ -17,12 +17,10 @@
 
 
 /**
- * @brief Frees the symbol table.
- * Frees the symbol table, freeing all of the symbols contained therein.
- * @param symtab The symbol table to free.
- * @warning Deletes all entries, and the table itself.
+ * free_symbol_table
  */
-void free_symbol_table(Symbol_Table* symtab) {
+void free_symbol_table(Symbol_Table* symtab)
+{
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to free function\n");
 
@@ -38,12 +36,10 @@ void free_symbol_table(Symbol_Table* symtab) {
 
 
 /**
- * @brief Prints a symbol table.
- *
- * This function prints all of the entries inside a symbol table.
- * @param symbol_table The symbol table to print.
+ * print_symbol_table
  */
-void print_symbol_table(Symbol_Table* const symbol_table) {
+void print_symbol_table(Symbol_Table* const symbol_table)
+{
 	if(!symbol_table) {
 		fprintf(stderr, "Error: Invalid symbol table provided to print function\n");
 		return;
@@ -61,22 +57,13 @@ void print_symbol_table(Symbol_Table* const symbol_table) {
 
 
 /**
- * @brief Adds a symbol to the symbol-table.
- *
- * Adds a symbol to the symbol table.
- * @param symtab A pointer to symbol table to add the symbol to.
- * @param name The name for the new symbol. This is the name by which it will be
- * referenced.
- * @param section A pointer to the section that contains this symbol.
- * @param offset The offset of the symbol being added in the section.
- * @warning @p symtab is modified in this function. The symbol entry array
- * is resized to accomodate the new symbol.
+ * symtab_add_symbol
  */
 Symbol* symtab_add_symbol(Symbol_Table* const symtab,
 	char* name,
 	Section* const section,
-	const size_t offset) {
-
+	const size_t offset)
+{
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to add symbol function\n");
 		return NULL;
@@ -113,16 +100,11 @@ Symbol* symtab_add_symbol(Symbol_Table* const symtab,
 
 
 /**
- * @brief Finds a symbol in the symbol-table.
- *
- * Finds a symbol contained in the symbol table.
- * @param symtab A pointer to symbol table to find the symbol in.
- * @param name The name of the symbol to search for.
- * @return A pointer to the first symbol matching the supplied name, or `NULL` if none exists.
+ * symtab_find_symbol
  */
 Symbol* symtab_find_symbol(Symbol_Table* const symtab,
-	const char* name) {
-
+	const char* name)
+{
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to find symbol function\n");
 		return NULL;
@@ -145,16 +127,11 @@ Symbol* symtab_find_symbol(Symbol_Table* const symtab,
 
 
 /**
- * @brief Finds a symbol in the symbol-table.
- *
- * Finds a symbol contained in the symbol table.
- * @param symtab A pointer to symbol table to find the symbol in.
- * @param name The name of the symbol to search for.
- * @return A pointer to the first symbol matching the supplied name, or `NULL` if none exists.
+ * symtab_find_symbol_index
  */
 ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
-	const char* name) {
-
+	const char* name)
+{
 	if(!symtab) {
 		fprintf(stderr, "Error: Invalid symbol table provided to find symbol function\n");
 		return -1;
@@ -177,19 +154,18 @@ ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
 
 
 /**
- * @brief Populates the ELF symbol table.
- *
- * This function parses through the program symbol table and encodes the necessary
- * ELF entities to write to the final assembled ELF file.
- * This function will add all of the necessary encoded entities to the symbol
- * table and string table sections.
- * @param sections A pointer to the section linked list.
- * @param symbol_table A pointer to the symbol table.
- * @warning This function modifies the sections.
- * @return A status entity indicating whether or not the pass was successful.
+ * populate_symtab
+ *  definition is in 'as.h'
  */
 Assembler_Status populate_symtab(Section* sections,
-	Symbol_Table* symbol_table) {
+	Symbol_Table* symbol_table)
+{
+	/** Used for tracking the result of adding the entity to a section. */
+	Encoding_Entity *added_entity = NULL;
+	Section* strtab = NULL;
+	Section* symtab = NULL;
+	/** Encoding entity to hold the null byte entity inserted into the symtab. */
+	Encoding_Entity* null_byte_entity = NULL;
 
 	if(!sections) {
 		fprintf(stderr, "Error: Invalid section data populating symbol table\n");
@@ -201,24 +177,20 @@ Assembler_Status populate_symtab(Section* sections,
 		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
-	Section* strtab = find_section(sections, ".strtab");
+	strtab = find_section(sections, ".strtab");
 	if(!strtab) {
 		fprintf(stderr, "Error: Unable to locate `.strtab` section populating symbol table\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
-	Section* symtab = find_section(sections, ".symtab");
+	symtab = find_section(sections, ".symtab");
 	if(!symtab) {
 		fprintf(stderr, "Error: Unable to locate .symtab section populating symbol table\n");
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
-
-	/** Used for tracking the result of adding the entity to a section. */
-	Encoding_Entity *added_entity = NULL;
-
 	// Add the initial null byte to strtab as per ELF specification.
-	Encoding_Entity *null_byte_entity = malloc(sizeof(Encoding_Entity));
+	null_byte_entity = malloc(sizeof(Encoding_Entity));
 	if(!null_byte_entity) {
 		fprintf(stderr, "Error: Error allocating null byte symbol entity\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -295,6 +267,7 @@ Assembler_Status populate_symtab(Section* sections,
 		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_entry_entity) {
 			fprintf(stderr, "Error: Error allocating symbol entity\n");
+
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -305,6 +278,7 @@ Assembler_Status populate_symtab(Section* sections,
 		symbol_entry_entity->data = malloc(symbol_entry_size);
 		if(!symbol_entry_entity->data) {
 			fprintf(stderr, "Error: Error allocating symbol entity data\n");
+
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -315,7 +289,8 @@ Assembler_Status populate_symtab(Section* sections,
 
 		added_entity = section_add_encoding_entity(symtab, symbol_entry_entity);
 		if(!added_entity) {
-			// Error message should already be set.
+			// Error message should already have been printed.
+
 			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 		}
 
@@ -329,6 +304,7 @@ Assembler_Status populate_symtab(Section* sections,
 		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_name_entity) {
 			fprintf(stderr, "Error: Error allocating symbol name entity\n");
+
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -340,6 +316,7 @@ Assembler_Status populate_symtab(Section* sections,
 		symbol_name_entity->data = malloc(symbol_name_len);
 		if(!symbol_name_entity->data) {
 			fprintf(stderr, "Error: Error allocating symbol name entity data\n");
+
 			return ASSEMBLER_ERROR_BAD_ALLOC;
 		}
 
@@ -351,7 +328,8 @@ Assembler_Status populate_symtab(Section* sections,
 
 		added_entity = section_add_encoding_entity(strtab, symbol_name_entity);
 		if(!added_entity) {
-			// Error message should already be set.
+			// Error message should already have been printed.
+
 			return ASSEMBLER_ERROR_SECTION_ENTITY_FAILURE;
 		}
 

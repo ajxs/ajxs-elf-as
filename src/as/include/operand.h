@@ -59,15 +59,49 @@ typedef struct {
 } Operand_Sequence;
 
 
+/**
+ * @brief Checks the operand count for an operand sequence.
+ *
+ * Checks that the number of operands provided in a statement matches the expected
+ * amount for the statement's instruction opcode.
+ * @param expected_operand_length The expected operand length.
+ * @param opseq The operand sequence to check.
+ * @return A boolean indicating whether the operand count matches the expected count.
+ */
 bool check_operand_count(const size_t expected_operand_length,
 	Operand_Sequence* opseq);
 
+/**
+ * @brief Frees an operand pointer.
+ *
+ * Frees an operand pointer. Checks if the operand type is dynamically allocated,
+ * freeing it if necessary.
+ * @param op A pointer to the operand to free.
+ */
 void free_operand(Operand* op);
 
+/**
+ * @brief Frees an operand sequence.
+ *
+ * Frees a sequence of operands,
+ * @param opseq A pointer to the operand sequence to free.
+ */
 void free_operand_sequence(Operand_Sequence* opseq);
 
-void print_operand(Operand* op);
+/**
+ * @brief Prints an instruction operand.
+ *
+ * This function prints information about an instruction operand.
+ * @param op The operand to print information about.
+ */
+void print_operand(Operand* const op);
 
+/**
+ * @brief Prints an operand sequence.
+ *
+ * This function prints an operand sequence entity, printing each operand.
+ * @param opseq The operand sequence to print.
+ */
 void print_operand_sequence(Operand_Sequence* opseq);
 
 #endif

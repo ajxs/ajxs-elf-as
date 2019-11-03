@@ -48,6 +48,8 @@ Assembler_Status assemble_first_pass(Section* sections,
 	Symbol_Table* symbol_table,
 	Statement* statements)
 {
+	/** The status of internal assembler function calls. */
+	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
 	/** The text section. */
 	Section* section_text = NULL;
 	/** The program data section. */
@@ -59,7 +61,7 @@ Assembler_Status assemble_first_pass(Section* sections,
 	/** Pointer to the current statement being parsed. */
 	Statement* curr = NULL;
 	/** The encoded size of the statement. */
-	ssize_t statement_size = 0;
+	size_t statement_size = 0;
 
 
 #if DEBUG_ASSEMBLER == 1
@@ -119,8 +121,9 @@ Assembler_Status assemble_first_pass(Section* sections,
 			}
 		}
 
-		statement_size = get_statement_size(curr);
-		if(statement_size == -1) {
+		// Get the size of the statement.
+		get_statement_size(curr, &statement_size);
+		if(!get_status(status)) {
 			// Error will already have been printed.
 			return ASSEMBLER_ERROR_STATEMENT_SIZE;
 		}
@@ -362,11 +365,11 @@ Assembler_Status assemble(const char* input_filename,
 	/** The input file. */
 	FILE* input_file = NULL;
 	/** The ELF file header. */
-	Elf32_Ehdr *elf_header = NULL;
+	Elf32_Ehdr* elf_header = NULL;
 	/** The binary section data. */
-	Section *sections = NULL;
+	Section* sections = NULL;
 	/** The individual statements parsed from the source input file. */
-	Statement *program_statements = NULL;
+	Statement* program_statements = NULL;
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
 

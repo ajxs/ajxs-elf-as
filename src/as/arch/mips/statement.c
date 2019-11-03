@@ -15,23 +15,22 @@
 #include <as.h>
 #include <statement.h>
 
-
 /**
- * @brief Gets the size of a statement entity.
- *
- * Returns the number of bytes required to encode a specific statement.
- * @param statement The statement to encode.
- * @returns The number of bytes required to encode the entity, or -1 if an error
- * occurred.
+ * get_statement_size
  */
-ssize_t get_statement_size(Statement* statement) {
+Assembler_Status get_statement_size(Statement* statement,
+	size_t* statement_size)
+{
 	if(!statement) {
-		fprintf(stderr, "Error: Invalid statement provided to get statement size function.\n");
-		return -1;
+		fprintf(stderr, "Error: Invalid statement provided to get statement size function\n");
+
+		return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 	}
 
 	if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
-		return 4;
+		*statement_size = 4;
+
+		return ASSEMBLER_STATUS_SUCCESS;
 	}
 
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
@@ -47,14 +46,18 @@ ssize_t get_statement_size(Statement* statement) {
 			case DIRECTIVE_SIZE:
 			case DIRECTIVE_TEXT:
 			case DIRECTIVE_GLOBAL:
-				return 0;
+				*statement_size = 0;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_ASCII:
 				for(size_t i=0; i<statement->directive.opseq.n_operands; i++) {
 					string_len = strlen(statement->directive.opseq.operands[i].string_literal);
 					total_len += string_len;
 				}
 
-				return total_len;
+				*statement_size = total_len;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_STRING:
 			case DIRECTIVE_ASCIZ:
 				for(size_t i=0; i<statement->directive.opseq.n_operands; i++) {
@@ -63,15 +66,26 @@ ssize_t get_statement_size(Statement* statement) {
 					total_len += (string_len + 1);
 				}
 
-				return total_len;
+				*statement_size = total_len;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_BYTE:
+				*statement_size = 1;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 				return 1;
 			case DIRECTIVE_SHORT:
-				return 2;
+				*statement_size = 2;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_LONG:
-				return 4;
+				*statement_size = 4;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_WORD:
-				return 4;
+				*statement_size = 4;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_FILL:
 				count = statement->directive.opseq.operands[0].numeric_literal;
 				fill_size = statement->directive.opseq.operands[1].numeric_literal;
@@ -81,20 +95,30 @@ ssize_t get_statement_size(Statement* statement) {
 					fill_size = 8;
 				}
 
-				return count * fill_size;
+				*statement_size = count * fill_size;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			case DIRECTIVE_SKIP:
 			case DIRECTIVE_SPACE:
-				return statement->directive.opseq.operands[0].numeric_literal;
+				*statement_size = statement->directive.opseq.operands[0].numeric_literal;
+
+				return ASSEMBLER_STATUS_SUCCESS;
 			default:
-				fprintf(stderr, "Error: Unknown directive type in get statement size function.\n");
-				return -1;
+				fprintf(stderr, "Error: Unknown directive type in get statement size function\n");
+				*statement_size = 0;
+
+				return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 		}
 	}
 
 	if(statement->type == STATEMENT_TYPE_EMPTY) {
-		return 0;
+		*statement_size = 0;
+
+		return ASSEMBLER_STATUS_SUCCESS;
 	}
 
-	fprintf(stderr, "Error: Unknown statement type in get statement size function.\n");
-	return -1;
+	fprintf(stderr, "Error: Unknown statement type in get statement size function\n");
+	*statement_size = 0;
+
+	return ASSEMBLER_ERROR_BAD_FUNCTION_ARGS;
 }

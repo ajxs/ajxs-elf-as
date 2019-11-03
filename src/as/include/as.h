@@ -10,28 +10,6 @@
 #ifndef AS_H
 #define AS_H 1
 
-#include <elf.h>
-#include <statement.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <section.h>
-#include <symtab.h>
-
-
-// These control whether or not debug information specific to certain processes
-// is printed to STDOUT.
-#define DEBUG_ASSEMBLER 1
-#define DEBUG_CODEGEN 1
-#define DEBUG_INPUT 0
-#define DEBUG_MACRO 1
-#define DEBUG_OUTPUT 1
-#define DEBUG_PARSED_STATEMENTS 1
-#define DEBUG_SYMBOLS 1
-
-#define ERROR_MSG_MAX_LEN 512
-
 
 /**
  * @brief The result of an assembler process.
@@ -65,6 +43,31 @@ typedef enum e_assembler_status {
 	CODEGEN_ERROR_MISSING_SYMBOL,
 	CODEGEN_ERROR_DEPRECATED_OPCODE
 } Assembler_Status;
+
+
+#include <elf.h>
+#include <encoding-entity.h>
+#include <statement.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <section.h>
+#include <symtab.h>
+
+
+// These control whether or not debug information specific to certain processes
+// is printed to STDOUT.
+#define DEBUG_ASSEMBLER 1
+#define DEBUG_CODEGEN 1
+#define DEBUG_INPUT 0
+#define DEBUG_MACRO 1
+#define DEBUG_OUTPUT 1
+#define DEBUG_PARSED_STATEMENTS 1
+#define DEBUG_SYMBOLS 1
+
+#define ERROR_MSG_MAX_LEN 512
+
 
 /**
  * @brief The main assembler entry point.
@@ -160,10 +163,40 @@ Assembler_Status expand_macros(Statement* statements);
 
 char* get_encoding_as_string(Encoding_Entity* encoded_instruction);
 
+/**
+ * @brief tests a result status for success.
+ *
+ * This functions tests an assembler result status for success. Returns true on
+ * success, false in any other state.
+ * @param status The status to test.
+ * @return True if the status is successful, false in any other state.
+ */
 bool get_status(const Assembler_Status status);
 
+/**
+ * @brief Creates and initialises the executable sections.
+ *
+ * This function creates all of the sections required to generate a relocatable
+ * ELF file. This will create all of the sections, as well as their relocation
+ * entry sections.
+ * Creates a linked list of the sections.
+ * @param sections A pointer-to-pointer to the section data.
+ * @return A status result object showing the result of the process.
+ */
 Assembler_Status initialise_sections(Section** sections);
 
+/**
+ * @brief Populates the ELF symbol table.
+ *
+ * This function parses through the program symbol table and encodes the necessary
+ * ELF entities to write to the final assembled ELF file.
+ * This function will add all of the necessary encoded entities to the symbol
+ * table and string table sections.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
 Assembler_Status populate_symtab(Section* sections,
 	Symbol_Table* symbol_table);
 

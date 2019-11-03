@@ -8,7 +8,9 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+#include "arch.h"
 #include "as.h"
 #include "parsing.h"
 
@@ -16,73 +18,73 @@
 /**
  * parse_register_symbol
  */
-Register parse_register_symbol(const char* register_symbol)
+Register parse_register_symbol(const char* reg_symbol)
 {
-	if(!strncasecmp(register_symbol, "0", 1) || !strncasecmp(register_symbol, "$0", 2) ||
-		!strncasecmp(register_symbol, "$zero", 5)) {
+	if(!strncasecmp(reg_symbol, "0", 1) || !strncasecmp(reg_symbol, "$0", 2) ||
+		!strncasecmp(reg_symbol, "$zero", 5)) {
 
 		return REGISTER_$ZERO;
-	} else if(!strncasecmp(register_symbol, "$1", 2) || !strncasecmp(register_symbol, "$at", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$1", 2) || !strncasecmp(reg_symbol, "$at", 3)) {
 		return REGISTER_$AT;
-	} else if(!strncasecmp(register_symbol, "$2", 2) || !strncasecmp(register_symbol, "$v0", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$2", 2) || !strncasecmp(reg_symbol, "$v0", 3)) {
 		return REGISTER_$V0;
-	} else if(!strncasecmp(register_symbol, "$3", 2) || !strncasecmp(register_symbol, "$v1", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$3", 2) || !strncasecmp(reg_symbol, "$v1", 3)) {
 		return REGISTER_$V1;
-	} else if(!strncasecmp(register_symbol, "$4", 2) || !strncasecmp(register_symbol, "$a0", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$4", 2) || !strncasecmp(reg_symbol, "$a0", 3)) {
 		return REGISTER_$A0;
-	} else if(!strncasecmp(register_symbol, "$5", 2) || !strncasecmp(register_symbol, "$a1", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$5", 2) || !strncasecmp(reg_symbol, "$a1", 3)) {
 		return REGISTER_$A1;
-	} else if(!strncasecmp(register_symbol, "$6", 2) || !strncasecmp(register_symbol, "$a2", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$6", 2) || !strncasecmp(reg_symbol, "$a2", 3)) {
 		return REGISTER_$A2;
-	} else if(!strncasecmp(register_symbol, "$7", 2) || !strncasecmp(register_symbol, "$a3", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$7", 2) || !strncasecmp(reg_symbol, "$a3", 3)) {
 		return REGISTER_$A3;
-	} else if(!strncasecmp(register_symbol, "$8", 2) || !strncasecmp(register_symbol, "$t0", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$8", 2) || !strncasecmp(reg_symbol, "$t0", 3)) {
 		return REGISTER_$T0;
-	} else if(!strncasecmp(register_symbol, "$9", 2) || !strncasecmp(register_symbol, "$t1", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$9", 2) || !strncasecmp(reg_symbol, "$t1", 3)) {
 		return REGISTER_$T1;
-	} else if(!strncasecmp(register_symbol, "$10", 3) || !strncasecmp(register_symbol, "$t2", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$10", 3) || !strncasecmp(reg_symbol, "$t2", 3)) {
 		return REGISTER_$T2;
-	} else if(!strncasecmp(register_symbol, "$11", 3) || !strncasecmp(register_symbol, "$t3", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$11", 3) || !strncasecmp(reg_symbol, "$t3", 3)) {
 		return REGISTER_$T3;
-	} else if(!strncasecmp(register_symbol, "$12", 3) || !strncasecmp(register_symbol, "$t4", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$12", 3) || !strncasecmp(reg_symbol, "$t4", 3)) {
 		return REGISTER_$T4;
-	} else if(!strncasecmp(register_symbol, "$13", 3) || !strncasecmp(register_symbol, "$t5", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$13", 3) || !strncasecmp(reg_symbol, "$t5", 3)) {
 		return REGISTER_$T5;
-	} else if(!strncasecmp(register_symbol, "$14", 3) || !strncasecmp(register_symbol, "$t6", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$14", 3) || !strncasecmp(reg_symbol, "$t6", 3)) {
 		return REGISTER_$T6;
-	} else if(!strncasecmp(register_symbol, "$15", 3) || !strncasecmp(register_symbol, "$t7", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$15", 3) || !strncasecmp(reg_symbol, "$t7", 3)) {
 		return REGISTER_$T7;
-	} else if(!strncasecmp(register_symbol, "$16", 3) || !strncasecmp(register_symbol, "$s0", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$16", 3) || !strncasecmp(reg_symbol, "$s0", 3)) {
 		return REGISTER_$S0;
-	} else if(!strncasecmp(register_symbol, "$17", 3) || !strncasecmp(register_symbol, "$s1", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$17", 3) || !strncasecmp(reg_symbol, "$s1", 3)) {
 		return REGISTER_$S1;
-	} else if(!strncasecmp(register_symbol, "$18", 3) || !strncasecmp(register_symbol, "$s2", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$18", 3) || !strncasecmp(reg_symbol, "$s2", 3)) {
 		return REGISTER_$S2;
-	} else if(!strncasecmp(register_symbol, "$19", 3) || !strncasecmp(register_symbol, "$s3", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$19", 3) || !strncasecmp(reg_symbol, "$s3", 3)) {
 		return REGISTER_$S3;
-	} else if(!strncasecmp(register_symbol, "$20", 3) || !strncasecmp(register_symbol, "$s4", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$20", 3) || !strncasecmp(reg_symbol, "$s4", 3)) {
 		return REGISTER_$S4;
-	} else if(!strncasecmp(register_symbol, "$21", 3) || !strncasecmp(register_symbol, "$s5", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$21", 3) || !strncasecmp(reg_symbol, "$s5", 3)) {
 		return REGISTER_$S5;
-	} else if(!strncasecmp(register_symbol, "$22", 3) || !strncasecmp(register_symbol, "$s6", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$22", 3) || !strncasecmp(reg_symbol, "$s6", 3)) {
 		return REGISTER_$S6;
-	} else if(!strncasecmp(register_symbol, "$23", 3) || !strncasecmp(register_symbol, "$s7", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$23", 3) || !strncasecmp(reg_symbol, "$s7", 3)) {
 		return REGISTER_$S7;
-	} else if(!strncasecmp(register_symbol, "$24", 3) || !strncasecmp(register_symbol, "$t8", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$24", 3) || !strncasecmp(reg_symbol, "$t8", 3)) {
 		return REGISTER_$T8;
-	} else if(!strncasecmp(register_symbol, "$25", 3) || !strncasecmp(register_symbol, "$t9", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$25", 3) || !strncasecmp(reg_symbol, "$t9", 3)) {
 		return REGISTER_$T9;
-	} else if(!strncasecmp(register_symbol, "$26", 3) || !strncasecmp(register_symbol, "$k0", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$26", 3) || !strncasecmp(reg_symbol, "$k0", 3)) {
 		return REGISTER_$K0;
-	} else if(!strncasecmp(register_symbol, "$27", 3) || !strncasecmp(register_symbol, "$k1", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$27", 3) || !strncasecmp(reg_symbol, "$k1", 3)) {
 		return REGISTER_$K1;
-	} else if(!strncasecmp(register_symbol, "$28", 3) || !strncasecmp(register_symbol, "$gp", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$28", 3) || !strncasecmp(reg_symbol, "$gp", 3)) {
 		return REGISTER_$GP;
-	} else if(!strncasecmp(register_symbol, "$29", 3) || !strncasecmp(register_symbol, "$sp", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$29", 3) || !strncasecmp(reg_symbol, "$sp", 3)) {
 		return REGISTER_$SP;
-	} else if(!strncasecmp(register_symbol, "$30", 3) || !strncasecmp(register_symbol, "$fp", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$30", 3) || !strncasecmp(reg_symbol, "$fp", 3)) {
 		return REGISTER_$FP;
-	} else if(!strncasecmp(register_symbol, "$31", 3) || !strncasecmp(register_symbol, "$ra", 3)) {
+	} else if(!strncasecmp(reg_symbol, "$31", 3) || !strncasecmp(reg_symbol, "$ra", 3)) {
 		return REGISTER_$RA;
 	}
 
@@ -91,14 +93,10 @@ Register parse_register_symbol(const char* register_symbol)
 
 
 /**
- * @brief Encodes a register.
- *
- * This function returns the integer encoding of a particular register.
- * @param reg The register to encode.
- * @warning This function returns 0 in the case of an unrecognised register.
- * @returns The integer encoding of the register.
+ * encode_operand_register
  */
-uint8_t encode_operand_register(Register reg) {
+uint8_t encode_operand_register(Register reg)
+{
 	if(reg == REGISTER_$ZERO) {
 		return 0;
 	} else if(reg == REGISTER_$AT) {

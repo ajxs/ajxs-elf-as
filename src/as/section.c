@@ -13,58 +13,47 @@
 #include <stdlib.h>
 #include <string.h>
 #include <as.h>
+#include <encoding-entity.h>
 #include <section.h>
 
 
-void free_encoding_entity(Encoding_Entity* entity);
-
-
 /**
- * @brief Creates a section.
- *
- * Creates a section program entity.
- * @param name The name for the newly created section.
- * @param type The type of the newly created section.
- * @param flags The flags for the newly created section.
- * @return A pointer to the newly created section, or NULL if an error occurred.
+ * create_section
  */
-Section *create_section(char* name,
+Assembler_Status create_section(Section** section,
+	char* name,
 	const uint32_t type,
-	const uint32_t flags) {
-
-	Section *section = malloc(sizeof(Section));
+	const uint32_t flags)
+{
+	*section = malloc(sizeof(Section));
 	if(!section) {
-		fprintf(stderr, "Error: Error allocating section.\n");
-		return NULL;
+		fprintf(stderr, "Error: Error allocating section\n");
+
+		return ASSEMBLER_ERROR_BAD_ALLOC;
 	}
 
-	section->name = name;
-	section->name_strtab_offset = 0;
-	section->program_counter = 0;
-	section->file_offset = 0;
-	section->size = 0;
-	section->flags = flags;
-	section->link = 0;
-	section->info = 0;
-	section->type = type;
-	section->encoding_entities = NULL;
-	section->next = NULL;
+	(*section)->name = name;
+	(*section)->name_strtab_offset = 0;
+	(*section)->program_counter = 0;
+	(*section)->file_offset = 0;
+	(*section)->size = 0;
+	(*section)->flags = flags;
+	(*section)->link = 0;
+	(*section)->info = 0;
+	(*section)->type = type;
+	(*section)->encoding_entities = NULL;
+	(*section)->next = NULL;
 
-	return section;
+	return ASSEMBLER_STATUS_SUCCESS;
 }
 
 
 /**
- * @brief Adds a section.
- *
- * Adds a program section to the linked list of program sections.
- * @param section_list A pointer-to-pointer to the program section linked list.
- * @param section The section to add.
- * @return The added section, or NULL if an error occurred.
+ * add_section
  */
 Section* add_section(Section** section_list,
-	Section* const section) {
-
+	Section* const section)
+{
 	if(!section_list) {
 		fprintf(stderr, "Error: Invalid section list provided to add section function\n");
 		return NULL;
@@ -91,17 +80,11 @@ Section* add_section(Section** section_list,
 
 
 /**
- * @brief Finds a section by its name.
- *
- * Finds a program section, searching for one that matches the provided name.
- * @param sections A pointer to the program section linked list.
- * @param name The name of the section to search for.
- * @return A pointer to the section, or `NULL` if no matching section can be
- * found.
+ * find_section
  */
-Section *find_section(Section* const section_list,
-	const char* name) {
-
+Section* find_section(Section* const section_list,
+	const char* name)
+{
 	if(!section_list) {
 		fprintf(stderr, "Error: Invalid section list provided to find section function.\n");
 		return NULL;
@@ -127,16 +110,11 @@ Section *find_section(Section* const section_list,
 
 
 /**
- * @brief Finds a section's index by its name.
- *
- * Finds a program section's index in the sections linked list by its name.
- * @param sections A pointer to the program section linked list.
- * @param name The name of the section to search for.
- * @return The index of the found section in the list, or -1 if not found.
+ * find_section_index
  */
 ssize_t find_section_index(Section* const section_list,
-	const char* name) {
-
+	const char* name)
+{
 	if(!section_list) {
 		return -1;
 	}
@@ -158,19 +136,11 @@ ssize_t find_section_index(Section* const section_list,
 
 
 /**
- * @brief Adds an encoded entity to a section.
- *
- * Adds an encoded instruction or directive entity to a program section.
- * The entity will be added to the end of the end of the encoded entities linked
- * list.
- * @param section A pointer to the program section to add the encoded
- * entity to.
- * @param entity The encoded entity to add to the section.
- * @return Returns the added encoding entity or NULL in the case of error.
+ * section_add_encoding_entity
  */
-Encoding_Entity *section_add_encoding_entity(Section* const section,
-	Encoding_Entity* const entity) {
-
+Encoding_Entity* section_add_encoding_entity(Section* const section,
+	Encoding_Entity* const entity)
+{
 	if(!section) {
 		fprintf(stderr, "Error: Invalid section provided to add entity function.\n");
 
@@ -210,46 +180,10 @@ Encoding_Entity *section_add_encoding_entity(Section* const section,
 
 
 /**
- * @brief Frees an encoded entity.
- *
- * Frees an encoded directive or instruction entity and its contained structures.
- * This will free any linked entities recursively.
- * @param entity A pointer to the entity to be freed.
- * @warning This function will recursively free any linked entities.
+ * free_section
  */
-void free_encoding_entity(Encoding_Entity* entity) {
-	if(!entity) {
-		fprintf(stderr, "Error: Attempting to free NULL encoded entity.\n");
-
-		return;
-	}
-
-	if(entity->data != NULL) {
-		free(entity->data);
-	}
-
-	if(entity->reloc_entries != NULL) {
-		free(entity->reloc_entries);
-	}
-
-	if(entity->next != NULL) {
-		free_encoding_entity(entity->next);
-	}
-
-	free(entity);
-}
-
-
-/**
- * @brief Frees a program section.
- *
- * Frees a program section and its contained encoded entities.  This will
- * free all of the encoded entities contained therein.
- * @param section A pointer to the section to be freed.
- * @warning This function will recursively free all encoded instruction and directive
- * entities contained in the section.
- */
-void free_section(Section *section) {
+void free_section(Section* section)
+{
 	if(!section) {
 		fprintf(stderr, "Error: Attempting to free NULL section.\n");
 
@@ -277,42 +211,40 @@ void free_section(Section *section) {
 
 
 /**
- * @brief Creates and initialises the executable sections.
- *
- * This function creates all of the sections required to generate a relocatable
- * ELF file. This will create all of the sections, as well as their relocation
- * entry sections.
- * Creates a linked list of the sections.
- * @param sections A pointer-to-pointer to the section data.
- * @return A status result object showing the result of the process.
+ * initialise_sections
  */
-Assembler_Status initialise_sections(Section **sections) {
-	/** Used for holding the error messages printed by this function. */
-	const char* error_message = NULL;
-	/** Holds the number of chars written to stderr in the error handler. */
+Assembler_Status initialise_sections(Section **sections)
+{
+	/** Holds the success status of internal operations. */
+	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;
+	/** Value to track the results of adding the newly created sections. */
+	Section* added_section = NULL;
 
 	// The invididual section entities.
-	Section *section_null = NULL;
-	Section *section_text = NULL;
-	Section *section_text_rel = NULL;
-	Section *section_data = NULL;
-	Section *section_data_rel = NULL;
-	Section *section_bss = NULL;
-	Section *section_symtab = NULL;
-	Section *section_shstrtab = NULL;
-	Section *section_strtab = NULL;
+	Section* section_null = NULL;
+	Section* section_text = NULL;
+	Section* section_text_rel = NULL;
+	Section* section_data = NULL;
+	Section* section_data_rel = NULL;
+	Section* section_bss = NULL;
+	Section* section_symtab = NULL;
+	Section* section_shstrtab = NULL;
+	Section* section_strtab = NULL;
 
 
 	// The section header data will be filled as the sections are serialised.
-	section_null = create_section("\0", SHT_NULL, 0);
-	if(!section_null) {
-		error_message = "Error creating `NULL` section.";
+	status = create_section(&section_null, "\0", SHT_NULL, 0);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `NULL` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_text = create_section(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
-	if(!section_text) {
-		error_message = "Error creating `.text` section.";
+	status = create_section(&section_text, ".text", SHT_PROGBITS,
+		SHF_ALLOC | SHF_EXECINSTR);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `TEXT` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
@@ -321,51 +253,55 @@ Assembler_Status initialise_sections(Section **sections) {
 	// seems to use `SHF_INFO_LINK`.
 	// Refer to: 'http://www.sco.com/developers/gabi/2003-12-17/ch4.sheader.html'
 	// for the undocumented flags.
-	section_text_rel = create_section(".rel.text", SHT_REL, SHF_INFO_LINK);
-	if(!section_text_rel) {
-		error_message = "Error creating `.rel.text` section.";
+	status = create_section(&section_text_rel, ".rel.text", SHT_REL, SHF_INFO_LINK);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.rel.text` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_data = create_section(".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
-	if(!section_data) {
-		error_message = "Error creating `.data` section.";
+	status = create_section(&section_data, ".data", SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.data` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_data_rel = create_section(".rel.data", SHT_REL, SHF_INFO_LINK);
-	if(!section_data_rel) {
-		error_message = "Error creating `.rel.data` section.";
+	status = create_section(&section_data_rel, ".rel.data", SHT_REL, SHF_INFO_LINK);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.rel.data` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_bss = create_section(".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
-	if(!section_bss) {
-		error_message = "Error creating `.bss` section.";
+	status = create_section(&section_bss, ".bss", SHT_NOBITS, SHF_ALLOC | SHF_WRITE);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.bss` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_symtab = create_section(".symtab", SHT_SYMTAB, SHF_ALLOC);
-	if(!section_symtab) {
-		error_message = "Error creating `.symtab` section.";
+	status = create_section(&section_symtab, ".symtab", SHT_SYMTAB, SHF_ALLOC);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.symtab` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_shstrtab = create_section(".shstrtab", SHT_STRTAB, SHF_ALLOC);
-	if(!section_shstrtab) {
-		error_message = "Error creating `.shstrtab` section.";
+	status = create_section(&section_shstrtab, ".shstrtab", SHT_STRTAB, SHF_ALLOC);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.shstrtab` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-	section_strtab = create_section(".strtab", SHT_STRTAB, 0);
-	if(!section_strtab) {
-		error_message = "Error creating `.strtab` section.";
+	status = create_section(&section_strtab, ".strtab", SHT_STRTAB, 0);
+	if(!get_status(status)) {
+		fprintf(stderr, "Error: creating `.strtab` section");
+
 		goto SECTION_INIT_ALLOC_FAILURE;
 	}
 
-
-	/** Value to track the results of adding the newly created sections. */
-	Section *added_section = NULL;
 
 	added_section = add_section(sections, section_null);
 	if(!added_section) {
@@ -467,9 +403,6 @@ Assembler_Status initialise_sections(Section **sections) {
 	return ASSEMBLER_STATUS_SUCCESS;
 
 SECTION_INIT_ALLOC_FAILURE:
-	// Print error message.
-	fprintf(stderr, "Error: %s\n", error_message);
-
 	// Free any allocated sections.
 	if(section_null) {
 		free_section(section_null);

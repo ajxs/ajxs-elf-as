@@ -35,9 +35,11 @@ SOURCES = ${ARCH_SOURCES}   \
 	as.c                      \
 	directive.c               \
 	elf.c                     \
+	encoding-entity.c         \
 	instruction.c             \
 	input.c                   \
 	main.c                    \
+	operand.c                 \
 	preprocessor.c            \
 	section.c                 \
 	statement.c               \
