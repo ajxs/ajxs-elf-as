@@ -130,7 +130,7 @@ STRING_LITERAL \"[^\"]*\"
 
 {NUMERIC_LITERAL} {
 	yylval.imm = strtol(yytext, NULL, 0);
-	
+
 #if DEBUG_LEXER == 1
 	printf("Debug lexer: NUMERIC_LITERAL: `%i`\n", yylval.imm);
 #endif
@@ -154,13 +154,22 @@ STRING_LITERAL \"[^\"]*\"
 
 %%
 
-int yywrap(void) {
+/**
+ * yywrap
+ */
+int yywrap(void)
+{
 	return 1;
 }
 
 
-Statement *scan_string(const char *str) {
-	Statement *parsed_statements = NULL;
+/**
+ * scan_string;
+ */
+Statement *scan_string(const char* str)
+{
+	/** Pointer to the linked list of parsed statements. */
+	Statement* parsed_statements = NULL;
 
 	YY_BUFFER_STATE buffer = yy_scan_bytes(str, strlen(str));
 	yyparse(&parsed_statements);

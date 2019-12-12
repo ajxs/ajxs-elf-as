@@ -16,15 +16,7 @@
 
 
 /**
- * @brief Reads the source file input.
- *
- * This function reads the assembly source file, lexes and parses each individual
- * statement. After all of the individual statements in the file have been parsed
- * these are passed to the two stage assembler.
- * The file handle is closed in the main function.
- * @param input_file The file pointer for the input source file.
- * @param program_statements A pointer-to-pointer to the statement list.
- * @return A status entity indicating whether or not the pass was successful.
+ * read_input
  */
 Assembler_Status read_input(FILE* input_file,
 	Statement** program_statements)

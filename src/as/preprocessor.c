@@ -19,15 +19,7 @@
 
 
 /**
- * @brief Preprocesses a line of input source.
- *
- * Preprocesses a line of input source, normalising it to ease parsing of the text.
- * All leading whitespace is removed, all mid-line whitespace is collapsed to a
- * single space character.
- * @param line_buffer The line to process.
- * @return The processed line.
- * @warning The returned line is allocated in this function, and must be freed
- * by the caller.
+ * preprocess_line
  */
 Assembler_Status preprocess_line(const char* line_buffer,
 	char** output)

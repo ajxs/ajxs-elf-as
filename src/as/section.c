@@ -69,7 +69,7 @@ Section* add_section(Section** section_list,
 		return section;
 	}
 
-	Section *curr = *section_list;
+	Section* curr = *section_list;
 	while(curr->next) {
 		curr = curr->next;
 	}
@@ -91,7 +91,7 @@ Section* find_section(Section* const section_list,
 	}
 
 	int name_len = strlen(name);
-	Section *curr = section_list;
+	Section* curr = section_list;
 
 	if(!curr) {
 		return NULL;
@@ -120,7 +120,7 @@ ssize_t find_section_index(Section* const section_list,
 	}
 
 	int name_len = strlen(name);
-	Section *curr = section_list;
+	Section* curr = section_list;
 	ssize_t idx = 0;
 	while(curr) {
 		if(strncmp(curr->name, name, name_len) == 0) {
@@ -167,7 +167,7 @@ Encoding_Entity* section_add_encoding_entity(Section* const section,
 
 	// If there is an encoded entities linked list, append the new entity
 	// to the end of the list.
-	Encoding_Entity *current_entity = section->encoding_entities;
+	Encoding_Entity* current_entity = section->encoding_entities;
 	section->size += entity->size;
 
 	while(current_entity->next != NULL) {
@@ -213,7 +213,7 @@ void free_section(Section* section)
 /**
  * initialise_sections
  */
-Assembler_Status initialise_sections(Section **sections)
+Assembler_Status initialise_sections(Section** sections)
 {
 	/** Holds the success status of internal operations. */
 	Assembler_Status status = ASSEMBLER_STATUS_SUCCESS;

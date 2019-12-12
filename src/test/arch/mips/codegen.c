@@ -22,47 +22,6 @@ int teardown_codegen_test_suite(void) {
 }
 
 
-void test_encode_r_type(void) {
-	Encoding_Entity* encoded_instruction = NULL;
-	Assembler_Status status;
-	uint8_t opcode = 0;
-	uint8_t func = 0;
-	uint8_t rd = 0;
-	uint8_t rs = 0;
-	uint8_t rt = 0;
-
-	// ADD, $t0, $t0, $t1
-	opcode = 0;
-	func = 0x20;
-	rd = encode_operand_register(REGISTER_$T0);
-	rs = encode_operand_register(REGISTER_$T0);
-	rt = encode_operand_register(REGISTER_$T1);
-
-	status = encode_r_type(&encoded_instruction,
-		opcode, rd, rs, rt, 0, func);
-
-	CU_ASSERT(*(uint32_t*)encoded_instruction->data == 0x1094020);
-	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
-
-	free_encoding_entity(encoded_instruction);
-
-	// SUB, $t1, $t1, $t0
-	opcode = 0;
-	func = 0x22;
-	rd = encode_operand_register(REGISTER_$T1);
-	rs = encode_operand_register(REGISTER_$T1);
-	rt = encode_operand_register(REGISTER_$T0);
-
-	status = encode_r_type(&encoded_instruction,
-		opcode, rd, rs, rt, 0, func);
-
-	CU_ASSERT(*(uint32_t*)encoded_instruction->data == 0x1284822);
-	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
-
-	free_encoding_entity(encoded_instruction);
-}
-
-
 void test_encode_i_type(void) {
 	/** The executable symbol table. */
 	Symbol_Table symbol_table;
@@ -127,4 +86,50 @@ void test_encode_i_type(void) {
 	free_encoding_entity(encoded_instruction);
 
 	free_symbol_table(&symbol_table);
+}
+
+
+void test_encode_j_type(void) {
+
+}
+
+
+void test_encode_r_type(void) {
+	Encoding_Entity* encoded_instruction = NULL;
+	Assembler_Status status;
+	uint8_t opcode = 0;
+	uint8_t func = 0;
+	uint8_t rd = 0;
+	uint8_t rs = 0;
+	uint8_t rt = 0;
+
+	// ADD, $t0, $t0, $t1
+	opcode = 0;
+	func = 0x20;
+	rd = encode_operand_register(REGISTER_$T0);
+	rs = encode_operand_register(REGISTER_$T0);
+	rt = encode_operand_register(REGISTER_$T1);
+
+	status = encode_r_type(&encoded_instruction,
+		opcode, rd, rs, rt, 0, func);
+
+	CU_ASSERT(*(uint32_t*)encoded_instruction->data == 0x1094020);
+	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
+
+	free_encoding_entity(encoded_instruction);
+
+	// SUB, $t1, $t1, $t0
+	opcode = 0;
+	func = 0x22;
+	rd = encode_operand_register(REGISTER_$T1);
+	rs = encode_operand_register(REGISTER_$T1);
+	rt = encode_operand_register(REGISTER_$T0);
+
+	status = encode_r_type(&encoded_instruction,
+		opcode, rd, rs, rt, 0, func);
+
+	CU_ASSERT(*(uint32_t*)encoded_instruction->data == 0x1284822);
+	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
+
+	free_encoding_entity(encoded_instruction);
 }

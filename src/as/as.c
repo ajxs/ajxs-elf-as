@@ -485,7 +485,7 @@ Assembler_Status assemble(const char* input_filename,
 	printf("Debug Output: Populating `.shstrtab`\n");
 #endif
 
-	Section *shstrtab = find_section(sections, ".shstrtab");
+	Section* shstrtab = find_section(sections, ".shstrtab");
 	if(!shstrtab) {
 		fprintf(stderr, "Error finding `.shstrtab` index.");
 		process_status = ASSEMBLER_ERROR_MISSING_SECTION;

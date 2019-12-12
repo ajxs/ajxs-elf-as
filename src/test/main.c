@@ -28,6 +28,11 @@ int main(int argc, char **argv) {
 		return CU_get_error();
 	}
 
+	if(!CU_add_test(codegen_test_suite,
+		"Encode J type instruction", test_encode_j_type)) {
+		return CU_get_error();
+	}
+
 	/* Run all tests using the CUnit Basic interface */
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	CU_basic_run_tests();
