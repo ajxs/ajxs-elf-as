@@ -68,9 +68,12 @@ Assembler_Status preprocess_line(const char* line_buffer,
 						return ASSEMBLER_STATUS_BAD_INPUT;
 					}
 				}
-			} else if(*scan == '#') {
+			} else if(*scan == '#' || *scan == '\n') {
 				// Terminate the string at any trailing comment char.
 				*scan = '\0';
+				last_scanned_char = scan;
+
+				break;
 			}
 
 			last_scanned_char = scan;
@@ -78,9 +81,6 @@ Assembler_Status preprocess_line(const char* line_buffer,
 
 		scan++;
 	}
-
-	// Remove any trailing whitespace.
-	*last_scanned_char = '\0';
 
 #if DEBUG_PREPROCESSOR == 1
 	if(strlen(*output)) {

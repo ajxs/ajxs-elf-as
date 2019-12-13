@@ -60,12 +60,14 @@ typedef enum e_assembler_status {
 // is printed to STDOUT.
 #define DEBUG_ASSEMBLER 1
 #define DEBUG_CODEGEN 1
-#define DEBUG_INPUT 0
+#define DEBUG_INPUT 1
 #define DEBUG_MACRO 1
 #define DEBUG_OUTPUT 1
 #define DEBUG_PARSED_STATEMENTS 1
+#define DEBUG_PREPROCESSOR 0
 #define DEBUG_SYMBOLS 1
 
+// The maximum length for the error message buffer.
 #define ERROR_MSG_MAX_LEN 512
 
 

@@ -39,7 +39,8 @@ AS_SOURCES = ${AS_ARCH_SOURCES}   \
 	${AS_DIR}/symtab.c
 
 TEST_SOURCES:=arch/${ARCH}/codegen.c    \
-	main.c
+	main.c                                \
+	preprocessor.c
 
 
 OBJECTS+=${AS_SOURCES:.c=.o}
