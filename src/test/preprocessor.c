@@ -5,6 +5,7 @@
 #include <as.h>
 #include <arch.h>
 #include <codegen.h>
+#include <input.h>
 #include <operand.h>
 #include <section.h>
 #include <stdlib.h>
@@ -32,6 +33,7 @@ void test_trim_leading_whitespace(void)
 
 	Assembler_Status status = preprocess_line(test_line, &output);
 
+	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
 	CU_ASSERT(strcmp(output, expected_output) == 0);
 }
 
@@ -47,6 +49,7 @@ void test_trim_internal_whitespace(void)
 
 	Assembler_Status status = preprocess_line(test_line, &output);
 
+	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
 	CU_ASSERT(strcmp(output, expected_output) == 0);
 }
 
@@ -62,5 +65,6 @@ void test_no_trailing_newline(void)
 
 	Assembler_Status status = preprocess_line(test_line, &output);
 
+	CU_ASSERT(status == ASSEMBLER_STATUS_SUCCESS);
 	CU_ASSERT(strcmp(output, expected_output) == 0);
 }
