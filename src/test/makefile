@@ -1,3 +1,10 @@
+.POSIX:
+.DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
+
+.PHONY: clean
+
 CC       := gcc
 CC_FLAGS := -std=gnu11    \
 	-O2                     \
@@ -26,7 +33,7 @@ AS_ARCH_SOURCES := ${AS_DIR}/arch/${ARCH}/codegen.c    \
 	${AS_DIR}/arch/${ARCH}/register.c                    \
 	${AS_DIR}/arch/${ARCH}/statement.c
 
-AS_SOURCES = ${AS_ARCH_SOURCES}   \
+AS_SOURCES := ${AS_ARCH_SOURCES}   \
 	${AS_DIR}/directive.c           \
 	${AS_DIR}/elf.c                 \
 	${AS_DIR}/encoding-entity.c     \
@@ -38,8 +45,8 @@ AS_SOURCES = ${AS_ARCH_SOURCES}   \
 	${AS_DIR}/status.c              \
 	${AS_DIR}/symtab.c
 
-TEST_SOURCES:=arch/${ARCH}/codegen.c    \
-	main.c                                \
+TEST_SOURCES := arch/${ARCH}/codegen.c    \
+	main.c                                  \
 	preprocessor.c
 
 
@@ -47,8 +54,6 @@ OBJECTS+=${AS_SOURCES:.c=.o}
 OBJECTS+=${TEST_SOURCES:.c=.o}
 
 LIBS := -lcunit
-
-.PHONY: clean
 
 all: ${BINARY}
 

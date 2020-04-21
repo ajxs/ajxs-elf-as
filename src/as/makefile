@@ -1,3 +1,10 @@
+.POSIX:
+.DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
+
+.PHONY: check_arch clean
+
 CC       := gcc
 CC_FLAGS := -std=gnu11    \
 	-O2                     \
@@ -7,12 +14,12 @@ CC_FLAGS := -std=gnu11    \
 	-Wmissing-prototypes    \
 	-Wstrict-prototypes
 
-CC_INCLUDES      = include arch/${ARCH}/include
-CC_INCLUDE_PARAM = $(foreach d, ${CC_INCLUDES}, -I$d)
+CC_INCLUDES      := include arch/${ARCH}/include
+CC_INCLUDE_PARAM := $(foreach d, ${CC_INCLUDES}, -I$d)
 
 LIBS := -lfl
 
-BINARY = ../../${ARCH}-ajxs-elf-as
+BINARY := ../../${ARCH}-ajxs-elf-as
 
 LEXER_GEN := lexer.c
 PARSER_GEN := parser.c
@@ -21,7 +28,7 @@ PARSER_HEADER_GEN := include/parser.h
 LEXER_SRC := lexer.l
 PARSER_SRC := parser.y
 
-ARCH_SOURCES = arch/${ARCH}/codegen.c    \
+ARCH_SOURCES := arch/${ARCH}/codegen.c    \
 	arch/${ARCH}/elf.c                     \
 	arch/${ARCH}/instruction.c             \
 	arch/${ARCH}/macro.c                   \
@@ -29,7 +36,7 @@ ARCH_SOURCES = arch/${ARCH}/codegen.c    \
 	arch/${ARCH}/register.c                \
 	arch/${ARCH}/statement.c
 
-SOURCES = ${ARCH_SOURCES}   \
+SOURCES := ${ARCH_SOURCES}   \
 	${LEXER_GEN}              \
 	${PARSER_GEN}             \
 	as.c                      \
@@ -47,8 +54,6 @@ SOURCES = ${ARCH_SOURCES}   \
 	symtab.c
 
 OBJECTS += ${SOURCES:.c=.o}
-
-.PHONY: check_arch clean
 
 all: ${BINARY}
 
