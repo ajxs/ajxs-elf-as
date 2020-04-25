@@ -53,7 +53,7 @@ SOURCES := ${ARCH_SOURCES}   \
 	status.c                  \
 	symtab.c
 
-OBJECTS += ${SOURCES:.c=.o}
+OBJECTS := ${SOURCES:.c=.o}
 
 all: ${BINARY}
 
