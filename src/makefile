@@ -1,3 +1,10 @@
+.POSIX:
+.DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
+
+.PHONY: check_arch clean
+
 BINARY      := ../${ARCH}-ajxs-elf-as
 TEST_BINARY := ../test-${ARCH}-ajxs-elf-as
 

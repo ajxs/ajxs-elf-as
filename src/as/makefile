@@ -6,7 +6,7 @@ MAKEFLAGS += --no-builtin-rules
 .PHONY: check_arch clean
 
 CC       := gcc
-CC_FLAGS := -std=gnu11    \
+CFLAGS   := -std=gnu11    \
 	-O2                     \
 	-g                      \
 	-Wall                   \
@@ -17,7 +17,7 @@ CC_FLAGS := -std=gnu11    \
 CC_INCLUDES      := include arch/${ARCH}/include
 CC_INCLUDE_PARAM := $(foreach d, ${CC_INCLUDES}, -I$d)
 
-LIBS := -lfl
+LDLIBS := -lfl
 
 BINARY := ../../${ARCH}-ajxs-elf-as
 
@@ -63,10 +63,10 @@ ifndef ARCH
 endif
 
 ${BINARY}: check_arch ${OBJECTS}
-	${CC} ${CC_FLAGS} ${OBJECTS} ${LIBS} -o ${BINARY}
+	${CC} ${CFLAGS} ${OBJECTS} ${LDLIBS} -o ${BINARY}
 
 %.o: %.c
-	${CC} ${CC_INCLUDE_PARAM} -c $< -o $@ ${CC_FLAGS}
+	${CC} ${CC_INCLUDE_PARAM} -c $< -o $@ ${CFLAGS}
 
 ${LEXER_GEN}: ${PARSER_GEN} ${PARSER_HEADER_GEN}
 	flex --outfile=${LEXER_GEN} ${LEXER_SRC}

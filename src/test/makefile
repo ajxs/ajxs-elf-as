@@ -6,7 +6,7 @@ MAKEFLAGS += --no-builtin-rules
 .PHONY: clean
 
 CC       := gcc
-CC_FLAGS := -std=gnu11    \
+CFLAGS   := -std=gnu11    \
 	-O2                     \
 	-g                      \
 	-Wall                   \
@@ -58,10 +58,10 @@ LIBS := -lcunit
 all: ${BINARY}
 
 ${BINARY}: ${OBJECTS}
-	${CC} ${CC_FLAGS} ${OBJECTS} ${LIBS} -o ${BINARY}
+	${CC} ${CFLAGS} ${OBJECTS} ${LIBS} -o ${BINARY}
 
 %.o: %.c
-	${CC} ${CC_INCLUDE_PARAM} -c $< -o $@ ${CC_FLAGS}
+	${CC} ${CC_INCLUDE_PARAM} -c $< -o $@ ${CFLAGS}
 
 clean:
 	rm ${OBJECTS}
