@@ -6,6 +6,8 @@
 
 **Rule:** Observe `const` correctness at all times.
 
+**Rule:** Provide initial values for declared variables where possible.
+
 **Rule:** Only create a single variable per line.
 **Rationale:** Resolves ambiguity of asterix position when declaring multiple pointer variables on a single line. Ensures a predictable standard for documentation of variables.
 
