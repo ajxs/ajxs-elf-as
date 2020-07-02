@@ -54,6 +54,7 @@ Program_Status read_number_from_port(uint32_t* output)
 
 	return STATUS_SUCCESS;
 }
+```
 
 **Rule:** When possible, declare any required variables at the top of each code block. Exception being when this would make the code less readable.
 **Rationale:** This makes it easier for another developer to gauge what variables are used in a given area of the code. As well as providing for consistent documentation.
