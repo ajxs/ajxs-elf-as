@@ -12,7 +12,7 @@
 
 
 extern int yylex(void);
-void yyerror(Statement **statements, const char *s);
+void yyerror(Statement** statements, const char* str);
 
 %}
 
@@ -80,7 +80,7 @@ input:
 		if(!*statements) {
 			*statements = $2;
 		} else {
-			Statement *curr = *statements;
+			Statement* curr = *statements;
 
 			while(curr->next) {
 				curr = curr->next;
@@ -103,7 +103,7 @@ statement:
 		$$ = $2;
 	}
 	| LABEL {
-		Statement *statement = malloc(sizeof(Statement));
+		Statement* statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_EMPTY;
 		statement->n_labels = 1;
 		statement->labels = malloc(sizeof(char*));
@@ -113,7 +113,7 @@ statement:
 		$$ = statement;
 	}
 	| instruction {
-		Statement *statement = malloc(sizeof(Statement));
+		Statement* statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_INSTRUCTION;
 		statement->instruction = $<instruction>1;
 		statement->n_labels = 0;
@@ -123,7 +123,7 @@ statement:
 		$$ = statement;
 	}
 	| directive {
-		Statement *statement = malloc(sizeof(Statement));
+		Statement* statement = malloc(sizeof(Statement));
 		statement->type = STATEMENT_TYPE_DIRECTIVE;
 		statement->directive = $1;
 		statement->n_labels = 0;
@@ -260,7 +260,7 @@ operand:
 
 %%
 
-void yyerror(Statement **statements, const char *s) {
+void yyerror(Statement** statements, const char* str) {
 	(void)statements;
-	fprintf(stderr, "Parser Error: %s\n", s);
+	fprintf(stderr, "Parser Error: %s\n", str);
 }

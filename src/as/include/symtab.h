@@ -12,16 +12,23 @@
 
 #include <section.h>
 
+/**
+ * @brief Symbol type.
+ */
 typedef struct {
-	char *name;
-	Section *section;
+	char* name;
+	Section* section;
 	size_t offset;
 } Symbol;
 
 
+/**
+ * @brief Symbol table type.
+ * Contains all of the individual symbols in a program.
+ */
 typedef struct {
 	size_t n_entries;
-	Symbol *symbols;
+	Symbol* symbols;
 } Symbol_Table;
 
 

@@ -161,7 +161,7 @@ Assembler_Status populate_symtab(Section* sections,
 	Symbol_Table* symbol_table)
 {
 	/** Used for tracking the result of adding the entity to a section. */
-	Encoding_Entity *added_entity = NULL;
+	Encoding_Entity* added_entity = NULL;
 	Section* strtab = NULL;
 	Section* symtab = NULL;
 	/** Encoding entity to hold the null byte entity inserted into the symtab. */
@@ -264,7 +264,7 @@ Assembler_Status populate_symtab(Section* sections,
 
 		// Create an encoding entity for each symbol entry, this will be encoded
 		// in the symbol table section during the writing of the section data.
-		Encoding_Entity *symbol_entry_entity = malloc(sizeof(Encoding_Entity));
+		Encoding_Entity* symbol_entry_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_entry_entity) {
 			fprintf(stderr, "Error: Error allocating symbol entity\n");
 
@@ -301,7 +301,7 @@ Assembler_Status populate_symtab(Section* sections,
 
 		// Create an encoding entity for each symbol name, this will be encoded
 		// in the string table during the writing of the section data.
-		Encoding_Entity *symbol_name_entity = malloc(sizeof(Encoding_Entity));
+		Encoding_Entity* symbol_name_entity = malloc(sizeof(Encoding_Entity));
 		if(!symbol_name_entity) {
 			fprintf(stderr, "Error: Error allocating symbol name entity\n");
 

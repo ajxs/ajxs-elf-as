@@ -19,7 +19,7 @@
  * check_operand_count
  */
 bool check_operand_count(size_t expected_operand_length,
-	Operand_Sequence *opseq)
+	Operand_Sequence* opseq)
 {
 	if(!opseq) {
 		fprintf(stderr, "Error: Invalid operand sequence provided to check operand function.\n");

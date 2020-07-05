@@ -17,14 +17,19 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-
+/**
+ * @brief The type of a particular statement.
+ */
 typedef enum {
 	STATEMENT_TYPE_EMPTY,
 	STATEMENT_TYPE_DIRECTIVE,
 	STATEMENT_TYPE_INSTRUCTION,
 } Statement_Type;
 
-
+/**
+ * @brief Statement type.
+ * Includes the labels that are attached to a particular statement.
+ */
 typedef struct statement {
 	size_t n_labels;
 	char** labels;
@@ -40,10 +45,10 @@ typedef struct statement {
 
 /**
  * @brief Gets the size of a statement entity.
- *
+ * Gets the fully encoded size of a statement.
  * Returns the number of bytes required to encode a specific statement.
  * @param statement The statement to encode.
- * @returns The number of bytes required to encode the entity, or -1 if an error
+ * @return The number of bytes required to encode the entity, or -1 if an error
  * occurred.
  */
 Assembler_Status get_statement_size(Statement* statement,

@@ -98,7 +98,7 @@ Assembler_Status assemble_first_pass(Section* sections,
 		// Since a label _can_ precede a section directive, but not the other way around.
 		if(curr->labels) {
 			for(size_t i = 0; i < curr->n_labels; i++) {
-				Symbol *added_sybmol = symtab_add_symbol(symbol_table, curr->labels[i], curr_section,
+				Symbol* added_sybmol = symtab_add_symbol(symbol_table, curr->labels[i], curr_section,
 					curr_section->program_counter);
 				if(!added_sybmol) {
 					// Error should already have been set.
@@ -221,7 +221,7 @@ Assembler_Status assemble_second_pass(Section* sections,
 	curr = statements;
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_DIRECTIVE) {
-			const char *directive_name = get_directive_string(&curr->directive);
+			const char* directive_name = get_directive_string(&curr->directive);
 			if(!directive_name) {
 				fprintf(stderr, "Error: Unable to get directive type for `%i`\n",
 					curr->directive.type);
@@ -494,9 +494,9 @@ Assembler_Status assemble(const char* input_filename,
 	}
 
 	/** Used for tracking the result of adding the entity to a section. */
-	Encoding_Entity *added_entity = NULL;
+	Encoding_Entity* added_entity = NULL;
 
-	Section *curr_section = sections;
+	Section* curr_section = sections;
 	while(curr_section) {
 		// Iterate through each section and add its name to the section header
 		// string table. Increment the total sections in the header as we go to
@@ -517,7 +517,7 @@ Assembler_Status assemble(const char* input_filename,
 		// Create an encoding entity for each section name.
 		// This raw data will be added to the section header string table binary
 		// data and encoded into the final encoded file.
-		Encoding_Entity *string_entity = malloc(sizeof(Encoding_Entity));
+		Encoding_Entity* string_entity = malloc(sizeof(Encoding_Entity));
 		if(!string_entity) {
 			fprintf(stderr, "Error allocating section name entity.");
 			process_status = ASSEMBLER_ERROR_BAD_ALLOC;
@@ -583,7 +583,7 @@ Assembler_Status assemble(const char* input_filename,
 #endif
 
 	// Open the output file.
-	FILE *out_file = fopen(output_filename, "w");
+	FILE* out_file = fopen(output_filename, "w");
 	if(!out_file) {
 		fprintf(stderr, "Error opening output file: `%u`\n", errno);
 		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
@@ -618,7 +618,7 @@ Assembler_Status assemble(const char* input_filename,
 			curr_section->name, curr_section->size, curr_section->file_offset);
 #endif
 
-		Encoding_Entity *curr_entity = curr_section->encoding_entities;
+		Encoding_Entity* curr_entity = curr_section->encoding_entities;
 		while(curr_entity) {
 			// Write each encoding entity contained in each section.
 			entity_write_count = fwrite(curr_entity->data, curr_entity->size, 1, out_file);
@@ -733,12 +733,12 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 	Section* sections)
 {
 	/** Used for tracking the result of adding the entity to a section. */
-	Encoding_Entity *added_entity = NULL;
+	Encoding_Entity* added_entity = NULL;
 	/** Pointer to the current section being parsed. */
 	Section *curr_section = sections;
 
 	while(curr_section) {
-		Encoding_Entity *curr_entity = curr_section->encoding_entities;
+		Encoding_Entity* curr_entity = curr_section->encoding_entities;
 		while(curr_entity) {
 			if(curr_entity->n_reloc_entries > 0) {
 				// If the current entity has relocation entries.
@@ -746,7 +746,7 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 				// that contains this entity.
 				// Search for the section by concatenating `.rel` with the section name.
 				size_t curr_section_name_len = strlen(curr_section->name);
-				char *curr_section_rel_name = malloc(5 + curr_section_name_len);
+				char* curr_section_rel_name = malloc(5 + curr_section_name_len);
 				if(!curr_section_rel_name) {
 					fprintf(stderr, "Unable to allocate space for reloc section name.\n");
 					return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -757,7 +757,7 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 				curr_section_rel_name[curr_section_name_len + 4] = '\0';
 
 				/** The section to add the reloc entry to. */
-				Section *curr_section_rel = find_section(sections, curr_section_rel_name);
+				Section* curr_section_rel = find_section(sections, curr_section_rel_name);
 				if(!curr_section_rel) {
 					fprintf(stderr, "Unable to find relocatable entry section: `%s`.\n",
 						curr_section_rel_name);
@@ -769,7 +769,7 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 
 				for(size_t r=0; r<curr_entity->n_reloc_entries; r++) {
 					// Create the ELF relocatione entry to encode in the file.
-					Elf32_Rel *rel = malloc(sizeof(Elf32_Rel));
+					Elf32_Rel* rel = malloc(sizeof(Elf32_Rel));
 					if(!rel) {
 						fprintf(stderr, "Unable to allocate space for reloc entry.\n");
 						return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -793,7 +793,7 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 					rel->r_offset = curr_entity->reloc_entries[r].offset;
 
 					/** The encoding entity that encodes the relocation entry. */
-					Encoding_Entity *reloc_entity = malloc(sizeof(Encoding_Entity));
+					Encoding_Entity* reloc_entity = malloc(sizeof(Encoding_Entity));
 					if(!reloc_entity) {
 						// cleanup.
 						free(rel);

@@ -37,7 +37,7 @@ void print_help(void);
  * @param error The error to print.
  * @warning Exits with a failure status within this function.
  */
-static void handle_opts_error(const char *error);
+static void handle_opts_error(const char* error);
 
 
 /**
@@ -56,7 +56,7 @@ void print_help(void) {
 /**
  * handle_opts_error
  */
-static void handle_opts_error(const char *error) {
+static void handle_opts_error(const char* error) {
 	printf("Error: %s\n", error);
 	print_help();
 	exit(EXIT_FAILURE);
@@ -69,13 +69,13 @@ static void handle_opts_error(const char *error) {
 int main(int argc, char **argv)
 {
 	/** The input filename. */
-	char *input_filename = NULL;
+	char* input_filename = NULL;
 	/**
 	 * @brief The output filename.
 	 * The output filename defaults to `out.elf` if not specified. This variable
 	 * is set with the -o/--output command line argument.
 	 */
-	const char *output_filename = "./out.elf";
+	const char* output_filename = "./out.elf";
 	/** Whether or not verbose mode is enabled. */
 	bool verbose = false;
 	/** getopts configuration. */

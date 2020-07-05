@@ -166,7 +166,7 @@ int yywrap(void)
 /**
  * scan_string;
  */
-Statement *scan_string(const char* str)
+Statement* scan_string(const char* str)
 {
 	/** Pointer to the linked list of parsed statements. */
 	Statement* parsed_statements = NULL;

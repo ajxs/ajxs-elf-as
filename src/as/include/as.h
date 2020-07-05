@@ -161,6 +161,17 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 	Instruction* const instruction,
 	const size_t program_counter);
 
+/**
+ * @brief Expands all of the macro statements in the program.
+ *
+ * This function iterates through all of the program statements, checking whether
+ * each one is a macro. Any macros encountered will be 'expanded'. This process
+ * typically involves the modification of the macro statement itself, as well as
+ * potentially appending further statements to it. This is accomplished by adding
+ * a new link to the `statements` linked list.
+ * @param statements The linked list of parsed statements.
+ * @warning @p statements is modified by this function.
+ */
 Assembler_Status expand_macros(Statement* statements);
 
 char* get_encoding_as_string(Encoding_Entity* encoded_instruction);

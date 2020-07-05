@@ -17,6 +17,7 @@
 
 
 /**
+ * @brief Section type.
  * Represents a file section.
  */
 typedef struct _section {

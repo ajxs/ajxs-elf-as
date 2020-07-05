@@ -15,6 +15,10 @@
 #include <stddef.h>
 
 
+/**
+ * @brief Operand mask type.
+ * Specifies how a particular operand is masked.
+ */
 typedef enum {
 	OPERAND_MASK_NONE,
 	OPERAND_MASK_HIGH,
@@ -27,7 +31,10 @@ typedef struct {
 	Operand_Mask mask;
 } Operand_Flags;
 
-
+/**
+ * @brief The default operand flags.
+ * Specifies no shift, and no masks.
+ */
 static const Operand_Flags DEFAULT_OPERAND_FLAGS = {0, OPERAND_MASK_NONE};
 
 
@@ -45,17 +52,20 @@ typedef struct {
 	Operand_Type type;
 	uint16_t offset;
 	union {
-		char *string_literal;
-		char *symbol;
+		char* string_literal;
+		char* symbol;
 		uint32_t numeric_literal;
 		Register reg;
 	};
 } Operand;
 
-
+/**
+ * @brief Operand sequence type.
+ * Represents a sequence of operands attached to a directive or instruction.
+ */
 typedef struct {
 	size_t n_operands;
-	Operand *operands;
+	Operand* operands;
 } Operand_Sequence;
 
 

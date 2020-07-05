@@ -142,7 +142,7 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
 			for(size_t i = 0; i < directive->opseq.n_operands; i++) {
 				// Create an array of each of the word operands.
 				if(directive->opseq.operands[i].type == OPERAND_TYPE_SYMBOL) {
-					Symbol *symbol = symtab_find_symbol(symtab,
+					Symbol* symbol = symtab_find_symbol(symtab,
 						directive->opseq.operands[i].string_literal);
 					if(!symbol) {
 						// cleanup.
@@ -441,7 +441,7 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
 	if(imm.type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		immediate = imm.numeric_literal;
 	} else if(imm.type == OPERAND_TYPE_SYMBOL) {
-		Symbol *symbol = symtab_find_symbol(symbol_table, imm.symbol);
+		Symbol* symbol = symtab_find_symbol(symbol_table, imm.symbol);
 
 		(*encoded_instruction)->n_reloc_entries = 1;
 		(*encoded_instruction)->reloc_entries = malloc(sizeof(Reloc_Entry));

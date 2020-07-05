@@ -19,7 +19,7 @@
 
 
 union YYSTYPE {
-	char *text;
+	char* text;
 	uint32_t imm;
 	Register reg;
 	Operand_Mask mask;
@@ -29,7 +29,7 @@ union YYSTYPE {
 	Instruction instruction;
 	Directive_Type dirtype;
 	Directive directive;
-	Statement *statement;
+	Statement* statement;
 };
 
 /**
@@ -37,7 +37,7 @@ union YYSTYPE {
  *
  * This function parses the string representation of a register operand.
  * @param register_symbol The register string to parse.
- * @returns The matching register.
+ * @return The matching register.
  */
 Register parse_register_symbol(const char* register_symbol);
 

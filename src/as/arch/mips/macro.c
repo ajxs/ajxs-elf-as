@@ -19,15 +19,7 @@
 #include <statement.h>
 
 /**
- * @brief Expands a `la` or `li` psuedo-instruction.
- *
- * This function expands these pseudo-instructions, replacing them with the correct
- * instruction statements in order to perform the prescribed operation.
- * The resulting instructions are highly dependent on the format of the statements,
- * with different formats of operands yielding different results.
- * @param macro The pseudo-instruction statement.
- * @warning @macro is modified in this function. Additional statements may be
- * appended to the end of this statement.
+ * expand_macro_la
  */
 Assembler_Status expand_macro_la(Statement* macro) {
 #if DEBUG_MACRO == 1
@@ -49,7 +41,7 @@ Assembler_Status expand_macro_la(Statement* macro) {
 
 		// Create the expansion instruction.
 		// This instruction will be appended to the original instruction.
-		Statement *expansion = malloc(sizeof(Statement));
+		Statement* expansion = malloc(sizeof(Statement));
 		if(!expansion) {
 			fprintf(stderr, "Error: Error allocating statement for macro expansion\n");
 			return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -102,7 +94,7 @@ Assembler_Status expand_macro_la(Statement* macro) {
 			// instruction loading the LSB.
 
 			// Create the expansion instruction to store the `ORI` instruction.
-			Statement *expansion = malloc(sizeof(Statement));
+			Statement* expansion = malloc(sizeof(Statement));
 			if(!expansion) {
 				fprintf(stderr, "Error allocating statement for macro expansion\n");
 				return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -174,12 +166,7 @@ Assembler_Status expand_macro_la(Statement* macro) {
 
 
 /**
- * @brief Expands a branch delay instruction.
- *
- * This function expands any branching instructions to insert a NOP in the branch
- * delay slot. This funcionality is as-per GCC's functionality.
- * @param macro The branching instruction statement.
- * @warning @p macro is modified in this function.
+ * expand_branch_delay
  */
 Assembler_Status expand_branch_delay(Statement* macro) {
 #if DEBUG_MACRO == 1
@@ -187,7 +174,7 @@ Assembler_Status expand_branch_delay(Statement* macro) {
 #endif
 
 	// Create the expansion instruction which will store the inserted `NOP`.
-	Statement *expansion = malloc(sizeof(Statement));
+	Statement* expansion = malloc(sizeof(Statement));
 	if(!expansion) {
 		fprintf(stderr, "Error allocating statement for macro expansion\n");
 		return ASSEMBLER_ERROR_BAD_ALLOC;
@@ -212,13 +199,7 @@ Assembler_Status expand_branch_delay(Statement* macro) {
 
 
 /**
- * @brief Expands a `move` pseudo-instruction.
- *
- * This function expands the MIPS `move` pseudo-instruction. This instruction is
- * analogous to adding a number to $0 and storing the result in a register. So
- * the instruction is converted to this form.
- * @param macro The `move` instruction statement.
- * @warning @p macro is modified in this function.
+ * expand_macro_move
  */
 Assembler_Status expand_macro_move(Statement* macro) {
 #if DEBUG_MACRO == 1
@@ -250,18 +231,10 @@ Assembler_Status expand_macro_move(Statement* macro) {
 
 
 /**
- * @brief Expands all of the macro statements in the program.
- *
- * This function iterates through all of the program statements, checking whether
- * each one is a macro. Any macros encountered will be 'expanded'. This process
- * typically involves the modification of the macro statement itself, as well as
- * potentially appending further statements to it. This is accomplished by adding
- * a new link to the `statements` linked list.
- * @param statements The linked list of parsed statements.
- * @warning @p statements is modified by this function.
+ * expand_macros
  */
 Assembler_Status expand_macros(Statement* statements) {
-	Statement *curr = statements;
+	Statement* curr = statements;
 
 	Assembler_Status macro_process_status;
 
@@ -290,9 +263,9 @@ Assembler_Status expand_macros(Statement* statements) {
 			}
 		}
 
+		// If an error was encountered, return here.
+		// The error will have been set in the expansion function.
 		if(macro_process_status != ASSEMBLER_STATUS_SUCCESS) {
-			// If an error was encountered, return here.
-			// The error will have been set in the expansion function.
 			return ASSEMBLER_ERROR_MACRO_EXPANSION;
 		}
 
