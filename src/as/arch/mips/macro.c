@@ -21,7 +21,8 @@
 /**
  * expand_macro_la
  */
-Assembler_Status expand_macro_la(Statement* macro) {
+Assembler_Status expand_macro_la(Statement* macro)
+{
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `LA` pseudo-instruction\n");
 #endif
@@ -168,7 +169,8 @@ Assembler_Status expand_macro_la(Statement* macro) {
 /**
  * expand_branch_delay
  */
-Assembler_Status expand_branch_delay(Statement* macro) {
+Assembler_Status expand_branch_delay(Statement* macro)
+{
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding branch delay macro...\n");
 #endif
@@ -201,7 +203,8 @@ Assembler_Status expand_branch_delay(Statement* macro) {
 /**
  * expand_macro_move
  */
-Assembler_Status expand_macro_move(Statement* macro) {
+Assembler_Status expand_macro_move(Statement* macro)
+{
 #if DEBUG_MACRO == 1
 	printf("Debug Macro: Expanding `MOVE` pseudo-instruction...\n");
 #endif
@@ -233,10 +236,12 @@ Assembler_Status expand_macro_move(Statement* macro) {
 /**
  * expand_macros
  */
-Assembler_Status expand_macros(Statement* statements) {
+Assembler_Status expand_macros(Statement* statements)
+{
+	/** Pointer to iterate over all statements. */
 	Statement* curr = statements;
-
-	Assembler_Status macro_process_status;
+	/** The status of the program. */
+	Assembler_Status macro_process_status = ASSEMBLER_STATUS_SUCCESS;
 
 	while(curr) {
 		if(curr->type == STATEMENT_TYPE_INSTRUCTION) {
@@ -264,8 +269,8 @@ Assembler_Status expand_macros(Statement* statements) {
 		}
 
 		// If an error was encountered, return here.
-		// The error will have been set in the expansion function.
-		if(macro_process_status != ASSEMBLER_STATUS_SUCCESS) {
+		// The error will have been printed in the expansion function.
+		if(!get_status(macro_process_status)) {
 			return ASSEMBLER_ERROR_MACRO_EXPANSION;
 		}
 

@@ -11,6 +11,10 @@
 #define ARCH_H 1
 
 
+/**
+ * @brief Opcode type.
+ * Enumerated type containing all of the different opcodes in this ISA.
+ */
 typedef enum {
 	OPCODE_UNKNOWN,
 	OPCODE_ADD,
@@ -58,6 +62,10 @@ typedef enum {
 } Opcode;
 
 
+/**
+ * @brief Register type.
+ * This enumerated type contains all of the register values within this ISA.
+ */
 typedef enum {
 	REGISTER_NONE,
 	REGISTER_$ZERO,
@@ -95,6 +103,10 @@ typedef enum {
 } Register;
 
 
+/**
+ * @brief Instruction types.
+ * This enumerated types contains the different types of instructions this ISA has.
+ */
 typedef enum {
 	INSTRUCTION_TYPE_UNKNOWN,
 	INSTRUCTION_TYPE_IMMEDIATE,
@@ -103,6 +115,13 @@ typedef enum {
 } Instruction_Type;
 
 
+/**
+ * @brief Encodes a register operand.
+ * 
+ * Returns the 8bit encoding of register operand.
+ * @param reg The register to encode
+ * @return The encoding of this register.
+ */
 uint8_t encode_operand_register(Register reg);
 
 #endif
