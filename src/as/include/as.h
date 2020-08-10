@@ -46,7 +46,7 @@ typedef enum e_assembler_status {
 
 
 #include <elf.h>
-#include <encoding-entity.h>
+#include <encoding_entity.h>
 #include <statement.h>
 #include <stdbool.h>
 #include <stddef.h>

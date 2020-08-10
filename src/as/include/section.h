@@ -11,7 +11,7 @@
 #define SECTION_H 1
 
 #include <as.h>
-#include <encoding-entity.h>
+#include <encoding_entity.h>
 #include <stddef.h>
 #include <stdio.h>
 

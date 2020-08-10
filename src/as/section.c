@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <as.h>
-#include <encoding-entity.h>
+#include <encoding_entity.h>
 #include <section.h>
 
 

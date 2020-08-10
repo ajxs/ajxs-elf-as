@@ -36,7 +36,7 @@ AS_ARCH_SOURCES := ${AS_DIR}/arch/${ARCH}/codegen.c    \
 AS_SOURCES := ${AS_ARCH_SOURCES}   \
 	${AS_DIR}/directive.c           \
 	${AS_DIR}/elf.c                 \
-	${AS_DIR}/encoding-entity.c     \
+	${AS_DIR}/encoding_entity.c     \
 	${AS_DIR}/instruction.c         \
 	${AS_DIR}/operand.c             \
 	${AS_DIR}/preprocessor.c        \

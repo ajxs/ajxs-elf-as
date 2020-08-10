@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <encoding-entity.h>
+#include <encoding_entity.h>
 
 
 /**

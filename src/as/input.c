@@ -1,7 +1,7 @@
 /**
  * @file input.c
  * @author Anthony (ajxs [at] panoptic.online)
- * @brief Handles fle input.
+ * @brief Handles file input.
  * Contains the functionality for reading and initial parsing of the input source
  * file.
  * @version 0.1

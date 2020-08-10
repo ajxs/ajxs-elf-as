@@ -158,3 +158,15 @@ if(shouldEncabulate) {
 	//...
 }
 ```
+**Rule:** Demonstrate hierarchy in filenames using the hypen character `-`, separate words with the underscore character `_`.
+
+**Rationale:** Easy to read, ensures compatibility across different systems.
+
+**Example:**
+
+```
+- assembler.h
+- assembler-parse_tokens.c
+- lexer.c
+- lexer-get_token.c
+```

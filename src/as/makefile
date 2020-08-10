@@ -53,7 +53,7 @@ SOURCES := ${ARCH_SOURCES}   \
 	as.c                      \
 	directive.c               \
 	elf.c                     \
-	encoding-entity.c         \
+	encoding_entity.c         \
 	instruction.c             \
 	input.c                   \
 	main.c                    \
