@@ -18,8 +18,8 @@
 /**
  * check_operand_count
  */
-bool check_operand_count(size_t expected_operand_length,
-	Operand_Sequence* opseq)
+bool check_operand_count(const size_t expected_operand_length,
+	const Operand_Sequence* opseq)
 {
 	if(!opseq) {
 		fprintf(stderr, "Error: Invalid operand sequence provided to check operand function.\n");
@@ -76,7 +76,7 @@ void free_operand_sequence(Operand_Sequence* opseq)
 /**
  * print_operand
  */
-void print_operand(Operand* const op)
+void print_operand(const Operand* op)
 {
 	if(op->type == OPERAND_TYPE_NUMERIC_LITERAL) {
 		printf("      Operand: Numeric Literal: `%i`", op->numeric_literal);
@@ -109,7 +109,7 @@ void print_operand(Operand* const op)
 /**
  * print_operand_sequence
  */
-void print_operand_sequence(Operand_Sequence* const opseq)
+void print_operand_sequence(const Operand_Sequence* opseq)
 {
 	printf("    Operand sequence: len: `%zu`\n", opseq->n_operands);
 	for(size_t i = 0; i < opseq->n_operands; i++) {

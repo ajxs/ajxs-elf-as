@@ -21,7 +21,7 @@
  * Represents a file section.
  */
 typedef struct _section {
-	char* name;
+	const char* name;
 	size_t name_strtab_offset;
 	size_t file_offset;
 	size_t program_counter;
@@ -45,7 +45,7 @@ typedef struct _section {
  * @return A pointer to the newly created section, or NULL if an error occurred.
  */
 Assembler_Status create_section(Section** section,
-	char* name,
+	const char* name,
 	const uint32_t type,
 	const uint32_t flags);
 
@@ -58,7 +58,7 @@ Assembler_Status create_section(Section** section,
  * @return The added section, or NULL if an error occurred.
  */
 Section* add_section(Section** section_list,
-	Section* const section);
+	Section* section);
 
 /**
  * @brief Finds a section by its name.
@@ -69,7 +69,7 @@ Section* add_section(Section** section_list,
  * @return A pointer to the section, or `NULL` if no matching section can be
  * found.
  */
-Section* find_section(Section* const section_list,
+Section* find_section(const Section* section_list,
 	const char* name);
 
 /**
@@ -80,7 +80,7 @@ Section* find_section(Section* const section_list,
  * @param name The name of the section to search for.
  * @return The index of the found section in the list, or -1 if not found.
  */
-ssize_t find_section_index(Section* const section_list,
+ssize_t find_section_index(const Section* section_list,
 	const char* name);
 
 /**
@@ -94,8 +94,8 @@ ssize_t find_section_index(Section* const section_list,
  * @param entity The encoded entity to add to the section.
  * @return Returns the added encoding entity or NULL in the case of error.
  */
-Encoding_Entity* section_add_encoding_entity(Section* const section,
-	Encoding_Entity* const entity);
+Encoding_Entity* section_add_encoding_entity(Section* section,
+	const Encoding_Entity* entity);
 
 /**
  * @brief Frees a program section.

@@ -27,8 +27,8 @@
  * encode_directive
  */
 Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
-	Symbol_Table* const symtab,
-	Directive* const directive,
+	const Symbol_Table* symtab,
+	const Directive* directive,
 	const size_t program_counter)
 {
 	// Currently unused in directive encoding.
@@ -201,7 +201,7 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
  * encode_i_type
  */
 Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symbol_table,
+	const Symbol_Table* symbol_table,
 	const uint8_t opcode,
 	const uint8_t rs,
 	const uint8_t rt,
@@ -413,7 +413,7 @@ Assembler_Status encode_offset_type(Encoding_Entity** encoded_instruction,
  * encode_j_type
  */
 Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symbol_table,
+	const Symbol_Table* symbol_table,
 	const uint8_t opcode,
 	const Operand imm,
 	const size_t program_counter)
@@ -496,8 +496,8 @@ Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
  * encode_instruction
  */
 Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symtab,
-	Instruction* const instruction,
+	const Symbol_Table* symtab,
+	const Instruction* instruction,
 	const size_t program_counter)
 {
 	if(!symtab) {
@@ -730,7 +730,8 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
 /**
  * get_encoding_as_string
  */
-char* get_encoding_as_string(Encoding_Entity* encoded_instruction) {
+char* get_encoding_as_string(const Encoding_Entity* encoded_instruction)
+{
 	/** Buffer to hold the representation of the encoding. */
 	char* representation = malloc(ERROR_MSG_MAX_LEN);
 	/** Integer representation of the instruction encoding. */

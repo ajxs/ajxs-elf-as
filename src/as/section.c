@@ -21,7 +21,7 @@
  * create_section
  */
 Assembler_Status create_section(Section** section,
-	char* name,
+	const char* name,
 	const uint32_t type,
 	const uint32_t flags)
 {
@@ -52,7 +52,7 @@ Assembler_Status create_section(Section** section,
  * add_section
  */
 Section* add_section(Section** section_list,
-	Section* const section)
+	Section* section)
 {
 	if(!section_list) {
 		fprintf(stderr, "Error: Invalid section list provided to add section function\n");
@@ -82,7 +82,7 @@ Section* add_section(Section** section_list,
 /**
  * find_section
  */
-Section* find_section(Section* const section_list,
+Section* find_section(const Section* section_list,
 	const char* name)
 {
 	if(!section_list) {
@@ -90,8 +90,8 @@ Section* find_section(Section* const section_list,
 		return NULL;
 	}
 
-	int name_len = strlen(name);
-	Section* curr = section_list;
+	const int name_len = strlen(name);
+	const Section* curr = section_list;
 
 	if(!curr) {
 		return NULL;
@@ -99,7 +99,7 @@ Section* find_section(Section* const section_list,
 
 	while(curr) {
 		if(strncmp(curr->name, name, name_len) == 0) {
-			return curr;
+			return (Section*)curr;
 		}
 
 		curr = curr->next;
@@ -112,15 +112,15 @@ Section* find_section(Section* const section_list,
 /**
  * find_section_index
  */
-ssize_t find_section_index(Section* const section_list,
+ssize_t find_section_index(const Section* section_list,
 	const char* name)
 {
 	if(!section_list) {
 		return -1;
 	}
 
-	int name_len = strlen(name);
-	Section* curr = section_list;
+	const int name_len = strlen(name);
+	const Section* curr = section_list;
 	ssize_t idx = 0;
 	while(curr) {
 		if(strncmp(curr->name, name, name_len) == 0) {
@@ -138,8 +138,8 @@ ssize_t find_section_index(Section* const section_list,
 /**
  * section_add_encoding_entity
  */
-Encoding_Entity* section_add_encoding_entity(Section* const section,
-	Encoding_Entity* const entity)
+Encoding_Entity* section_add_encoding_entity(Section* section,
+	const Encoding_Entity* entity)
 {
 	if(!section) {
 		fprintf(stderr, "Error: Invalid section provided to add entity function.\n");
@@ -159,7 +159,7 @@ Encoding_Entity* section_add_encoding_entity(Section* const section,
 
 	if(!section->encoding_entities) {
 		// If there is no current head of the encoded entities linked list.
-		section->encoding_entities = entity;
+		section->encoding_entities = (Encoding_Entity*)entity;
 		section->size += entity->size;
 
 		return section->encoding_entities;
@@ -174,7 +174,7 @@ Encoding_Entity* section_add_encoding_entity(Section* const section,
 		current_entity = current_entity->next;
 	}
 
-	current_entity->next = entity;
+	current_entity->next = (Encoding_Entity*)entity;
 	return current_entity->next;
 }
 

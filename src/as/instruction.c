@@ -32,7 +32,7 @@ void free_instruction(Instruction* instruction)
 /**
  * print_instruction
  */
-void print_instruction(Instruction* instruction)
+void print_instruction(const Instruction* instruction)
 {
 	const char* opcode_name = get_opcode_string(instruction->opcode);
 	printf("  Instruction: Opcode: `%s`\n", opcode_name);

@@ -59,7 +59,7 @@ void free_directive(Directive* directive);
  * @param dir The directive to get the string for.
  * @return a pointer to the string containing the directive name.
  */
-const char* get_directive_string(Directive* const directive);
+const char* get_directive_string(const Directive* directive);
 
 /**
  * @brief Parses a directive symbol.
@@ -67,7 +67,7 @@ const char* get_directive_string(Directive* const directive);
  * Parses a directive string, returning a value.
  * @param directive_symbol The directive string to parse.
  */
-Directive_Type parse_directive_symbol(char* const directive_symbol);
+Directive_Type parse_directive_symbol(const char* directive_symbol);
 
 /**
  * @brief Prints a directive.
@@ -75,6 +75,6 @@ Directive_Type parse_directive_symbol(char* const directive_symbol);
  * This function prints information about a directive entity.
  * @param dir The directive to print.
  */
-void print_directive(Directive* const directive);
+void print_directive(const Directive* directive);
 
 #endif

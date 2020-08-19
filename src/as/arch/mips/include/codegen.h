@@ -33,7 +33,7 @@
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
 Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symtab,
+	const Symbol_Table* symtab,
 	const uint8_t opcode,
 	const uint8_t rs,
 	const uint8_t rt,
@@ -55,7 +55,7 @@ Assembler_Status encode_i_type(Encoding_Entity** encoded_instruction,
  * @return The encoded instruction entity. Returns `NULL` in case of error.
  */
 Assembler_Status encode_j_type(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symtab,
+	const Symbol_Table* symtab,
 	const uint8_t opcode,
 	const Operand imm,
 	const size_t program_counter);

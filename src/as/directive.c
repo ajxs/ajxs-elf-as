@@ -32,7 +32,7 @@ void free_directive(Directive* directive)
 /**
  * get_directive_string
  */
-const char* get_directive_string(Directive* const directive)
+const char* get_directive_string(const Directive* directive)
 {
 	if(directive->type == DIRECTIVE_ALIGN) {
 		return ".ALIGN";
@@ -75,7 +75,7 @@ const char* get_directive_string(Directive* const directive)
 /**
  * parse_directive_symbol
  */
-Directive_Type parse_directive_symbol(char* directive_symbol)
+Directive_Type parse_directive_symbol(const char* directive_symbol)
 {
 	if(!directive_symbol) {
 		fprintf(stderr, "Invalid directive symbol provided to parse function\n");

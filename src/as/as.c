@@ -273,7 +273,7 @@ Assembler_Status assemble_second_pass(Section* sections,
 					}
 
 #if DEBUG_CODEGEN == 1
-	printf("Debug Codegen: Encoded directive `%s`\n", directive_name);
+					printf("Debug Codegen: Encoded directive `%s`\n", directive_name);
 #endif
 
 					curr_section->program_counter += encoding->size;
@@ -307,12 +307,12 @@ Assembler_Status assemble_second_pass(Section* sections,
 			}
 
 #if DEBUG_CODEGEN == 1
-	/** String representation of the encoded instruction. */
-	char* string_representation = get_encoding_as_string(encoding);
-	printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `%s`\n",
-		opcode_name, curr_section->program_counter, string_representation);
+			/** String representation of the encoded instruction. */
+			char* string_representation = get_encoding_as_string(encoding);
+			printf("Debug Codegen: Encoded instruction `%s` at `0x%zx` as `%s`\n",
+				opcode_name, curr_section->program_counter, string_representation);
 
-	free(string_representation);
+			free(string_representation);
 #endif
 
 			curr_section->program_counter += encoding->size;
@@ -389,7 +389,7 @@ Assembler_Status assemble(const char* input_filename,
 		goto FAIL_FREE_STATEMENTS;
 	}
 
-	int close_status = fclose(input_file);
+	const int close_status = fclose(input_file);
 	if(close_status) {
 		fprintf(stderr, "Error closing file handler: `%u`.\n", errno);
 		process_status = ASSEMBLER_ERROR_FILE_FAILURE;
@@ -470,7 +470,7 @@ Assembler_Status assemble(const char* input_filename,
 
 	// Find the index into the section header block of the section header
 	// string table. This is needed by the ELF header.
-	ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
+	const ssize_t section_shstrtab_index = find_section_index(sections, ".shstrtab");
 	if(section_shstrtab_index == -1) {
 		fprintf(stderr, "Error: Error finding `.shstrtab` index\n");
 		process_status = ASSEMBLER_ERROR_MISSING_SECTION;

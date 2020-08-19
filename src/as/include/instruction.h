@@ -40,7 +40,7 @@ void free_instruction(Instruction* instruction);
  * This function prints information about an instruction entity.
  * @param instruction The instruction to print.
  */
-void print_instruction(Instruction* instruction);
+void print_instruction(const Instruction* instruction);
 
 /**
  * @brief Gets a representation of the provided opcode in string form.
@@ -48,6 +48,6 @@ void print_instruction(Instruction* instruction);
  * This function gets a representation of the provided opcode in string form.
  * @param op The opcode to get the string representation of.
  */
-const char* get_opcode_string(Opcode op);
+const char* get_opcode_string(const Opcode op);
 
 #endif

@@ -135,12 +135,26 @@ Assembler_Status create_elf_header(Elf32_Ehdr** elf_header);
  * created.
  * @return The status of process.
  */
-Assembler_Status encode_section_header(Section* section,
+Assembler_Status encode_section_header(const Section* section,
 	Elf32_Shdr** section_header);
 
+/**
+ * @brief Encodes a Directive entity.
+ *
+ * Encodes an Directive entity, creating an `Encoding_Entity` instance representing
+ * the generated machine code entities to be written into the executable.
+ * @param encoded_directive A pointer-to-pointer to the resulting encoded deirective.
+ * @param symtab The symbol table. This is scanned to find any symbols referenced
+ * in instruction operands.
+ * @param instruction The parsed instruction entity to encode.
+ * @param program_counter The current program counter. This represents the current
+ * place of the instruction within the current encoding context, which is the
+ * current program section.
+ * @return The status of the operation.
+ */
 Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
-	Symbol_Table* const symtab,
-	Directive* const directive,
+	const Symbol_Table* symtab,
+	const Directive* directive,
 	const size_t program_counter);
 
 /**
@@ -148,17 +162,18 @@ Assembler_Status encode_directive(Encoding_Entity** encoded_directive,
  *
  * Encodes an instruction entity, creating an `Encoding_Entity` instance representing
  * the generated machine code entities to be written into the executable.
+ * @param encoded_directive A pointer-to-pointer to the resulting encoded deirective.
  * @param symtab The symbol table. This is scanned to find any symbols referenced
  * in instruction operands.
  * @param instruction The parsed instruction entity to encode.
  * @param program_counter The current program counter. This represents the current
  * place of the instruction within the current encoding context, which is the
  * current program section.
- * @return The encoded instruction entity. Returns `NULL` in case of error.
+ * @return The status of the operation.
  */
 Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
-	Symbol_Table* const symbol_table,
-	Instruction* const instruction,
+	const Symbol_Table* symbol_table,
+	const Instruction* instruction,
 	const size_t program_counter);
 
 /**
@@ -170,11 +185,20 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
  * potentially appending further statements to it. This is accomplished by adding
  * a new link to the `statements` linked list.
  * @param statements The linked list of parsed statements.
+ * @returns The result of the operation.
  * @warning @p statements is modified by this function.
  */
 Assembler_Status expand_macros(Statement* statements);
 
-char* get_encoding_as_string(Encoding_Entity* encoded_instruction);
+/**
+ * @brief Gets a string representation of an encoded instruction.
+ * 
+ * This function creates a string representation of an encoded instruction. Used for
+ * debugging purposes.
+ * @param encoded_instruction The instruction to get the representation of.
+ * @returns A string literal containing the representation.
+ */
+char* get_encoding_as_string(const Encoding_Entity* encoded_instruction);
 
 /**
  * @brief tests a result status for success.
@@ -210,7 +234,7 @@ Assembler_Status initialise_sections(Section** sections);
  * @warning This function modifies the sections.
  * @return A status entity indicating whether or not the pass was successful.
  */
-Assembler_Status populate_symtab(Section* sections,
-	Symbol_Table* symbol_table);
+Assembler_Status populate_symtab(const Section* sections,
+	const Symbol_Table* symbol_table);
 
 #endif

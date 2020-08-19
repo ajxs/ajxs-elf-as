@@ -38,7 +38,7 @@ void free_symbol_table(Symbol_Table* symtab)
 /**
  * print_symbol_table
  */
-void print_symbol_table(Symbol_Table* const symbol_table)
+void print_symbol_table(const Symbol_Table* symbol_table)
 {
 	if(!symbol_table) {
 		fprintf(stderr, "Error: Invalid symbol table provided to print function\n");
@@ -59,9 +59,9 @@ void print_symbol_table(Symbol_Table* const symbol_table)
 /**
  * symtab_add_symbol
  */
-Symbol* symtab_add_symbol(Symbol_Table* const symtab,
+Symbol* symtab_add_symbol(Symbol_Table* symtab,
 	char* name,
-	Section* const section,
+	const Section* section,
 	const size_t offset)
 {
 	if(!symtab) {
@@ -102,7 +102,7 @@ Symbol* symtab_add_symbol(Symbol_Table* const symtab,
 /**
  * symtab_find_symbol
  */
-Symbol* symtab_find_symbol(Symbol_Table* const symtab,
+Symbol* symtab_find_symbol(const Symbol_Table* symtab,
 	const char* name)
 {
 	if(!symtab) {
@@ -129,7 +129,7 @@ Symbol* symtab_find_symbol(Symbol_Table* const symtab,
 /**
  * symtab_find_symbol_index
  */
-ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
+ssize_t symtab_find_symbol_index(const Symbol_Table* symtab,
 	const char* name)
 {
 	if(!symtab) {
@@ -157,8 +157,8 @@ ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
  * populate_symtab
  *  definition is in 'as.h'
  */
-Assembler_Status populate_symtab(Section* sections,
-	Symbol_Table* symbol_table)
+Assembler_Status populate_symtab(const Section* sections,
+	const Symbol_Table* symbol_table)
 {
 	/** Used for tracking the result of adding the entity to a section. */
 	Encoding_Entity* added_entity = NULL;

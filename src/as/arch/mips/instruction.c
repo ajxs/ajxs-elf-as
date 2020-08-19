@@ -19,7 +19,7 @@
 /**
  * get_opcode_string
  */
-const char* get_opcode_string(Opcode op)
+const char* get_opcode_string(const Opcode op)
 {
 	if(op == OPCODE_ADDIU) {
 		return "ADDIU";

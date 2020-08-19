@@ -51,7 +51,7 @@ void free_statement(Statement* statement)
 /**
  * print_directive
  */
-void print_directive(Directive* const directive)
+void print_directive(const Directive* directive)
 {
 	const char* directive_name = get_directive_string(directive);
 	printf("  Directive: Type: `%s`\n", directive_name);
@@ -67,7 +67,7 @@ void print_directive(Directive* const directive)
  * This function prints information about a statement entity.
  * @param statement The statement to print.
  */
-void print_statement(Statement* const statement)
+void print_statement(const Statement* statement)
 {
 	if(!statement) {
 		fprintf(stderr, "Error: Invalid statement provided to print function\n");

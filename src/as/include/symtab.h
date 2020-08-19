@@ -17,7 +17,7 @@
  */
 typedef struct {
 	char* name;
-	Section* section;
+	const Section* section;
 	size_t offset;
 } Symbol;
 
@@ -38,7 +38,7 @@ typedef struct {
  * This function prints all of the entries inside a symbol table.
  * @param symbol_table The symbol table to print.
  */
-void print_symbol_table(Symbol_Table* const symbol_table);
+void print_symbol_table(const Symbol_Table* symbol_table);
 
 /**
  * @brief Adds a symbol to the symbol-table.
@@ -52,9 +52,9 @@ void print_symbol_table(Symbol_Table* const symbol_table);
  * @warning @p symtab is modified in this function. The symbol entry array
  * is resized to accomodate the new symbol.
  */
-Symbol* symtab_add_symbol(Symbol_Table* const symtab,
+Symbol* symtab_add_symbol(Symbol_Table* symtab,
 	char* name,
-	Section* const section,
+	const Section* section,
 	const size_t offset);
 
 /**
@@ -66,7 +66,7 @@ Symbol* symtab_add_symbol(Symbol_Table* const symtab,
  * @return A pointer to the first symbol matching the supplied name,
  * or `NULL` if none exists.
  */
-Symbol* symtab_find_symbol(Symbol_Table* const symtab,
+Symbol* symtab_find_symbol(const Symbol_Table* symtab,
 	const char* name);
 
 /**
@@ -78,7 +78,7 @@ Symbol* symtab_find_symbol(Symbol_Table* const symtab,
  * @return A pointer to the first symbol matching the supplied name,
  * or `NULL` if none exists.
  */
-ssize_t symtab_find_symbol_index(Symbol_Table* const symtab,
+ssize_t symtab_find_symbol_index(const Symbol_Table* symtab,
 	const char* name);
 
 

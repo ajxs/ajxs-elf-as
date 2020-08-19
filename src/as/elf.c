@@ -15,7 +15,7 @@
 /**
  * encode_section_header
  */
-Assembler_Status encode_section_header(Section* section,
+Assembler_Status encode_section_header(const Section* section,
 	Elf32_Shdr** section_header)
 {
 	/** The header for the provided section. */

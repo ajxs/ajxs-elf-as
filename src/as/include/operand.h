@@ -79,7 +79,7 @@ typedef struct {
  * @return A boolean indicating whether the operand count matches the expected count.
  */
 bool check_operand_count(const size_t expected_operand_length,
-	Operand_Sequence* opseq);
+	const Operand_Sequence* opseq);
 
 /**
  * @brief Frees an operand pointer.
@@ -104,7 +104,7 @@ void free_operand_sequence(Operand_Sequence* opseq);
  * This function prints information about an instruction operand.
  * @param op The operand to print information about.
  */
-void print_operand(Operand* const op);
+void print_operand(const Operand* op);
 
 /**
  * @brief Prints an operand sequence.
@@ -112,6 +112,6 @@ void print_operand(Operand* const op);
  * This function prints an operand sequence entity, printing each operand.
  * @param opseq The operand sequence to print.
  */
-void print_operand_sequence(Operand_Sequence* opseq);
+void print_operand_sequence(const Operand_Sequence* opseq);
 
 #endif

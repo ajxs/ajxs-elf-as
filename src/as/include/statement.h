@@ -65,6 +65,6 @@ Assembler_Status get_statement_size(Statement* statement,
  */
 void free_statement(Statement* statement);
 
-void print_statement(Statement* statement);
+void print_statement(const Statement* statement);
 
 #endif
