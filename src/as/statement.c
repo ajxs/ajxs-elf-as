@@ -86,6 +86,6 @@ void print_statement(Statement* const statement)
 	if(statement->type == STATEMENT_TYPE_DIRECTIVE) {
 		print_directive(&statement->directive);
 	} else if(statement->type == STATEMENT_TYPE_INSTRUCTION) {
-		print_instruction(statement->instruction);
+		print_instruction(&statement->instruction);
 	}
 }

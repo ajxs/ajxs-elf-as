@@ -40,7 +40,7 @@ void free_instruction(Instruction* instruction);
  * This function prints information about an instruction entity.
  * @param instruction The instruction to print.
  */
-void print_instruction(Instruction inst);
+void print_instruction(Instruction* instruction);
 
 /**
  * @brief Gets a representation of the provided opcode in string form.
