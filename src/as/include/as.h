@@ -67,9 +67,6 @@ typedef enum e_assembler_status {
 #define DEBUG_PREPROCESSOR 0
 #define DEBUG_SYMBOLS 1
 
-// The maximum length for the error message buffer.
-#define ERROR_MSG_MAX_LEN 512
-
 
 /**
  * @brief The main assembler entry point.

@@ -732,15 +732,24 @@ Assembler_Status encode_instruction(Encoding_Entity** encoded_instruction,
  */
 char* get_encoding_as_string(const Encoding_Entity* encoded_instruction)
 {
-	/** Buffer to hold the representation of the encoding. */
-	char* representation = malloc(ERROR_MSG_MAX_LEN);
 	/** Integer representation of the instruction encoding. */
 	uint32_t encoding_representation = encoded_instruction->data[0] << 24;
 	encoding_representation |= encoded_instruction->data[1] << 16;
 	encoding_representation |= encoded_instruction->data[2] << 8;
 	encoding_representation |= encoded_instruction->data[3];
 
-	sprintf(representation, "0x%x", encoding_representation);
+	/** The required length for the string representation. */
+	int required_len = snprintf(NULL, 0, "0x%x", encoding_representation);
+	if(required_len < 0) {
+		fprintf(stderr, "Error getting length for string representation\n");
+		return "\0";
+	}
+
+	/** Buffer to hold the representation of the encoding. */
+	char* representation = malloc(required_len);
+
+	// Write to the string representation buffer.
+	snprintf(representation, required_len + 1, "0x%x", encoding_representation);
 
 	return representation;
 }
