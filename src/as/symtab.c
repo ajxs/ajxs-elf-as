@@ -244,10 +244,8 @@ Assembler_Status populate_symtab(const Section* sections,
 
 		// If we could not match the section index, abort.
 		if(shndx == -1) {
-			char missing_section_error_message[ERROR_MSG_MAX_LEN];
-			sprintf(missing_section_error_message, "Unable to find section index for: `%s`",
+			fprintf(stderr, "Unable to find section index for: `%s`\n",
 				symbol_table->symbols[i].section->name);
-			fprintf(stderr, "%s\n", missing_section_error_message);
 
 			return ASSEMBLER_ERROR_MISSING_SECTION;
 		}
