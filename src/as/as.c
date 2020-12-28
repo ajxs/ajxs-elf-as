@@ -752,8 +752,8 @@ Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 					return ASSEMBLER_ERROR_BAD_ALLOC;
 				}
 
-				strcpy(curr_section_rel_name, ".rel");
-				strcpy(curr_section_rel_name + 4, curr_section->name);
+				strncpy(curr_section_rel_name, ".rel", 4);
+				strncpy(curr_section_rel_name + 4, curr_section->name, curr_section_name_len);
 				curr_section_rel_name[curr_section_name_len + 4] = '\0';
 
 				/** The section to add the reloc entry to. */
