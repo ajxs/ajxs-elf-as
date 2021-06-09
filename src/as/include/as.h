@@ -82,37 +82,6 @@ Assembler_Status assemble(const char* input_filename,
 	const bool verbose);
 
 /**
- * @brief Runs the first pass of the assembler.
- *
- * This function runs the first assembly pass. This pass calculates the size of
- * each instruction, and populates the symbol table with all of the labels.
- * Creates a linked list of the sections.
- * @param sections A pointer to the section linked list.
- * @param symbol_table A pointer to the symbol table.
- * @param statements A pointer to the parsed statement linked list.
- * @warning This function modifies the symbol table.
- * @return A status entity indicating whether or not the pass was successful.
- */
-Assembler_Status assemble_first_pass(Section* sections,
-	Symbol_Table* symbol_table,
-	Statement* statements);
-
-/**
- * @brief Runs the second pass of the assembler.
- *
- * This function runs the second assembly pass. This pass generates the code for
- * each parsed instruction and populates the section data.
- * @param sections A pointer to the section linked list.
- * @param symbol_table A pointer to the symbol table.
- * @param statements A pointer to the parsed statement linked list.
- * @warning This function modifies the sections.
- * @return A status entity indicating whether or not the pass was successful.
- */
-Assembler_Status assemble_second_pass(Section* sections,
-	Symbol_Table* symbol_table,
-	Statement* statements);
-
-/**
  * @brief Creates the ELF file header.
  *
  * This function creates an ELF executable file header specific for this

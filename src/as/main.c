@@ -22,13 +22,14 @@
  * @brief Main entry function.
  * Main entry function of the program.
  */
-int main(int argc, char **argv);
+int main(int argc,
+	char **argv);
 
 /**
  * @brief Prints the help text for the program.
  * Prints the help text for the program's command line options to STDOUT.
  */
-void print_help(void);
+static void print_help(void);
 
 /**
  * @brief Handles errors parsing the command line arguments.
@@ -43,7 +44,7 @@ static void handle_opts_error(const char* error);
 /**
  * print_help
  */
-void print_help(void) {
+static void print_help(void) {
 	printf("Usage 'ajxs-{ARCH}-elf-as' input_file\n");
 	printf("[-?|--help]\n");
 	printf("-o|--output\n");
@@ -66,16 +67,20 @@ static void handle_opts_error(const char* error) {
 /**
  * main
  */
-int main(int argc, char **argv)
+int main(int argc,
+	char **argv)
 {
 	/** The input filename. */
-	char* input_filename = NULL;
+	const char* input_filename = NULL;
+	/** The default output filename. */
+	const char* default_output_filename = "./out.elf";
+
 	/**
 	 * @brief The output filename.
 	 * The output filename defaults to `out.elf` if not specified. This variable
 	 * is set with the -o/--output command line argument.
 	 */
-	const char* output_filename = "./out.elf";
+	const char* output_filename = default_output_filename;
 	/** Whether or not verbose mode is enabled. */
 	bool verbose = false;
 	/** getopts configuration. */
@@ -97,7 +102,7 @@ int main(int argc, char **argv)
 				exit(EXIT_SUCCESS);
 			case 'o':
 				if(!optarg || strlen(optarg) == 0) {
-					handle_opts_error("Unrecognised output filename.");
+					handle_opts_error("Invalid output filename.");
 				}
 
 				output_filename = optarg;

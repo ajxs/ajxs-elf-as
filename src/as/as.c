@@ -37,14 +37,45 @@
  * @param sections A pointer to the section linked list.
  * @warning This function modifies the sections.
  */
-Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
+static Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 	Section* sections);
 
 
 /**
+ * @brief Runs the first pass of the assembler.
+ *
+ * This function runs the first assembly pass. This pass calculates the size of
+ * each instruction, and populates the symbol table with all of the labels.
+ * Creates a linked list of the sections.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @param statements A pointer to the parsed statement linked list.
+ * @warning This function modifies the symbol table.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
+static Assembler_Status assemble_first_pass(Section* sections,
+	Symbol_Table* symbol_table,
+	Statement* statements);
+
+/**
+ * @brief Runs the second pass of the assembler.
+ *
+ * This function runs the second assembly pass. This pass generates the code for
+ * each parsed instruction and populates the section data.
+ * @param sections A pointer to the section linked list.
+ * @param symbol_table A pointer to the symbol table.
+ * @param statements A pointer to the parsed statement linked list.
+ * @warning This function modifies the sections.
+ * @return A status entity indicating whether or not the pass was successful.
+ */
+static Assembler_Status assemble_second_pass(Section* sections,
+	Symbol_Table* symbol_table,
+	Statement* statements);
+
+/**
  * assemble_first_pass
  */
-Assembler_Status assemble_first_pass(Section* sections,
+static Assembler_Status assemble_first_pass(Section* sections,
 	Symbol_Table* symbol_table,
 	Statement* statements)
 {
@@ -76,14 +107,14 @@ Assembler_Status assemble_first_pass(Section* sections,
 	}
 
 	section_data = find_section(sections, ".data");
-	if(!section_text) {
+	if(!section_data) {
 		fprintf(stderr, "Unable to locate .data section\n");
 
 		return ASSEMBLER_ERROR_MISSING_SECTION;
 	}
 
 	section_bss = find_section(sections, ".bss");
-	if(!section_text) {
+	if(!section_bss) {
 		fprintf(stderr, "Unable to locate .bss section\n");
 
 		return ASSEMBLER_ERROR_MISSING_SECTION;
@@ -152,7 +183,7 @@ Assembler_Status assemble_first_pass(Section* sections,
 /**
  * assemble_second_pass
  */
-Assembler_Status assemble_second_pass(Section* sections,
+static Assembler_Status assemble_second_pass(Section* sections,
 	Symbol_Table* symbol_table,
 	Statement* statements)
 {
@@ -729,7 +760,7 @@ FAIL_FREE_STATEMENTS:
 /**
  * populate_relocation_entries
  */
-Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
+static Assembler_Status populate_relocation_entries(Symbol_Table* symtab,
 	Section* sections)
 {
 	/** Used for tracking the result of adding the entity to a section. */
