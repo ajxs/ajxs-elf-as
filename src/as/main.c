@@ -132,5 +132,5 @@ int main(int argc,
 		exit(EXIT_FAILURE);
 	}
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
